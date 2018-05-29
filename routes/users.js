@@ -7,13 +7,9 @@ router.get('/', function (req, res, next) {
     access_manager.Access_Manager
         .getUsers()
         .then((result) => {
-            console.log("Da route");
-            console.log(result);
             res.json(result)
         })
         .catch((error) => {
-            console.log("Da route err");
-            console.log(error);
             res.json(error);
         });
 });
