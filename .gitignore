@@ -44,5 +44,3 @@ testem.log
 Thumbs.db
 
 # config files
-/sql
-/config
