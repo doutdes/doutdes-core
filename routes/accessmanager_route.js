@@ -1,23 +1,8 @@
 const express = require('express');
 let router = express.Router();
-let model = require('../models/index');
-let access_manager = require('../engine/access_manager');
+const AccessManager = require('../engine/access-manager');
 
-/* GET users */
-router.get('/', function (req, res, next) {
-    access_manager.Access_Manager
-        .getUsers()
-        .then((result) => {
-            console.log(result[0].dataValues);
-            // console.log(result);
-            // console.log(typeof result);
-            res.json(result)
-        })
-        .catch((error) => {
-            res.json(error);
-        });
-});
-
+/*
 router.get('/:usern', function (req, res, next) {
     const name = req.params.usern;
 
@@ -33,5 +18,17 @@ router.get('/:usern', function (req, res, next) {
     // console.log(access_manager.Access_Manager.getUserByUsername(name).getUserName());
 });
 
+*/
+
+router.get('/getEmailFromUsername/:usern', function (req, res, next) {
+    const name = req.params.usern;
+
+    AccessManager.getEmailFromUsername(name)
+        .then(result => {
+            console.log('Ho trovato la mail: '+ result);
+            res.json(result);
+        })
+        .catch(err => console.log(err));
+});
 
 module.exports = router;
