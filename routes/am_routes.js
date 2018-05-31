@@ -21,8 +21,12 @@ router.get('/', function (req, res, next) {
 router.get('/:usern', function (req, res, next) {
     const name = req.params.usern;
 
-    access_manager.Access_Manager.getUserByUsername(name)
-        .then(result => console.log(result))
+    access_manager.Access_Manager
+        .getUserByUsername(name)
+        .then(result => {
+            console.log(result);
+            res.json(result);
+        })
         .catch(err => console.log(err));
 
     console.log("Qua sotto ci entra");
