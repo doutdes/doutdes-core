@@ -1,6 +1,6 @@
 'use strict';
 
-const User = require('../database_handler/user');
+const Model = require('../models/index');
 
 class AccessManager {
 
@@ -18,14 +18,12 @@ class AccessManager {
     static getEmailFromUsername(username) {
         return new Promise((resolve, reject) => {
 
-            User.fetchFromUsername(username)
-                .then(user => {
-
+            Model.Users.findOne({ where: { username: username } })
+                .then(userReceived => {
                     // Returning the new object instantiated
-                    resolve(user.getEmail());
+                    resolve(userReceived.get('first_name'));
                 })
                 .catch(err => {
-
                     reject(() => {
                         console.log(err);// TODO: fix these errors
                     })
