@@ -1,34 +1,24 @@
-const express = require('express');
-let router = express.Router();
+const express       = require('express');
+let   router        = express.Router();
+let   passport      = require('passport');
 const AccessManager = require('../engine/access-manager');
-
-/*
-router.get('/:usern', function (req, res, next) {
-    const name = req.params.usern;
-
-    access_manager.Access_Manager
-        .getUserByUsername(name)
-        .then(result => {
-            console.log(result);
-            res.json(result);
-        })
-        .catch(err => console.log(err));
-
-    console.log("Qua sotto ci entra");
-    // console.log(access_manager.Access_Manager.getUserByUsername(name).getUserName());
-});
-
-*/
 
 router.get('/getEmailFromUsername/:usern', function (req, res, next) {
     const name = req.params.usern;
 
-    AccessManager.getEmailFromUsername(name)
+    AccessManager.getUserFromUsername(name)
         .then(result => {
-            console.log('Ho trovato la mail: '+ result);
-            res.json(result);
+            console.log('Ho trovato la mail: '+ result.email);
+            res.json(result.email);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            res.json(err)
+        });
 });
+
+router.post('/login', passport.authenticate('local'), function (req, res, next) {
+        res.json("Logged in");
+    }
+);
 
 module.exports = router;

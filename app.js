@@ -1,13 +1,31 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+let createError = require('http-errors');
+let express = require('express');
+let path = require('path');
+let cookieParser = require('cookie-parser');
+let logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/accessmanager_route');
+let app = express();
 
-var app = express();
+/* Routers */
+let indexRouter = require('./routes/index');
+let usersRouter = require('./routes/accessmanager_route');
+
+/* PASSPORT */
+let passport      = require('passport');
+let LocalStrategy = require('passport-local').Strategy;
+
+/* Access Manager */
+const AccessManager = require('./engine/access-manager');
+
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(AccessManager.loginStrategy));
+passport.serializeUser(AccessManager.serializeUser);
+passport.deserializeUser(AccessManager.deserializeUser);
+
+/* EXPRESS ROUTING */
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
