@@ -6,24 +6,27 @@ let logger = require('morgan');
 
 let app = express();
 
+/* Access Manager */
+const AccessManager = require('./engine/access-manager');
+
 /* Routers */
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/accessmanager_route');
 
-/* PASSPORT */
+/* Passport */
 let passport      = require('passport');
 let LocalStrategy = require('passport-local').Strategy;
 
-/* Access Manager */
-const AccessManager = require('./engine/access-manager');
-
-// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new LocalStrategy(AccessManager.loginStrategy));
 passport.serializeUser(AccessManager.serializeUser);
 passport.deserializeUser(AccessManager.deserializeUser);
+
+/* Helmet */
+let helmet = require('helmet');
+app.use(helmet());
 
 /* EXPRESS ROUTING */
 
