@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
+let createError = require('http-errors');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+exports.index = function (req, res, next) {
+    res.render('index', {title: 'Express'});
+};
 
-module.exports = router;
+exports.fun404 = function (req, res, next) {
+    next(createError(404));
+};
