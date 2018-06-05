@@ -1,7 +1,8 @@
 'use strict';
+const bcrypt = require('bcrypt-nodejs');
 
 module.exports = (sequelize, DataType) => {
-    var Users = sequelize.define('Users', {
+    let Users = sequelize.define('Users', {
         username: DataType.STRING(20),
         email: DataType.STRING(50),
         company_name: DataType.STRING(100),
@@ -26,6 +27,13 @@ module.exports = (sequelize, DataType) => {
     /*  Users.associate = function (models) {
         // Users.hasMany(models.User_keys, {foreignKey: 'id', sourceKey: models.User_keys.})
       };*/
+
+    Users.prototype.verifyPassword = function(password, cb) {
+        bcrypt.compare(password, this.password, function(err, isMatch) {
+            if (err) return cb(err);
+            cb(null, isMatch);
+        });
+    };
 
     return Users;
 };

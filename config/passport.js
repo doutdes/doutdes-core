@@ -1,4 +1,4 @@
-const local = require('./passport/local');
+const basic = require('./passport/basic');
 
 module.exports = function (passport) {
 
@@ -7,6 +7,6 @@ module.exports = function (passport) {
     passport.deserializeUser((user, done) => done(null, user));
 
     // strategies
-    passport.use(local);
+    passport.use(basic);
 
 };
