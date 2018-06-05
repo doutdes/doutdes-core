@@ -12,21 +12,11 @@ module.exports =
                         return done(null, false);
                     }
 
-                    user.verifyPassword(password, function (err, isMatch) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        // Password did not match
-                        if (!isMatch) {
-                            return done(null, false);
-                        }
-
-                        // Success
+                    if(user.verifyPassword(password)){
                         return done(null, user);
-                    });
-
-                    return done(null, user);
+                    } else {
+                        return done(null, false);
+                    }
                 })
                 .catch(err => {
                     return done(err);

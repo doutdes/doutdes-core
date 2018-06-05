@@ -8,7 +8,10 @@ module.exports = function (app, passport) {
 
     app.get('/users/getEmailFromUsername/:usern', accessRoute.getEmailFromUsername);
     app.post('/login', passport.authenticate('basic', { session : false }), function (req, res, next) {
-        res.json("Logged In");
+        res.json({
+            logged: true,
+            username: req.body.username
+        });
     });
 
     app.get('/', indexRoute.index);
