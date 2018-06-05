@@ -1,4 +1,5 @@
 const basic = require('./passport/basic');
+const jwt   = require('./passport/jwt');
 
 module.exports = function (passport) {
 
@@ -8,5 +9,6 @@ module.exports = function (passport) {
 
     // strategies
     passport.use(basic);
+    passport.use(jwt);
 
 };

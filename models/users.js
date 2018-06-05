@@ -32,5 +32,9 @@ module.exports = (sequelize, DataType) => {
         return bcrypt.compareSync(password, this.password);
     };
 
+    Users.getById = function(id) {
+        return Users.findOne({where: {id: id}});
+    };
+
     return Users;
 };
