@@ -2,23 +2,23 @@
 
 const Model = require('../models/index');
 
-exports.getUserFromUsername = function (username) {
-    return new Promise((resolve, reject) => {
+exports.getUserFromUsername = function (req, res, next) {
+    const username = req.params.usern;
 
-        Model.Users.findOne({ where: { username: username } })
-            .then(userReceived => {
-                // Returning the new object instantiated
-                if(userReceived === null){
-                    reject("This username doesn't exist in the platform");
-                }
-                resolve(userReceived);
-            })
-            .catch(err => {
-                reject(err);
-            });
-    });
+    Model.Users.findOne({ where: { username: username } })
+        .then(user => {
+            // Returning the new object instantiated
+            if(user === null)
+                res.json("This username doesn't exist in the platform.");
+            else
+                res.json(user.email);
+        })
+        .catch(err => {
+            res.json(err);
+        });
 };
 
+/*
 exports.addUser = function (user) {
 
     return new Promise((resolve, reject) => {
@@ -47,3 +47,4 @@ exports.updateUser = function (user) {
             })
     });
 };
+*/
