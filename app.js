@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const passport = require('passport');
 
-module.exports = app;
+module.exports = { app, passport };
 
 /* Various config */
 require('./config/passport')(passport);
