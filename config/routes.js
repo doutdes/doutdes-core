@@ -12,10 +12,7 @@ module.exports = function (app, passport) {
         res.json("Logged In");
     });
     app.get('/login', accessRoute.login);
-    // app.get('/fbsearch',facebookRoute.fbsearch);
-    // app.get('/fbinfo',facebookRoute.fbPageInfo);
     app.get('/fbfancount',facebookRoute.fbFanCount);
-
     app.get('/', indexRoute.index);
     app.use(indexRoute.fun404);
 
