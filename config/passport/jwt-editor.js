@@ -1,7 +1,7 @@
 const passportJWT = require('passport-jwt');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
-const model = require('../../models/index');
+const Model = require('../../models/index');
 
 module.exports =
     new JWTStrategy(
@@ -10,9 +10,12 @@ module.exports =
             secretOrKey: 'your_jwt_secret'
         },
         function (jwtPayload, cb) {
-            console.log(jwtPayload);
 
-            model.Users.findOne({where: {username: jwtPayload.username}})
+            if(jwtPayload.user_type !== '2' && jwtPayload.user_type !== '0'){
+                cb("Unauthorized");
+            }
+
+            Model.Users.findOne({where: {username: jwtPayload.username}})
                 .then(user => {
                     return cb(null, user);
                 })
