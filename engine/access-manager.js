@@ -1,6 +1,8 @@
 'use strict';
 
-const Model = require('../models/index');
+const Model    = require('../models/index');
+const passport = require('../app').passport;
+const jwt      = require('jsonwebtoken');
 
 exports.getUserFromUsername = function (username) {
     return new Promise((resolve, reject) => {
@@ -46,4 +48,22 @@ exports.updateUser = function (user) {
                 reject(err);
             })
     });
+};
+
+exports.basicLogin = function (req, res, next) {
+    passport.authenticate('basic', {session: false}, function (err, user, info) {
+        if(err) {
+            return next(err);
+        }
+        if(!user) {
+            return res.status(401).json({
+                logged: false,
+                error: 'unauthorized'
+            })
+        } else {
+            console.log(user);
+            const token = jwt.sign(user.dataValues, 'your_jwt_secret');
+            return res.json({user, token});
+        }
+    })(req, res, next);
 };
