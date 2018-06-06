@@ -28,11 +28,8 @@ module.exports = (sequelize, DataType) => {
         // Users.hasMany(models.User_keys, {foreignKey: 'id', sourceKey: models.User_keys.})
       };*/
 
-    Users.prototype.verifyPassword = function(password, cb) {
-        bcrypt.compare(password, this.password, function(err, isMatch) {
-            if (err) return cb(err);
-            cb(null, isMatch);
-        });
+    Users.prototype.verifyPassword = function(password) {
+        return bcrypt.compareSync(password, this.password);
     };
 
     return Users;
