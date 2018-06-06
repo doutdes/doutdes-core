@@ -6,7 +6,7 @@ const request = require('request-promise');
 
 exports.fbFanCount = function () {
     const page_id = '1397642170275248';
-    const access_token = 'EAACEdEose0cBAKmSZAxFEvRt1TLXbRRWEWFZAzJZChOdXZC4V7tmpEELcyXVKfZAmyZBgpns3zpZBfCGbngC6wxpsl6a0Irazt2Akcohpttyn519HLz0dLsQmymImjcLoIlkBn3b5YMlDzJLM5ZBEQhsnjqkVZBc3RIW8NNevx3fWF35RHXE8lbFTLtFeAYRBPX0ZD'
+    const access_token = 'EAACEdEose0cBAC3HIVxbGozjePH8pqa3P4wgyPfVJSXztEt5x64p2nUmreoAIbAcZBlQTvkA1KA8ftz2PhUPlSchXYybVfegZC7MCqlu1ntPRYQVh0x9eZCUZCl8C73xcme42SXrNlZCs2xWy20EWuZCITz3klqmD7CeBXvoxSZBrtkTizHaOTvyLUWRXAnbl0tegY4BciZAawZDZD'
     const options = {
         method : 'GET',
         uri : 'https://graph.facebook.com/' + page_id,
@@ -17,3 +17,4 @@ exports.fbFanCount = function () {
     };
     return request(options);
 };
+
