@@ -16,12 +16,15 @@ module.exports = function (app, passport) {
     /****************** ACCESS MANAGER ********************/
 
     app.post('/login', AccessManager.basicLogin);
-    app.get('/ciao1', adminAuth, function (req, res, next) { res.send('ciao1'); });
-    app.get('/ciao2', userAuth, function (req, res, next) { res.send('ciao2'); });
-    app.get('/ciao3', editorAuth, function (req, res, next) { res.send('ciao3'); });
+
+    /****************** CRUD USERS ********************/
+    app.post(amPath   + 'create/', adminAuth, AccessManager.createUser);        // Create
+    app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID
+    app.update(amPath + 'update/', adminAuth, AccessManager.updateUser);        // Update
+    app.delete(amPath + 'delete/', adminAuth, AccessManager.deleteUser);        // Delete
 
 
-    app.get(amPath + 'getUserFromUsername/:usern', AccessManager.getUserFromUsername);
+    app.get(amPath + 'getUserFromUsername/:usern', AccessManager.getUserFromUsername); // NOT USEFUL
 
     /****************** FACEBOOK MANAGER ********************/
 

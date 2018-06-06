@@ -1,45 +1,48 @@
 'use strict';
 
-const Model    = require('../models/index');
+const Model = require('../models/index');
 const passport = require('../app').passport;
-const jwt      = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
 exports.getUserFromUsername = function (req, res, next) {
     const username = req.params.usern;
 
-    Model.Users.findOne({ where: { username: username } })
+    Model.Users.findOne({where: {username: username}})
         .then(user => {
             // Returning the new object instantiated
-            if(user === null)
+            if (user === null) {
                 res.json("This username doesn't exist in the platform.");
-            else
-                res.json(user.email);
+            }
+
+            res.json(user.email);
         })
         .catch(err => {
             res.json(err);
         });
 };
 
-/*
-exports.addUser = function (user) {
+exports.createUser = function (req, res, next) {
 
-    return new Promise((resolve, reject) => {
+    const user = req.body;
 
-        Model.Users.create(user)
-            .then(newUser => {
-                resolve("User " + newUser.get('firt_name') + ' ' + newUser.get('last_name') + ' has been successful created');
-            })
-            .catch(err => {
-                console.log("User cannot be created");
-                reject(err);
-            })
-    });
+    Model.Users.create(user)
+        .then(newUser => {
+            res.send("User " + newUser.get('firt_name') + ' ' + newUser.get('last_name') + ' has been successful created');
+        })
+        .catch(err => {
+            console.log("User cannot be created");
+            res.send(err);
+        })
+};
+
+exports.getUserById = function (id) {
+
 };
 
 exports.updateUser = function (user) {
     return new Promise((resolve, reject) => {
 
-        Model.Users.update(user, { where: { id: user.id } })
+        Model.Users.update(user, {where: {id: user.id}})
             .then(newUser => {
                 resolve("User " + newUser.get('firt_name') + ' ' + newUser.get('last_name') + ' has been successful updated');
             })
@@ -49,14 +52,27 @@ exports.updateUser = function (user) {
             })
     });
 };
-*/
+
+exports.deleteUser = function (user) {
+    return new Promise((resolve, reject) => {
+
+        Model.Users.update(user, {where: {id: user.id}})
+            .then(newUser => {
+                resolve("User " + newUser.get('firt_name') + ' ' + newUser.get('last_name') + ' has been successful updated');
+            })
+            .catch(err => {
+                console.log("User cannot be updated");
+                reject(err);
+            })
+    });
+};
 
 exports.basicLogin = function (req, res, next) {
     passport.authenticate('basic', {session: false}, function (err, user, info) {
-        if(err) {
+        if (err) {
             return next(err);
         }
-        if(!user) {
+        if (!user) {
             return res.status(401).json({
                 logged: false,
                 error: 'unauthorized'
