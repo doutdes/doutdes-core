@@ -20,7 +20,7 @@ module.exports = function (app, passport) {
     /****************** CRUD USERS ********************/
     app.post(amPath   + 'create/', adminAuth, AccessManager.createUser);        // Create
     app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID
-    app.update(amPath + 'update/', adminAuth, AccessManager.updateUser);        // Update
+    app.put(amPath    + 'update/', adminAuth, AccessManager.updateUser);           // Update
     app.delete(amPath + 'delete/', adminAuth, AccessManager.deleteUser);        // Delete
 
 
