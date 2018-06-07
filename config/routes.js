@@ -30,11 +30,11 @@ module.exports = function (app, passport) {
     app.get(amPath + 'getUserFromUsername/:usern', AccessManager.getUserFromUsername); // NOT USEFUL
 
     /****************** CRUD USER KEYS ********************/
-    app.post(keysPath   + 'insert/', adminAuth, UserKeysManager.insertKey);                      // Create
-    app.get(keysPath    + 'getAll/:user_id', adminAuth, UserKeysManager.readAllKeysById);        // Read all keys by User
-    app.get(keysPath    + 'getByUserService/', adminAuth, UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
-    app.put(keysPath    + 'update/', adminAuth, UserKeysManager.update);                         // Update
-    app.delete(keysPath + 'delete/', adminAuth, UserKeysManager.delete);                         // Delete
+    app.post(keysPath   + 'insert/', userAuth, UserKeysManager.insertKey);                      // Create
+    app.get(keysPath    + 'getAll/:user_id', userAuth, UserKeysManager.readAllKeysById);        // Read all keys by User
+    app.get(keysPath    + 'getByUserService/', userAuth, UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
+    app.put(keysPath    + 'update/', userAuth, UserKeysManager.update);                         // Update
+    app.delete(keysPath + 'delete/', userAuth, UserKeysManager.delete);                         // Delete
 
     /****************** FACEBOOK MANAGER ********************/
 
