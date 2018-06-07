@@ -119,7 +119,6 @@ exports.basicLogin = function (req, res, next) {
                 error: 'unauthorized'
             })
         } else {
-            console.log(user);
             const token = jwt.sign(user.dataValues, 'your_jwt_secret');
             return res.json({user, token});
         }
