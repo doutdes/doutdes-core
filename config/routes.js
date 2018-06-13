@@ -39,7 +39,7 @@ module.exports = function (app, passport) {
     /****************** FACEBOOK MANAGER ********************/
 
     app.get('/fbfancount', AnalyticsManager.fbFanCount);
-    app.get('/fbinsights', AnalyticsManager.fbInsights)
+    app.get('/fbinsights', AnalyticsManager.fbInsights);
 
     /****************** ERROR HANDLER ********************/
 
