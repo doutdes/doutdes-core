@@ -4,11 +4,11 @@
 const FacebookApi = require('../api_handler/facebook-api');
 //const {FB, FacebookApiException} = require('fb');
 
-exports.fbFanCount = function (req, res, next) {
+exports.fb_insights_page_fans = function (req, res, next) {
 
-    FacebookApi.fbFanCount()
-        .then(fan_count => {
-            res.json(fan_count);
+    FacebookApi.fb_insights_page_fans()
+        .then(page_fans => {
+            res.json(page_fans);
         })
         .catch(err => {
             res.json(err);
@@ -16,11 +16,11 @@ exports.fbFanCount = function (req, res, next) {
 
 };
 
-exports.fbInsights = function (req, res, next) {
+exports.fb_insights_engaged_users = function (req, res, next) {
 
-    FacebookApi.fbInsights()
-        .then(fbInsights => {
-            res.json(fbInsights);
+    FacebookApi.fb_insights_engaged_users()
+        .then(engaged_users => {
+            res.json(engaged_users);
         })
         .catch(err => {
             res.json(err);
