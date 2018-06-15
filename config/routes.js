@@ -38,8 +38,8 @@ module.exports = function (app, passport) {
 
     /****************** FACEBOOK MANAGER ********************/
 
-    app.get('/fbfancount', AnalyticsManager.fbFanCount);
-    app.get('/fbinsights', AnalyticsManager.fbInsights);
+    app.get('/fbfancount', AnalyticsManager.fb_insights_page_fans);
+    app.get('/fbinsights', AnalyticsManager.fb_insights_engaged_users);
 
     /****************** ERROR HANDLER ********************/
 
