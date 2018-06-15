@@ -26,32 +26,11 @@ exports.fbInsights = function () {
         qs: {
             access_token: access_token,
             metric: 'page_engaged_users',
-            period: 'days_28'
+            period: 'day'
         }
     };
     return Request(options);
 };
-
-
-// const {FB, FacebookApiException} = require('fb');
-//
-// FB.options({
-//     version: 'v3.0',
-//     accessToken: 'EAACEdEose0cBAIZB3e0oYIXKONS9F1sVCXZBajegts94uwfd4S05KZCcNbbmOEhulReJMdI6ezOTJkLKXvp2RBZARvBaqF5pGD8mCuXeW9nB7Rk3EKt70fHAKllGbcHx1A234NhhIZCvl1xHSpbffvwzeWQ7Jo0HMA0RJE0KXHJHcw7qt3wbEtaBxCA0Q1BHHaH3viMLDtQZDZD'
-// });
-// FB.extend({appID: '1397642170275248'});
-//
-// exports.fbFanCount = () => {
-//     return FB.api('4', {fields: ['id', 'name']}, function (res) {
-//         if (!res || res.error) {
-//             console.log(!res ? 'error occurred' : res.error);
-//             return;
-//         }
-//         console.log(res.id);
-//         console.log(res.name);
-//     });
-// };
-
 
 
 
