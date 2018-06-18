@@ -3,7 +3,7 @@
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../api_handler/facebook-api');
 
-exports.fb_insights_page_fans = function (req, res, next) {
+exports.fb_getPageFans = function (req, res, next) {
 
     FacebookApi.fb_insights_page_fans()
         .then(result => {
@@ -17,7 +17,7 @@ exports.fb_insights_page_fans = function (req, res, next) {
 
 exports.fb_insights_engaged_users = function (req, res, next) {
 
-    FacebookApi.fb_insights_engaged_users()
+    FacebookApi.getEngagedUsers(FacebookApi.DAYS_28)
         .then(result => {
             res.json(result);
         })
