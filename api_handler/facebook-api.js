@@ -51,21 +51,6 @@ exports.fb_insights_page_impressions_by_city_unique = function () {
 
 };
 
-exports.fb_insights_page_impressions_by_city_unique = function () {
-
-    const options = {
-        method: 'GET',
-        uri: 'https://graph.facebook.com/' + page_id + '/insights/',
-        qs: {
-            access_token: access_token,
-            metric: 'page_impressions_by_city_unique',
-            period: 'days_28'
-        }
-    };
-    return Request(options);
-
-};
-
 exports.fb_insights_page_impressions_by_country_unique = function () {
 
     const options = {
