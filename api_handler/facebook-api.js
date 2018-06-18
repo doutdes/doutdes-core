@@ -2,16 +2,23 @@
  * API calls from Page Insights Facebook
  * */
 
+/** IMPORTS **/
 const Request = require('request-promise');
 
+/** CONSTANTS **/
 const pageID = '1397642170275248';
 const accessToken = 'EAAYgMsLsh6kBAHaIb2LuEnDBn4k2KIYvZCgTqqoUeVk8R97ZATKLVRFbPuWr2ppeXwsRsEKxtRdKaqsUogJjaRq3B81UMkVYy5IBAmZAOhUKDvYZBntWjnA865bz8vamvclZAgy3gE3Uv6X4NM5EOeLq38viSq4u4QC80CfTZBfwZDZD';
 const fbInsightURI = 'https://graph.facebook.com/' + pageID + '/insights/';
 
-// PARAMETERS
-export const GET = 'GET';
-export const POST = 'POST';
-export const DAYS_28  = 'days_28';
+/** GLOBAL PARAMETERS **/
+global.GET = 'GET';
+global.POST = 'POST';
+global.DAYS_28  = 'days_28';
+global.WEEK = 'week';
+global.DAY = 'day';
+global.LIFETIME = 'lifetime';
+
+/** Facebook Page/Insight query **/
 
 function facebookQuery(method, metric, period) {
 
@@ -27,156 +34,92 @@ function facebookQuery(method, metric, period) {
     return Request(options);
 }
 
-export function getEngagedUsers(period) {
+/** Metrics **/
+
+exports.getInsightsEngagedUsers = function (period) {
 
     const metric = 'page_engaged_users';
 
-    return facebookQuery(GET, metric, DAYS_28);
-}
-
-exports.fb_insights_page_impressions_unique = function () {
-
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_impressions_unique',
-            period: 'days_28'
-        }
-    };
-    return Request(options);
-
-}
-
-exports.fb_insights_page_impressions_by_city_unique = function () {
-
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_impressions_by_city_unique',
-            period: 'days_28'
-        }
-    };
-    return Request(options);
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_impressions_by_country_unique = function () {
+exports.getInsightsPageImpressionsUnique = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_impressions_by_country_unique',
-            period: 'days_28'
-        }
-    };
-    return Request(options)
+    const metric = 'page_impressions_unique';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_actions_post_reactions_total = function () {
+exports.getInsightsPageImpressionsByCityUnique = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_actions_post_reactions_total',
-            period: 'days_28'
-        }
-    };
-    return Request(options);
+    const metric = 'page_impressions_by_city_unique';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_fans = function () {
+exports.getInsightsPageImpressionsByCountryUnique = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_fans'
-        }
-    };
-    return Request(options);
+    const metric = 'page_impressions_by_city_unique';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_fans_city = function () {
+exports.getInsightsPageActionsPostReactionsTotal = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_fans_city'
-        }
-    };
-    return Request(options);
+    const metric = 'page_impressions_by_city_unique';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_fans_country = function () {
+exports.getInsightsPageFans = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_fans_country'
-        }
-    };
-    return Request(options);
+    const metric = 'page_fans';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_fans_adds_unique = function () {
+exports.getInsightsPageFansCity = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_fans_adds_unique',
-            period: 'day'
-        }
-    };
-    return Request(options);
+    const metric = 'page_fans_city';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_fans_removes_unique = function () {
+exports.getInsightsPageFansCountry = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_fans_removes_unique',
-            period: 'day'
-        }
-    };
-    return Request(options);
+    const metric = 'page_fans_country';
+
+    return facebookQuery(GET, metric, period);
 
 };
 
-exports.fb_insights_page_views_external_referrals = function () {
+exports.getInsightsPageFansAddsUnique = function (period) {
 
-    const options = {
-        method: 'GET',
-        uri: fbInsightURI,
-        qs: {
-            access_token: accessToken,
-            metric: 'page_views_external_referrals',
-            period: 'day'
-        }
-    };
-    return Request(options);
+    const metric = 'page_fans_adds_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageFansRemovesUnique = function (period) {
+
+    const metric = 'page_fans_removes_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageViewsExternalReferrals = function (period) {
+
+    const metric = 'page_views_external_referrals';
+
+    return facebookQuery(GET, metric, period);
 
 };
