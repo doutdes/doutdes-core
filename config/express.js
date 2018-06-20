@@ -6,7 +6,8 @@
 
 const express = require('express');
 const cookieParser = require('cookie-parser');
-let path = require('path');
+const cors = require('cors');
+let path   = require('path');
 let helmet = require('helmet');
 let logger = require('morgan');
 let config = require('./index');
@@ -29,6 +30,9 @@ module.exports = function (app, passport) {
     app.use(express.urlencoded({extended: false}));
     app.use(cookieParser());
     app.use(express.static(config.root + '/public'));
+
+    // enabling cors
+    app.use(cors());
 
     // error handler
     app.use(function (err, req, res, next) {
