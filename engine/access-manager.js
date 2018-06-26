@@ -22,35 +22,57 @@ exports.getUserFromUsername = function (req, res, next) {
         });
 };
 
+
 exports.createUser = function (req, res, next) {
+    const Op = Model.Sequelize.Op;
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
 
-    Model.Users.create({
-        username: user.username,
-        email: user.email,
-        company_name: user.company_name,
-        vat_number: user.vat_number,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        birth_place: user.birth_place,
-        birth_date: new Date(user.birth_date),
-        fiscal_code: user.fiscal_code,
-        address: user.address,
-        province: user.province,
-        city: user.city,
-        zip: user.zip,
-        password: password,
-        user_type: user.user_type,
-        checksum: user.checksum
+    Model.Users.findAll({
+        where: {
+            [Op.or] : [
+                { username: user.username },
+                { email: user.email }
+            ]
+        }
     })
-        .then(newUser => {
-            res.send("User " + newUser.get('first_name') + ' ' + newUser.get('last_name') + ' has been successful created');
+        .then(userbn => {
+            // user !== null then a username or an email already exists in the sistem
+            // the registration has to be rejected
+
+            if(userbn.length !== 0) {
+                res.status(400).send('The username or email choosen already exists in the system');
+            } else {
+                // A new user can be created
+
+                Model.Users.create({
+                    username: user.username,
+                    email: user.email,
+                    company_name: user.company_name,
+                    vat_number: user.vat_number,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    birth_place: user.birth_place,
+                    birth_date: new Date(user.birth_date),
+                    fiscal_code: user.fiscal_code,
+                    address: user.address,
+                    province: user.province,
+                    city: user.city,
+                    zip: user.zip,
+                    password: password,
+                    user_type: user.user_type,
+                    checksum: '0'
+                })
+                    .then(newUser => {
+                        res.send("User " + newUser.get('first_name') + ' ' + newUser.get('last_name') + ' has been successful created');
+                    })
+                    .catch(err => {
+                        console.log("User cannot be created");
+                        res.send(err);
+                    })
+            }
         })
-        .catch(err => {
-            console.log("User cannot be created");
-            res.send(err);
-        })
+    ;
 };
 
 exports.getUserById = function (req, res, next) {
