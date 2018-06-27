@@ -21,7 +21,7 @@ module.exports = function (app, passport) {
     app.post('/login', AccessManager.basicLogin);
 
     /****************** CRUD USERS ********************/
-    app.post(amPath   + 'create/', adminAuth, AccessManager.createUser);        // Create
+    app.post(amPath   + 'create/', AccessManager.createUser);        // Create
     app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID
     app.put(amPath    + 'update/', adminAuth, AccessManager.updateUser);        // Update
     app.delete(amPath + 'delete/', adminAuth, AccessManager.deleteUser);        // Delete

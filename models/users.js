@@ -9,6 +9,7 @@ module.exports = (sequelize, DataType) => {
         vat_number:     DataType.STRING(11),
         first_name:     DataType.STRING(40),
         last_name:      DataType.STRING(40),
+        birth_place:    DataType.STRING(50),
         birth_date:     DataType.DATEONLY,
         fiscal_code:    DataType.STRING(16),
         address:        DataType.STRING(100),
