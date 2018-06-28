@@ -23,6 +23,7 @@
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "sequelize": "^4.37.10",
-    "fb": "^2.0.0"
+    "fb": "^2.0.0",
+    "hashmap": "^2.3.0"
   }
 }
