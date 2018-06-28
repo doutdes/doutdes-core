@@ -9,7 +9,7 @@ const Request = require('request-promise');
 const pageID = '1397642170275248';
 const accessToken = 'EAAYgMsLsh6kBAHaIb2LuEnDBn4k2KIYvZCgTqqoUeVk8R97ZATKLVRFbPuWr2ppeXwsRsEKxtRdKaqsUogJjaRq3B81UMkVYy5IBAmZAOhUKDvYZBntWjnA865bz8vamvclZAgy3gE3Uv6X4NM5EOeLq38viSq4u4QC80CfTZBfwZDZD';
 const fbInsightURI = 'https://graph.facebook.com/' + pageID + '/insights/';
-
+const date_preset = 'this_year';
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
@@ -28,10 +28,12 @@ function facebookQuery(method, metric, period) {
         qs: {
             access_token: accessToken,
             metric: metric,
-            period: period
+            period: period,
+            date_preset: date_preset
         }
     };
     return Request(options);
+
 }
 
 /** Metrics **/
@@ -78,7 +80,17 @@ exports.getInsightsPageActionsPostReactionsTotal = function (period) {
 
 exports.getInsightsPageFans = function (period) {
 
+    var since = 1529971200;
+    var until = 1530057599;
+
     const metric = 'page_fans';
+
+    for (var i = 0; i<60; i++){
+
+        since -= 86400;
+        until -= 86400;
+
+    }
 
     return facebookQuery(GET, metric, period);
 
