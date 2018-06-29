@@ -41,49 +41,49 @@ function facebookQuery(method, metric, period) {
 
 /** The number of people who engaged with your Page. Engagement includes any click or story created. (Unique Users)**/
 
-// exports.getInsightsEngagedUsers = function (period) {
-//
-//     const metric = 'page_engaged_users';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// /** The number of people who had any content from your Page or about your Page enter their screen. This includes posts, check-ins, ads, social information from people who interact with your Page and more. (Unique Users) **/
-//
-// exports.getInsightsPageImpressionsUnique = function (period) {
-//
-//     const metric = 'page_impressions_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// /** **/
-//
-// exports.getInsightsPageImpressionsByCityUnique = function (period) {
-//
-//     const metric = 'page_impressions_by_city_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// exports.getInsightsPageImpressionsByCountryUnique = function (period) {
-//
-//     const metric = 'page_impressions_by_country_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// exports.getInsightsPageActionsPostReactionsTotal = function (period) {
-//
-//     const metric = 'page_impressions_by_city_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
+exports.getInsightsEngagedUsers = function (period) {
+
+    const metric = 'page_engaged_users';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+/** The number of people who had any content from your Page or about your Page enter their screen. This includes posts, check-ins, ads, social information from people who interact with your Page and more. (Unique Users) **/
+
+exports.getInsightsPageImpressionsUnique = function (period) {
+
+    const metric = 'page_impressions_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+/** **/
+
+exports.getInsightsPageImpressionsByCityUnique = function (period) {
+
+    const metric = 'page_impressions_by_city_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageImpressionsByCountryUnique = function (period) {
+
+    const metric = 'page_impressions_by_country_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageActionsPostReactionsTotal = function (period) {
+
+    const metric = 'page_impressions_by_city_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
 
 exports.getInsightsPageFans = function (period) {
 
@@ -101,34 +101,34 @@ exports.getInsightsPageFansCity = function (period) {
 
 };
 
-// exports.getInsightsPageFansCountry = function (period) {
-//
-//     const metric = 'page_fans_country';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// exports.getInsightsPageFansAddsUnique = function (period) {
-//
-//     const metric = 'page_fans_adds_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// exports.getInsightsPageFansRemovesUnique = function (period) {
-//
-//     const metric = 'page_fans_removes_unique';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
-//
-// exports.getInsightsPageViewsExternalReferrals = function (period) {
-//
-//     const metric = 'page_views_external_referrals';
-//
-//     return facebookQuery(GET, metric, period);
-//
-// };
+exports.getInsightsPageFansCountry = function (period) {
+
+    const metric = 'page_fans_country';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageFansAddsUnique = function (period) {
+
+    const metric = 'page_fans_adds_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageFansRemovesUnique = function (period) {
+
+    const metric = 'page_fans_removes_unique';
+
+    return facebookQuery(GET, metric, period);
+
+};
+
+exports.getInsightsPageViewsExternalReferrals = function (period) {
+
+    const metric = 'page_views_external_referrals';
+
+    return facebookQuery(GET, metric, period);
+
+};
