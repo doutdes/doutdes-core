@@ -111,7 +111,7 @@ exports.getInsightsPageFansCountry = function (period) {
 
 exports.getInsightsPageFansAddsUnique = function (period) {
 
-    const metric = 'page_fans_adds_unique';
+    const metric = 'page_fan_adds_unique';
 
     return facebookQuery(GET, metric, period);
 
@@ -119,7 +119,7 @@ exports.getInsightsPageFansAddsUnique = function (period) {
 
 exports.getInsightsPageFansRemovesUnique = function (period) {
 
-    const metric = 'page_fans_removes_unique';
+    const metric = 'page_fan_removes_unique';
 
     return facebookQuery(GET, metric, period);
 
