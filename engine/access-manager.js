@@ -64,7 +64,11 @@ exports.createUser = function (req, res, next) {
                     checksum: '0'
                 })
                     .then(newUser => {
-                        res.send("User " + newUser.get('first_name') + ' ' + newUser.get('last_name') + ' has been successful created');
+                        res.send({
+                            created:    true,
+                            first_name: newUser.get('first_name'),
+                            last_name:  newUser.get('last_name')
+                        });
                     })
                     .catch(err => {
                         console.log("User cannot be created");
