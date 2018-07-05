@@ -39,7 +39,14 @@ module.exports = function (app, passport) {
     /****************** FACEBOOK MANAGER ********************/
 
     app.get('/fbfancount', AnalyticsManager.fb_getPageFans);
-    app.get('/fbinsights', AnalyticsManager.fb_getPageFansCity);
+    app.get('/fbfancity', AnalyticsManager.fb_getPageFansCity);
+    app.get('/fbfancountry', AnalyticsManager.fb_getPageFansCountry);
+    app.get('/fbengageduser', AnalyticsManager.fb_getEngagedUsers);
+    app.get('/fbpageimpressions', AnalyticsManager.fb_getPageImpressionsUnique);
+    app.get('/fbpageimpressionscity', AnalyticsManager.fb_getPageImpressionsByCityUnique);
+    app.get('/fbpageimpressionscountry', AnalyticsManager.fb_getPageImpressionsByCountryUnique);
+    app.get('/fbpagereactions', AnalyticsManager.fb_getPageActionsPostReactionsTotal);
+    app.get('/fbpageviewsexternals', AnalyticsManager.fb_getPageViewsExternalReferrals);
 
     /****************** ERROR HANDLER ********************/
 
