@@ -9,6 +9,7 @@ const Request = require('request-promise');
 const pageID = '1397642170275248';
 const accessToken = 'EAAYgMsLsh6kBAHaIb2LuEnDBn4k2KIYvZCgTqqoUeVk8R97ZATKLVRFbPuWr2ppeXwsRsEKxtRdKaqsUogJjaRq3B81UMkVYy5IBAmZAOhUKDvYZBntWjnA865bz8vamvclZAgy3gE3Uv6X4NM5EOeLq38viSq4u4QC80CfTZBfwZDZD';
 const fbInsightURI = 'https://graph.facebook.com/' + pageID + '/insights/';
+const date_preset = 'this_year';
 
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
@@ -28,13 +29,17 @@ function facebookQuery(method, metric, period) {
         qs: {
             access_token: accessToken,
             metric: metric,
-            period: period
+            period: period,
+            date_preset: date_preset
         }
     };
     return Request(options);
+
 }
 
-/** Metrics **/
+/** METRICS **/
+
+/** The number of people who engaged with your Page. Engagement includes any click or story created. (Unique Users)**/
 
 exports.getInsightsEngagedUsers = function (period) {
 
@@ -44,6 +49,8 @@ exports.getInsightsEngagedUsers = function (period) {
 
 };
 
+/** The number of people who had any content from your Page or about your Page enter their screen. This includes posts, check-ins, ads, social information from people who interact with your Page and more. (Unique Users) **/
+
 exports.getInsightsPageImpressionsUnique = function (period) {
 
     const metric = 'page_impressions_unique';
@@ -51,6 +58,8 @@ exports.getInsightsPageImpressionsUnique = function (period) {
     return facebookQuery(GET, metric, period);
 
 };
+
+/** **/
 
 exports.getInsightsPageImpressionsByCityUnique = function (period) {
 
@@ -62,7 +71,7 @@ exports.getInsightsPageImpressionsByCityUnique = function (period) {
 
 exports.getInsightsPageImpressionsByCountryUnique = function (period) {
 
-    const metric = 'page_impressions_by_city_unique';
+    const metric = 'page_impressions_by_country_unique';
 
     return facebookQuery(GET, metric, period);
 
@@ -102,7 +111,7 @@ exports.getInsightsPageFansCountry = function (period) {
 
 exports.getInsightsPageFansAddsUnique = function (period) {
 
-    const metric = 'page_fans_adds_unique';
+    const metric = 'page_fan_adds_unique';
 
     return facebookQuery(GET, metric, period);
 
@@ -110,7 +119,7 @@ exports.getInsightsPageFansAddsUnique = function (period) {
 
 exports.getInsightsPageFansRemovesUnique = function (period) {
 
-    const metric = 'page_fans_removes_unique';
+    const metric = 'page_fan_removes_unique';
 
     return facebookQuery(GET, metric, period);
 
