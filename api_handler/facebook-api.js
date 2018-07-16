@@ -79,7 +79,7 @@ exports.getInsightsPageImpressionsByCountryUnique = function (period) {
 
 exports.getInsightsPageActionsPostReactionsTotal = function (period) {
 
-    const metric = 'page_impressions_by_city_unique';
+    const metric = 'page_actions_post_reactions_total';
 
     return facebookQuery(GET, metric, period);
 
