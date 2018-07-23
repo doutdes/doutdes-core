@@ -5,24 +5,6 @@ const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 
-exports.getUserFromUsername = function (req, res, next) {
-    const username = req.params.usern;
-
-    Model.Users.findOne({where: {username: username}})
-        .then(user => {
-            // Returning the new object instantiated
-            if (user === null) {
-                res.json("This username doesn't exist in the platform.");
-            }
-
-            res.json(user.email);
-        })
-        .catch(err => {
-            res.json(err);
-        });
-};
-
-
 exports.createUser = function (req, res, next) {
     const Op = Model.Sequelize.Op;
     const user = req.body;
@@ -79,7 +61,7 @@ exports.createUser = function (req, res, next) {
     ;
 };
 
-exports.getUserById = function (req, res, next) {
+exports.getUserById = function (req, res, next) { // TODO fix the responses
     const userId = req.params.id;
 
     Model.Users.findOne({where: {id: userId}})
@@ -113,15 +95,23 @@ exports.updateUser = function (req, res, next) {
         password: password
     }, {
         where: {
-            username: user.username
+            id: req.user.id
         }
     })
         .then(newUser => {
-            res.send("User " + newUser.get('first_name') + ' ' + newUser.get('last_name') + ' has been successful updated');
+            return res.status(200).json({
+                updated: true,
+                user_id: req.user.id
+            })
         })
         .catch(err => {
-            console.log("User cannot be updated");
-            res.send(err);
+            console.log(err);
+
+            return res.status(500).json({
+                updated: false,
+                user_id: req.user.id,
+                error: 'Cannot update the user'
+            })
         });
 };
 

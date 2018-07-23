@@ -21,13 +21,10 @@ module.exports = function (app, passport) {
     app.post('/login', AccessManager.basicLogin);
 
     /****************** CRUD USERS ********************/
-    app.post(amPath   + 'create/', AccessManager.createUser);        // Create
-    app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID
-    app.put(amPath    + 'update/', adminAuth, AccessManager.updateUser);        // Update
+    app.post(amPath   + 'create/', AccessManager.createUser);                   // Create
+    app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID TODO should a user read his infos?
+    app.put(amPath    + 'update/', userAuth, AccessManager.updateUser);         // Update
     app.delete(amPath + 'delete/', adminAuth, AccessManager.deleteUser);        // Delete
-
-
-    app.get(amPath + 'getUserFromUsername/:usern', AccessManager.getUserFromUsername); // NOT USEFUL
 
     /****************** CRUD USER KEYS ********************/
     app.post(keysPath   + 'insert/', userAuth, UserKeysManager.insertKey);                      // Create

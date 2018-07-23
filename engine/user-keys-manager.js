@@ -98,7 +98,7 @@ exports.update = (req, res, next) => {
             return res.status(500).json({
                 updated: false,
                 service: parseInt(user_keys.service),
-                error: 'Cannot update the key with service code ' + user_keys.service
+                error: 'Cannot update the key'
             })
         });
 };
