@@ -31,8 +31,8 @@ module.exports = function (app, passport) {
 
     /****************** CRUD USER KEYS ********************/
     app.post(keysPath   + 'insert/', userAuth, UserKeysManager.insertKey);                      // Create
-    app.get(keysPath    + 'getAll/:user_id', userAuth, UserKeysManager.readAllKeysById);        // Read all keys by User
-    app.get(keysPath    + 'getByUserService/', userAuth, UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
+    app.get(keysPath    + 'getAll/', userAuth, UserKeysManager.readAllKeysById);                // Read all keys by User
+    app.get(keysPath    + 'getByUserService/:service_id', userAuth, UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
     app.put(keysPath    + 'update/', userAuth, UserKeysManager.update);                         // Update
     app.delete(keysPath + 'delete/', userAuth, UserKeysManager.delete);                         // Delete
 
