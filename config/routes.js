@@ -22,7 +22,7 @@ module.exports = function (app, passport) {
 
     /****************** CRUD USERS ********************/
     app.post(amPath   + 'create/', AccessManager.createUser);                   // Create
-    app.get(amPath    + 'getFromId/:id', adminAuth, AccessManager.getUserById); // Read by ID TODO should a user read his infos?
+    app.get(amPath    + 'getFromId', userAuth, AccessManager.getUserById);      // Read by ID
     app.put(amPath    + 'update/', userAuth, AccessManager.updateUser);         // Update
     app.delete(amPath + 'delete/', adminAuth, AccessManager.deleteUser);        // Delete
 

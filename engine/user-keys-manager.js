@@ -4,15 +4,17 @@ const Model = require('../models/index');
 const User_keys = Model.User_keys;
 const Op = Model.Sequelize.Op;
 
+const HttpStatus = require('http-status-codes');
+
 exports.readAllKeysById = (req, res, next) => {
 
     User_keys.findAll({where: {user_id: req.user.id}})
         .then(keys => {
-            return res.status(200).json(keys)
+            return res.status(HttpStatus.OK).json(keys)
         })
         .catch(err => {
             console.log(err);
-            return res.status(500).send({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: err
             })
         });
@@ -29,17 +31,17 @@ exports.readServiceKeyByUser = (req, res, next) => {
     })
         .then(key => {
             if(key === null) {
-                return res.status(200).json({
+                return res.status(HttpStatus.OK).json({
                     error: 'No service found for the user',
                     user_id: req.user.id,
                     service: parseInt(req.params.service_id)
                 })
             }
-            return res.status(200).json(key)
+            return res.status(HttpStatus.OK).json(key)
         })
         .catch(err => {
             console.log(err);
-            return res.status(500).send({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: 'Cannot read the service selected for the user inserted',
                 service: req.params.service_id,
                 user_id: req.user.id
@@ -56,7 +58,7 @@ exports.insertKey = (req, res, next) => {
         api_key: user_keys.api_key
     })
         .then(new_key => {
-            return res.status(201).send({
+            return res.status(HttpStatus.CREATED).send({
                 created: true,
                 service: parseInt(new_key.get('service'))
             });
@@ -64,7 +66,7 @@ exports.insertKey = (req, res, next) => {
         .catch(err => {
             console.log(err);
 
-            return res.status(500).send({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 created: false,
                 service: parseInt(user_keys.service),
                 error:   'Cannot insert the key'
@@ -88,14 +90,13 @@ exports.update = (req, res, next) => {
     })
         .then(up_key => {
             console.log(up_key);
-            return res.status(200).json({
+            return res.status(HttpStatus.OK).json({
                 updated: true,
                 service: parseInt(user_keys.service)
             })
         })
         .catch(err => {
-            console.log(err);
-            return res.status(500).json({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 updated: false,
                 service: parseInt(user_keys.service),
                 error: 'Cannot update the key'
@@ -113,13 +114,13 @@ exports.delete = (req, res, next) => {
         }
         })
         .then(() => {
-            return res.status(200).json({
+            return res.status(HttpStatus.OK).json({
                 deleted: true,
                 service: parseInt(req.body.service)
             })
         })
         .catch(err => {
-            return res.status(500).json({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 deleted: false,
                 service: parseInt(req.body.service),
                 error: 'Cannot delete the key'
