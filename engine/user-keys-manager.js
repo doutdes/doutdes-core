@@ -41,11 +41,18 @@ exports.insertKey = (req, res, next) => {
         api_key: user_keys.api_key
     })
         .then(new_key => {
-            res.send("The new key for the service " + user_keys.service + " has been created");
+            return res.status(200).send({
+                created: true,
+                service: new_key.get('service')
+            });
         })
         .catch(err => {
             console.log(err);
-            res.send("Cannot create the new key for the service choosen");
+
+            return res.status(500).send({
+                created: false,
+                error:   'Cannot insert the key'
+            });
         })
 
 };
