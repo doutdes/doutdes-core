@@ -11,7 +11,7 @@ module.exports =
         },
         function (jwtPayload, cb) {
 
-            if(jwtPayload.user_type !== '2' && jwtPayload.user_type !== '0'){
+            if(jwtPayload.user_type !== '2'){
                 cb("Unauthorized");
             }
 

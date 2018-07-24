@@ -5,23 +5,7 @@ const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 
-exports.getUserFromUsername = function (req, res, next) {
-    const username = req.params.usern;
-
-    Model.Users.findOne({where: {username: username}})
-        .then(user => {
-            // Returning the new object instantiated
-            if (user === null) {
-                res.json("This username doesn't exist in the platform.");
-            }
-
-            res.json(user.email);
-        })
-        .catch(err => {
-            res.json(err);
-        });
-};
-
+const HttpStatus = require('http-status-codes');
 
 exports.createUser = function (req, res, next) {
     const Op = Model.Sequelize.Op;
@@ -41,7 +25,10 @@ exports.createUser = function (req, res, next) {
             // the registration has to be rejected
 
             if(userbn.length !== 0) {
-                res.status(400).send('The username or email choosen already exists in the system');
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    created: false,
+                    error: 'Username or email already exists'
+                });
             } else {
                 // A new user can be created
 
@@ -64,15 +51,17 @@ exports.createUser = function (req, res, next) {
                     checksum: '0'
                 })
                     .then(newUser => {
-                        res.send({
+                        return res.status(HttpStatus.CREATED).send({
                             created:    true,
                             first_name: newUser.get('first_name'),
                             last_name:  newUser.get('last_name')
                         });
                     })
                     .catch(err => {
-                        console.log("User cannot be created");
-                        res.send(err);
+                        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                            created:  false,
+                            username: user.username
+                        });
                     })
             }
         })
@@ -80,14 +69,14 @@ exports.createUser = function (req, res, next) {
 };
 
 exports.getUserById = function (req, res, next) {
-    const userId = req.params.id;
-
-    Model.Users.findOne({where: {id: userId}})
+    Model.Users.findById(req.user.id)
         .then(user => {
-            res.send(user);
+            return res.status(HttpStatus.OK).send(user);
         })
         .catch(err => {
-            res.send(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: err
+            });
         })
 };
 
@@ -113,26 +102,40 @@ exports.updateUser = function (req, res, next) {
         password: password
     }, {
         where: {
-            username: user.username
+            id: req.user.id
         }
     })
         .then(newUser => {
-            res.send("User " + newUser.get('first_name') + ' ' + newUser.get('last_name') + ' has been successful updated');
+            return res.status(HttpStatus.OK).json({
+                updated: true,
+                user_id: req.user.id
+            })
         })
         .catch(err => {
-            console.log("User cannot be updated");
-            res.send(err);
+            console.log(err);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                updated: false,
+                user_id: req.user.id,
+                error: 'Cannot update the user'
+            })
         });
 };
 
 exports.deleteUser = function (req, res, next) {
     Model.Users.destroy({where: {user: req.body.username}})
         .then(() => {
-            res.send("user" + req.body.username + " destroyed");
+            return res.status(HttpStatus.OK).json({
+                deleted: true,
+                service: parseInt(req.body.username)
+            })
         })
         .catch(err => {
-            console.log("User cannot be deleted");
-            reject(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                deleted: false,
+                user: req.body.username,
+                error: 'Cannot delete the user'
+            })
         })
 };
 
@@ -142,13 +145,13 @@ exports.basicLogin = function (req, res, next) {
             return next(err);
         }
         if (!user) {
-            return res.status(401).json({
+            return res.status(HttpStatus.UNAUTHORIZED).json({
                 logged: false,
                 error: 'unauthorized'
             })
         } else {
             const token = jwt.sign(user.dataValues, 'your_jwt_secret');
-            return res.json({user, token});
+            return res.status(HttpStatus.OK).json({user, token});
         }
     })(req, res, next);
 };
