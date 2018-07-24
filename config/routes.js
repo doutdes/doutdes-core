@@ -27,14 +27,14 @@ module.exports = function (app, passport) {
 
     /****************** CRUD USERS ********************/
     app.post(amPath   + 'create/', AccessManager.createUser);        // Create
-    app.get(amPath    + 'getFromId/:id', auth([admin, user]), AccessManager.getUserById); // Read by ID
+    app.get(amPath    + 'getFromId/', auth(all), AccessManager.getUserById); // Read by ID
     app.put(amPath    + 'update/', auth([admin]), AccessManager.updateUser);        // Update
     app.delete(amPath + 'delete/', auth([admin]), AccessManager.deleteUser);        // Delete
 
 
     /****************** CRUD USER KEYS ********************/
     app.post(keysPath   + 'insert/', auth(all), UserKeysManager.insertKey);                      // Create
-    app.get(keysPath    + 'getAll/:user_id', auth(all), UserKeysManager.readAllKeysById);        // Read all keys by User
+    app.get(keysPath    + 'getAll/', auth(all), UserKeysManager.readAllKeysById);                // Read all keys by User
     app.get(keysPath    + 'getByUserService/', auth(all), UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
     app.put(keysPath    + 'update/', auth(all), UserKeysManager.update);                         // Update
     app.delete(keysPath + 'delete/', auth(all), UserKeysManager.delete);                         // Delete
