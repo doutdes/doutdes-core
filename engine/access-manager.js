@@ -1,6 +1,6 @@
 'use strict';
 
-const Model = require('../models/index');
+const Model = require('../models/index'); // delete me
 const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
