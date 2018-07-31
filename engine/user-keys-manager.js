@@ -30,7 +30,7 @@ exports.readServiceKeyByUser = (req, res, next) => {
         }
     })
         .then(key => {
-            if(key === null) {
+            if (key === null) {
                 return res.status(HttpStatus.OK).json({
                     error: 'No service found for the user',
                     user_id: req.user.id,
@@ -52,27 +52,52 @@ exports.readServiceKeyByUser = (req, res, next) => {
 exports.insertKey = (req, res, next) => {
     let user_keys = req.body;
 
-    User_keys.create({
-        user_id: req.user.id,
-        service: user_keys.service,
-        api_key: user_keys.api_key
+    User_keys.findOne({
+        where: {
+            [Op.and]: [{
+                user_id: req.user.id,
+                service: user_keys.service
+            }]
+        }
+    }).then(key => {
+        console.log(key);
+        if (key !== null) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: 'Service already exists',
+                service: user_keys.service
+            })
+        }
+        else {
+            User_keys.create({
+                user_id: req.user.id,
+                service: user_keys.service,
+                api_key: user_keys.api_key
+            })
+                .then(new_key => {
+                    return res.status(HttpStatus.CREATED).send({
+                        created: true,
+                        service: parseInt(new_key.get('service'))
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        created: false,
+                        service: parseInt(user_keys.service),
+                        error: 'Cannot insert the key'
+                    });
+                })
+        }
     })
-        .then(new_key => {
-            return res.status(HttpStatus.CREATED).send({
-                created: true,
-                service: parseInt(new_key.get('service'))
-            });
-        })
         .catch(err => {
             console.log(err);
-
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 created: false,
                 service: parseInt(user_keys.service),
-                error:   'Cannot insert the key'
-            });
+                error: 'Cannot insert the key'
+            })
         })
-
 };
 
 exports.update = (req, res, next) => {
@@ -112,7 +137,7 @@ exports.delete = (req, res, next) => {
                 service: req.body.service
             }]
         }
-        })
+    })
         .then(() => {
             return res.status(HttpStatus.OK).json({
                 deleted: true,
