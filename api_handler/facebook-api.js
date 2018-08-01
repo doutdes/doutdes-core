@@ -6,8 +6,6 @@
 const Request = require('request-promise');
 
 /** CONSTANTS **/
-//const pageID = '1397642170275248';
-//const accessToken = 'EAAYgMsLsh6kBAHaIb2LuEnDBn4k2KIYvZCgTqqoUeVk8R97ZATKLVRFbPuWr2ppeXwsRsEKxtRdKaqsUogJjaRq3B81UMkVYy5IBAmZAOhUKDvYZBntWjnA865bz8vamvclZAgy3gE3Uv6X4NM5EOeLq38viSq4u4QC80CfTZBfwZDZD';
 const fbInsightURI = 'https://graph.facebook.com/';
 const date_preset = 'this_year';
 
@@ -88,11 +86,28 @@ exports.getInsightsEngagedUsers = function (period) {
 
 /** The number of people who had any content from your Page or about your Page enter their screen. This includes posts, check-ins, ads, social information from people who interact with your Page and more. (Unique Users) **/
 
-exports.getInsightsPageImpressionsUnique = function (period) {
+exports.getInsightsPageImpressionsUnique = function (period, token) {
 
     const metric = 'page_impressions_unique';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
@@ -154,11 +169,28 @@ exports.getInsightsPageFansCity = function (period) {
 
 };
 
-exports.getInsightsPageFansCountry = function (period) {
+exports.getInsightsPageFansCountry = function (period, token) {
 
     const metric = 'page_fans_country';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
