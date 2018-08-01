@@ -42,7 +42,7 @@ module.exports = function (app, passport) {
 
     /****************** FACEBOOK MANAGER ********************/
 
-    app.get('/fbfancount', AnalyticsManager.fb_getPageFans);
+    app.get('/fbfancount', auth(all), AnalyticsManager.fb_getPageFans);
     app.get('/fbfancity', auth(all), AnalyticsManager.fb_getPageFansCity);
     app.get('/fbfancountry', auth(all),  AnalyticsManager.fb_getPageFansCountry);
     app.get('/fbengageduser', auth(all),  AnalyticsManager.fb_getEngagedUsers);
