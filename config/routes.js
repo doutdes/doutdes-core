@@ -43,14 +43,14 @@ module.exports = function (app, passport) {
     /****************** FACEBOOK MANAGER ********************/
 
     app.get('/fbfancount', AnalyticsManager.fb_getPageFans);
-    app.get('/fbfancity', AnalyticsManager.fb_getPageFansCity);
-    app.get('/fbfancountry', AnalyticsManager.fb_getPageFansCountry);
-    app.get('/fbengageduser', AnalyticsManager.fb_getEngagedUsers);
-    app.get('/fbpageimpressions', AnalyticsManager.fb_getPageImpressionsUnique);
-    app.get('/fbpageimpressionscity', AnalyticsManager.fb_getPageImpressionsByCityUnique);
-    app.get('/fbpageimpressionscountry', AnalyticsManager.fb_getPageImpressionsByCountryUnique);
-    app.get('/fbpagereactions', AnalyticsManager.fb_getPageActionsPostReactionsTotal);
-    app.get('/fbpageviewsexternals', AnalyticsManager.fb_getPageViewsExternalReferrals);
+    app.get('/fbfancity', auth(all), AnalyticsManager.fb_getPageFansCity);
+    app.get('/fbfancountry', auth(all),  AnalyticsManager.fb_getPageFansCountry);
+    app.get('/fbengageduser', auth(all),  AnalyticsManager.fb_getEngagedUsers);
+    app.get('/fbpageimpressions', auth(all),  AnalyticsManager.fb_getPageImpressionsUnique);
+    app.get('/fbpageimpressionscity', auth(all),  AnalyticsManager.fb_getPageImpressionsByCityUnique);
+    app.get('/fbpageimpressionscountry', auth(all),  AnalyticsManager.fb_getPageImpressionsByCountryUnique);
+    app.get('/fbpagereactions', auth(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
+    app.get('/fbpageviewsexternals', auth(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
 
     /****************** ERROR HANDLER ********************/
 
