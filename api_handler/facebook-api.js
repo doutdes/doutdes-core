@@ -76,11 +76,28 @@ function facebookQuery(method, metric, period, pageID, token) {
 
 /** The number of people who engaged with your Page. Engagement includes any click or story created. (Unique Users)**/
 
-exports.getInsightsEngagedUsers = function (period) {
+exports.getInsightsEngagedUsers = function (period, token) {
 
     const metric = 'page_engaged_users';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
@@ -113,27 +130,78 @@ exports.getInsightsPageImpressionsUnique = function (period, token) {
 
 /** **/
 
-exports.getInsightsPageImpressionsByCityUnique = function (period) {
+exports.getInsightsPageImpressionsByCityUnique = function (period, token) {
 
     const metric = 'page_impressions_by_city_unique';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
-exports.getInsightsPageImpressionsByCountryUnique = function (period) {
+exports.getInsightsPageImpressionsByCountryUnique = function (period, token) {
 
     const metric = 'page_impressions_by_country_unique';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
-exports.getInsightsPageActionsPostReactionsTotal = function (period) {
+exports.getInsightsPageActionsPostReactionsTotal = function (period, token) {
 
     const metric = 'page_actions_post_reactions_total';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
@@ -155,17 +223,34 @@ exports.getInsightsPageFans = function (period, token) {
                         reject(err);
                     });
             })
-        .catch(err => {
-            reject(err);
-        })
+            .catch(err => {
+                reject(err);
+            })
     })
 };
 
-exports.getInsightsPageFansCity = function (period) {
+exports.getInsightsPageFansCity = function (period, token) {
 
     const metric = 'page_fans_city';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
@@ -194,26 +279,77 @@ exports.getInsightsPageFansCountry = function (period, token) {
 
 };
 
-exports.getInsightsPageFansAddsUnique = function (period) {
+exports.getInsightsPageFansAddsUnique = function (period, token) {
 
     const metric = 'page_fan_adds_unique';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
-exports.getInsightsPageFansRemovesUnique = function (period) {
+exports.getInsightsPageFansRemovesUnique = function (period, token) {
 
     const metric = 'page_fan_removes_unique';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
 
-exports.getInsightsPageViewsExternalReferrals = function (period) {
+exports.getInsightsPageViewsExternalReferrals = function (period, token) {
 
     const metric = 'page_views_external_referrals';
 
-    return facebookQuery(GET, metric, period);
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 
 };
