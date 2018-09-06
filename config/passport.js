@@ -1,7 +1,5 @@
 const basic     = require('./passport/basic');
-const jwtAdmin  = require('./passport/jwt-admin');
-const jwtUser   = require('./passport/jwt-user');
-const jwtEditor = require('./passport/jwt-editor');
+const jwt  = require('./passport/jwt');
 
 const Users = require('../models/index').Users;
 
@@ -22,7 +20,5 @@ module.exports = function (passport) {
 
     // strategies
     passport.use(basic);
-    passport.use('jwt-admin', jwtAdmin);
-    passport.use('jwt-user', jwtUser);
-    passport.use('jwt-editor', jwtEditor);
+    passport.use('jwt', jwt);
 };
