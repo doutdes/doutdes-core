@@ -17,9 +17,9 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
-    const admin  = '0';
-    const user   = '1';
-    const editor = '2';
+    const admin  = 0;
+    const user   = 1;
+    const editor = 2;
     const all = [admin, user, editor];
 
     /****************** ACCESS MANAGER ********************/
@@ -28,9 +28,9 @@ module.exports = function (app, passport) {
 
     /****************** CRUD USERS ********************/
     app.post(amPath   + 'create/', AccessManager.createUser);        // Create
-    app.get(amPath    + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), requireAuth, AccessManager.getUserById); // Read by ID
-    app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization([admin]), requireAuth, AccessManager.updateUser);        // Update
-    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), requireAuth, AccessManager.deleteUser);        // Delete
+    app.get(amPath    + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById); // Read by ID
+    app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);        // Update
+    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);        // Delete
 
 
     /****************** CRUD USER KEYS ********************/
