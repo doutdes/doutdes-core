@@ -17,9 +17,9 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
-    const admin  = 0;
-    const user   = 1;
-    const editor = 2;
+    const admin  = '0';
+    const user   = '1';
+    const editor = '2';
     const all = [admin, user, editor];
 
     /****************** ACCESS MANAGER ********************/
