@@ -40,9 +40,12 @@ module.exports = function (app, passport) {
     app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);                         // Update
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);                         // Delete
 
+    /****************** CRUD DASHBOARD ********************/
+
+    /****************** CRUD CHARTS ********************/
+
 
     /****************** FACEBOOK MANAGER ********************/
-
     app.get('/fbfancount', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFans);
     app.get('/fbfancity', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFansCity);
     app.get('/fbfancountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageFansCountry);
@@ -54,6 +57,5 @@ module.exports = function (app, passport) {
     app.get('/fbpageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
 
     /****************** ERROR HANDLER ********************/
-
     app.use(ErrorHandler.fun404);
 };
