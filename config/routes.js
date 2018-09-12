@@ -5,10 +5,10 @@ const UserKeysManager  = require('../engine/user-keys-manager');
 const ErrorHandler = require('../engine/error-handler');
 
 module.exports = function (app, passport) {
-
-    function auth(strategy) {
-        return passport.authenticate.bind(passport)(strategy,  {session: false});
-    }
+    //
+    // function requireAuth, AccessManager.roleAuthorization(strategy) {
+    //     return passport.authenticate.bind(passport)(strategy,  {session: false});
+    // }
 
     /* PATHs */
     let indexPath = "/";
@@ -16,9 +16,10 @@ module.exports = function (app, passport) {
     let keysPath  = indexPath + 'keys/';
 
     /* AUTH */
-    const admin  = 'jwt-admin';
-    const user   = 'jwt-user';
-    const editor = 'jwt-editor';
+    const requireAuth = passport.authenticate('jwt', {session: false});
+    const admin  = '0';
+    const user   = '1';
+    const editor = '2';
     const all = [admin, user, editor];
 
     /****************** ACCESS MANAGER ********************/
@@ -27,32 +28,34 @@ module.exports = function (app, passport) {
 
     /****************** CRUD USERS ********************/
     app.post(amPath   + 'create/', AccessManager.createUser);        // Create
-    app.get(amPath    + 'getFromId/', auth(all), AccessManager.getUserById); // Read by ID
-    app.put(amPath    + 'update/', auth([admin]), AccessManager.updateUser);        // Update
-    app.delete(amPath + 'delete/', auth([admin]), AccessManager.deleteUser);        // Delete
+    app.get(amPath    + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById); // Read by ID
+    app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);        // Update
+    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);        // Delete
 
 
     /****************** CRUD USER KEYS ********************/
-    app.post(keysPath   + 'insert/', auth(all), UserKeysManager.insertKey);                      // Create
-    app.get(keysPath    + 'getAll/', auth(all), UserKeysManager.readAllKeysById);                // Read all keys by User
-    app.get(keysPath    + 'getByUserService/:service_id', auth(all), UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
-    app.put(keysPath    + 'update/', auth(all), UserKeysManager.update);                         // Update
-    app.delete(keysPath + 'delete/', auth(all), UserKeysManager.delete);                         // Delete
+    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);                      // Create
+    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);                // Read all keys by User
+    app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
+    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);                         // Update
+    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);                         // Delete
+
+    /****************** CRUD DASHBOARD ********************/
+
+    /****************** CRUD CHARTS ********************/
 
 
     /****************** FACEBOOK MANAGER ********************/
-
-    app.get('/fbfancount', auth(all), AnalyticsManager.fb_getPageFans);
-    app.get('/fbfancity', auth(all), AnalyticsManager.fb_getPageFansCity);
-    app.get('/fbfancountry', auth(all),  AnalyticsManager.fb_getPageFansCountry);
-    app.get('/fbengageduser', auth(all),  AnalyticsManager.fb_getEngagedUsers);
-    app.get('/fbpageimpressions', auth(all),  AnalyticsManager.fb_getPageImpressionsUnique);
-    app.get('/fbpageimpressionscity', auth(all),  AnalyticsManager.fb_getPageImpressionsByCityUnique);
-    app.get('/fbpageimpressionscountry', auth(all),  AnalyticsManager.fb_getPageImpressionsByCountryUnique);
-    app.get('/fbpagereactions', auth(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
-    app.get('/fbpageviewsexternals', auth(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
+    app.get('/fbfancount', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFans);
+    app.get('/fbfancity', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFansCity);
+    app.get('/fbfancountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageFansCountry);
+    app.get('/fbengageduser', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getEngagedUsers);
+    app.get('/fbpageimpressions', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsUnique);
+    app.get('/fbpageimpressionscity', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsByCityUnique);
+    app.get('/fbpageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsByCountryUnique);
+    app.get('/fbpagereactions', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
+    app.get('/fbpageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
 
     /****************** ERROR HANDLER ********************/
-
     app.use(ErrorHandler.fun404);
 };

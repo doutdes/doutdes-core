@@ -1,11 +1,34 @@
 'use strict';
 
 const Model = require('../models/index'); // delete me
+const Users = require('../models/index').Users;
 const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 
 const HttpStatus = require('http-status-codes');
+
+exports.roleAuthorization = function(roles){
+
+    return function(req, res, next){
+
+        let user = req.user;
+
+        Users.findById(user.id)
+            .then(userFound => {
+                if(roles.indexOf(userFound.user_type) > -1){
+                    return next();
+                }
+
+                res.status(401).json({error: 'You are not authorized to view this content'});
+                return next('Unauthorized');
+            })
+            .catch(err => {
+                res.status(422).json({error: 'No user found.'});
+                return next(err);
+            });
+    }
+};
 
 exports.createUser = function (req, res, next) {
     const Op = Model.Sequelize.Op;
