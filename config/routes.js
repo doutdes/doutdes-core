@@ -1,6 +1,8 @@
-const AccessManager    = require('../engine/access-manager');
-const AnalyticsManager = require('../engine/analytics-manager');
-const UserKeysManager  = require('../engine/user-keys-manager');
+const AccessManager     = require('../engine/access-manager');
+const AnalyticsManager  = require('../engine/analytics-manager');
+const UserKeysManager   = require('../engine/user-keys-manager');
+const DashboardsManager = require('../engine/dashboard-manager');
+const ChartsManager     = require('../engine/charts-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -11,9 +13,11 @@ module.exports = function (app, passport) {
     // }
 
     /* PATHs */
-    let indexPath = "/";
-    let amPath    = indexPath + 'users/';
-    let keysPath  = indexPath + 'keys/';
+    let indexPath  = "/";
+    let amPath     = indexPath + 'users/';
+    let keysPath   = indexPath + 'keys/';
+    let dashPath   = indexPath + 'dashboards/';
+    let chartsPath = indexPath + 'charts/';
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
@@ -41,9 +45,14 @@ module.exports = function (app, passport) {
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);                         // Delete
 
     /****************** CRUD DASHBOARD ********************/
+    app.get(dashPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readAll);
+    app.get(dashPath + 'getAllDashboardCharts/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardCharts);
+    app.get(dashPath + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
+
+
 
     /****************** CRUD CHARTS ********************/
-
+    app.get(chartsPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get('/fbfancount', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFans);
