@@ -11,7 +11,18 @@ module.exports = (sequelize, DataType) => {
     });
 
     Dashboards.associate = function (models) {
-        Dashboards.hasMany(models.Charts, {through: 'dashboard_charts', as: 'dashboard_charts', foreignKey: 'dashboard_id'})
+        Dashboards.belongsToMany(models.Charts, {
+            through: {
+                model: models.DashboardCharts
+            },
+            foreignKey: 'dashboard_id'
+        });
+        Dashboards.belongsToMany(models.Users, {
+            through: {
+                model: models.UserDashboards
+            },
+            foreignKey: 'dashboard_id'
+        });
     };
 
     return Dashboards;
