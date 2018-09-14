@@ -4,6 +4,8 @@ const UserKeysManager   = require('../engine/user-keys-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
 const ChartsManager     = require('../engine/charts-manager');
 
+const Google            = require('../api_handler/googleAnalytics-api');
+
 const ErrorHandler = require('../engine/error-handler');
 
 module.exports = function (app, passport) {
@@ -64,6 +66,8 @@ module.exports = function (app, passport) {
     app.get('/fbpageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsByCountryUnique);
     app.get('/fbpagereactions', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
     app.get('/fbpageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
+
+    //app.get('/prova',Google.getData);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
