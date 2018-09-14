@@ -10,7 +10,7 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER(3),
             primaryKey: true
         },
-        api_key: DataType.STRING(100)
+        api_key: DataType.STRING(200)
     }, {
         freezeTableName: true,
         timestamps: false,
