@@ -9,6 +9,12 @@ module.exports = (sequelize, DataType) => {
         chart_id: {
             type: DataType.INTEGER(5),
             primaryKey: true
+        },
+        title: {
+            type: DataType.STRING(30)
+        },
+        color: {
+            type: DataType.STRING(7)
         }
     }, {
         freezeTableName: true,
@@ -19,7 +25,7 @@ module.exports = (sequelize, DataType) => {
     DashboardCharts.removeAttribute('id');
 
     DashboardCharts.associate = function (models) {
-
+        // TODO Fix reletions
     };
 
     return DashboardCharts;

@@ -48,11 +48,12 @@ module.exports = function (app, passport) {
     app.get(dashPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readAll);
     app.get(dashPath + 'getAllDashboardCharts/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardCharts);
     app.get(dashPath + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
-
-
+    app.get(dashPath + 'getByType', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboardByType);
 
     /****************** CRUD CHARTS ********************/
     app.get(chartsPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
+    app.get(chartsPath + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readByType);
+    app.post(chartsPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.insert);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get('/fbfancount', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFans);

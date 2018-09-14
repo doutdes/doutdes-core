@@ -67,3 +67,40 @@ exports.readUserDashboards = function (req, res, next) {
             })
         })
 };
+
+exports.readUserDashboardByType = function (req, res, next) {
+    Dashboard.findAll({
+        include: [
+            {
+                model: Model.DashboardCharts,
+                required: true,
+            },
+            {
+                model: Model.UserDashboards,
+                required: true,
+                attributes: {
+                    exclude: ['ID']
+                }
+            }
+        ],
+        where: {
+            user_id: req.user.id
+        }
+    })
+        .then(userDashboards => {
+
+            if(userDashboards.length === 0) {
+                return res.status(HttpStatus.NO_CONTENT).send({});
+            }
+
+            return res.status(HttpStatus.OK).send(userDashboards)
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: true,
+                message: 'Cannot get dashboards charts informations'
+            })
+        })
+};
