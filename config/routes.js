@@ -67,7 +67,7 @@ module.exports = function (app, passport) {
     app.get('/fbpagereactions', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
     app.get('/fbpageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
 
-    //app.get('/prova',Google.getData);
+    app.get('/prova',Google.getData);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);

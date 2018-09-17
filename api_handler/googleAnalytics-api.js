@@ -1,12 +1,13 @@
 'use strict';
 const {google} = require('googleapis');
-const key = require ('../doutdes.json');
+const key = require('../doutdes.json');
 
 const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
-const jwt = new google.auth.JWT(key.client_email,null,key.private_key,scopes,key.project_id);
+const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
 const view_id = '181073244';
 
-async function getData() {
+exports.getData = async function() {
+
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
@@ -16,10 +17,9 @@ async function getData() {
         'metrics': 'ga:pageviews'
     });
 
-    console.dir(result);
+    console.log(result);
 }
 
-exports.getData = getData();
 // const {auth}   = require('google-auth-library');
 // const CLIENT_ID = '677265943833-pk2h68akq4u3o6elhcupu8bt89qg4cjl.apps.googleusercontent.com';
 // const CLIENT_SECRET = 'AIzaSyC4ZSzBxjzevXRDzGbVycZmtmnbHFuBdIU';
