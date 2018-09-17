@@ -1,15 +1,14 @@
 'use strict';
 
-const Model = require('../models/index');
+const Model = require('../../models/index');
 const User_keys = Model.User_keys;
 const Op = Model.Sequelize.Op;
 const FB_SERVICE = 0;
-const GA_SERVICE = 1;
 
 const HttpStatus = require('http-status-codes');
 
 /***************** FACEBOOK *****************/
-const FacebookApi = require('../api_handler/facebook-api');
+const FacebookApi = require('../../api_handler/facebook-api');
 
 exports.fb_getEngagedUsers = function (req, res, next) {
 

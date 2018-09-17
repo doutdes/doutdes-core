@@ -6,19 +6,21 @@ const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
 const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
 const view_id = '181073244';
 
-exports.getData = async function() {
+exports.getBrowsersSessions = async function() {
 
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '7daysAgo',
+        'start-date': '30daysAgo',
         'end-date': 'today',
-        'metrics': 'ga:pageviews'
+        'dimensions': 'ga:browser',
+        'metrics': 'ga:sessions'
     });
 
-    console.log(result);
-}
+    console.log(result.data.rows);
+    return result.data.rows;
+};
 
 // const {auth}   = require('google-auth-library');
 // const CLIENT_ID = '677265943833-pk2h68akq4u3o6elhcupu8bt89qg4cjl.apps.googleusercontent.com';
