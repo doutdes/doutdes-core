@@ -1,8 +1,12 @@
 const AccessManager     = require('../engine/access-manager');
-const AnalyticsManager  = require('../engine/analytics-manager');
 const UserKeysManager   = require('../engine/user-keys-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
 const ChartsManager     = require('../engine/charts-manager');
+
+const FacebookManager   = require('../engine/analytics/facebook-manager');
+const GoogleManager     = require('../engine/analytics/google-manager');
+
+const Google            = require('../api_handler/googleAnalytics-api');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -18,6 +22,9 @@ module.exports = function (app, passport) {
     let keysPath   = indexPath + 'keys/';
     let dashPath   = indexPath + 'dashboards/';
     let chartsPath = indexPath + 'charts/';
+
+    let googlePath   = indexPath + 'ga/';
+    let facebookPath = indexPath + 'fb/';
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
@@ -55,15 +62,18 @@ module.exports = function (app, passport) {
     app.get(chartsPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get('/fbfancount', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFans);
-    app.get('/fbfancity', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageFansCity);
-    app.get('/fbfancountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageFansCountry);
-    app.get('/fbengageduser', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getEngagedUsers);
-    app.get('/fbpageimpressions', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsUnique);
-    app.get('/fbpageimpressionscity', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsByCityUnique);
-    app.get('/fbpageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  AnalyticsManager.fb_getPageImpressionsByCountryUnique);
-    app.get('/fbpagereactions', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageActionsPostReactionsTotal);
-    app.get('/fbpageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), AnalyticsManager.fb_getPageViewsExternalReferrals);
+    app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFans);
+    app.get(facebookPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFansCity);
+    app.get(facebookPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageFansCountry);
+    app.get(facebookPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getEngagedUsers);
+    app.get(facebookPath + 'pageimpressions', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsUnique);
+    app.get(facebookPath + 'pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsByCityUnique);
+    app.get(facebookPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsByCountryUnique);
+    app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageActionsPostReactionsTotal);
+    app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
+
+    /****************** GOOGLE MANAGER ********************/
+    app.get(googlePath + 'sessions', GoogleManager.ga_getBrowsersSessions);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
