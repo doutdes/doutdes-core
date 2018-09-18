@@ -181,3 +181,5 @@ exports.addChartToDashboard = function (req, res, next) {
             });
         })
 };
+
+// TODO Delete and update of charts in dashboards
