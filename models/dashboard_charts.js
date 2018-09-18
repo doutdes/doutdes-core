@@ -22,10 +22,20 @@ module.exports = (sequelize, DataType) => {
         tableName: 'dashboard_charts'
     });
 
-    DashboardCharts.removeAttribute('id');
+/*    DashboardCharts.removeAttribute('id');*/
 
     DashboardCharts.associate = function (models) {
         // TODO Fix reletions
+
+        DashboardCharts.belongsTo(models.Dashboards, {
+            foreignKey: 'dashboard_id',
+            sourceKey: models.Dashboards.id
+        });
+
+        DashboardCharts.belongsTo(models.Charts, {
+            foreignKey: 'chart_id',
+            sourceKey: models.Charts.id
+        });
     };
 
     return DashboardCharts;

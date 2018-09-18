@@ -69,23 +69,17 @@ exports.readUserDashboards = function (req, res, next) {
 };
 
 exports.readUserDashboardByType = function (req, res, next) {
-    Dashboard.findAll({
+    DashboardCharts.findAll({
         include: [
             {
-                model: Model.DashboardCharts,
+                model: Dashboard,
                 required: true,
             },
             {
-                model: Model.UserDashboards,
-                required: true,
-                attributes: {
-                    exclude: ['ID']
-                }
+                model: Model.Charts,
+                required: true
             }
-        ],
-        where: {
-            user_id: req.user.id
-        }
+        ]
     })
         .then(userDashboards => {
 
