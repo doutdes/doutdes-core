@@ -27,3 +27,9 @@ exports.ga_getMostPagesViews = async function (req, res, next) {
 
     return res.status(HttpStatus.OK).send(result);
 };
+
+exports.ga_getSources = async function (req, res, next) {
+    let result = await GoogleApi.getSources();
+
+    return res.status(HttpStatus.OK).send(result);
+};

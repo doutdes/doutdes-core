@@ -64,7 +64,21 @@ exports.getMostPagesVisited = async function() {
     return result.data.rows;
 };
 
+exports.getSources = async function() {
+    const view_id = await getViewID();
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': '365daysAgo',
+        'end-date': 'today',
+        'dimensions': 'ga:medium',
+        'metrics': 'ga:sessions',
+        'filters': 'ga:sessions>5'
+    });
 
+    return result.data.rows;
+};
 
 
 
