@@ -55,7 +55,7 @@ exports.getMostPagesVisited = async function() {
         'ids': 'ga:' + view_id,
         'start-date': '365daysAgo',
         'end-date': 'today',
-        'dimensions': 'ga:date, ga:pagePath',
+        'dimensions': 'ga:pagePath',
         'metrics': 'ga:pageviews',
         'sort': '-ga:pageviews',
         'max-results': '10'
