@@ -16,8 +16,14 @@ exports.ga_getLastYearSessions = async function (req, res, next) {
     return res.status(HttpStatus.OK).send(result);
 };
 
-exports.ga_getUsersCities = async function (req, res, next) {
-    let result = await GoogleApi.getUsersCities();
+exports.ga_getPageViews = async function (req, res, next) {
+    let result = await GoogleApi.getPageViews();
+
+    return res.status(HttpStatus.OK).send(result);
+};
+
+exports.ga_getMostPagesViews = async function (req, res, next) {
+    let result = await GoogleApi.getMostPagesVisited();
 
     return res.status(HttpStatus.OK).send(result);
 };

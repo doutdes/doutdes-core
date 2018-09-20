@@ -1,6 +1,6 @@
 'use strict';
 const {google} = require('googleapis');
-const key = require('../doutdes.json');
+const key = require('../Agenda.json');
 
 const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
 const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
@@ -45,6 +45,23 @@ exports.getPageViews = async function () {
 
     return result.data.rows;
 
+};
+
+exports.getMostPagesVisited = async function() {
+    const view_id = await getViewID();
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': '365daysAgo',
+        'end-date': 'today',
+        'dimensions': 'ga:date, ga:pagePath',
+        'metrics': 'ga:pageviews',
+        'sort': '-ga:pageviews',
+        'max-results': '10'
+    });
+
+    return result.data.rows;
 };
 
 

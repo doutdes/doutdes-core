@@ -74,7 +74,8 @@ module.exports = function (app, passport) {
 
     /****************** GOOGLE MANAGER ********************/
     app.get(googlePath + 'sessions', GoogleManager.ga_getLastYearSessions);
-    app.get(googlePath + 'userscities', GoogleManager.ga_getUsersCities);
+    app.get(googlePath + 'pageviews', GoogleManager.ga_getPageViews);
+    app.get(googlePath + 'mostviews', GoogleManager.ga_getMostPagesViews);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
