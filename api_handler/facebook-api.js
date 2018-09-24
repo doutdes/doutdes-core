@@ -32,7 +32,6 @@ function getPageId(token) {
 
         Request(options)
             .then(result => {
-                console.log('getPageId: ' + result);
                 resolve(result);
             })
             .catch(err => {
@@ -61,7 +60,6 @@ function facebookQuery(method, metric, period, pageID, token) {
 
         Request(options)
             .then(result => {
-                console.log('FacebookQuery: ' + result);
                 resolve(result);
             })
             .catch(err => {
@@ -85,7 +83,6 @@ exports.getInsightsEngagedUsers = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -112,7 +109,6 @@ exports.getInsightsPageImpressionsUnique = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -139,7 +135,6 @@ exports.getInsightsPageImpressionsByCityUnique = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -164,7 +159,6 @@ exports.getInsightsPageImpressionsByCountryUnique = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -189,7 +183,6 @@ exports.getInsightsPageActionsPostReactionsTotal = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -214,7 +207,6 @@ exports.getInsightsPageFans = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -238,7 +230,6 @@ exports.getInsightsPageFansCity = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -263,7 +254,6 @@ exports.getInsightsPageFansCountry = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -288,7 +278,6 @@ exports.getInsightsPageFansAddsUnique = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -313,7 +302,6 @@ exports.getInsightsPageFansRemovesUnique = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);
@@ -338,7 +326,6 @@ exports.getInsightsPageViewsExternalReferrals = function (period, token) {
         getPageId(token)
             .then(result => {
                 const jsonResult = JSON.parse(result);
-                console.log('exports.getInsights -> jsonResult.id: ' + jsonResult.id);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {
                         resolve(result);

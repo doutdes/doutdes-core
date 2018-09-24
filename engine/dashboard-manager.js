@@ -156,12 +156,12 @@ exports.readDashboardChartsByType = function (req, res, next) {
 
 // It adds a chart to a choosen dashboard
 exports.addChartToDashboard = function (req, res, next) {
-    const chart = req.body;
+    const chart = req.body.chart;
 
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
-            dashboard_id: req.body.dashboard_id
+            dashboard_id: chart.dashboard_id
         },
         attributes: {
             exclude: ['DashboardId']
@@ -169,11 +169,14 @@ exports.addChartToDashboard = function (req, res, next) {
     })
         .then(dashboard => {
 
+            console.log(dashboard);
+            console.log(chart);
+
             if(!dashboard)
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     inserted: false,
                     chart_id: parseInt(chart.chart_id),
-                    error: 'Cannot insert a chart in a dashboard that doesn\'t exists'
+                    error: 'Cannot insert a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
                 });
 
             DashboardCharts.create({
@@ -211,6 +214,8 @@ exports.addChartToDashboard = function (req, res, next) {
 
 // It removes a chart from the dashboard given its identifier
 exports.removeChartFromDashboard = function (req, res, next) {
+
+    console.log(req.body);
 
     UserDashboards.findOne({
         where: {
