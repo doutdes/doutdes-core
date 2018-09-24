@@ -17,7 +17,7 @@ exports.readUserDashboards = function (req, res, next) {
                 model: Dashboard,
                 required: true,
                 attributes: {
-                    exclude: ['id']
+                    exclude: []
                 }
             }
         ],
@@ -54,7 +54,7 @@ exports.readUserDashboardByType = function (req, res, next) {
                 model: Dashboard,
                 required: true,
                 attributes: {
-                    exclude: ['id']
+                    exclude: []
                 },
                 where: {
                     category: req.params.type
@@ -94,7 +94,7 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 model: Dashboard,
                 required: true,
                 attributes: {
-                    exclude: ['id']
+                    exclude: []
                 },
                 where: {
                     category: req.params.type
@@ -120,7 +120,7 @@ exports.readDashboardChartsByType = function (req, res, next) {
                         model: Charts,
                         required: true,
                         attributes: {
-                            exclude: ['id']
+                            exclude: []
                         }
                     }
                 ],
@@ -158,28 +158,123 @@ exports.readDashboardChartsByType = function (req, res, next) {
 exports.addChartToDashboard = function (req, res, next) {
     const chart = req.body;
 
-    DashboardCharts.create({
-        dashboard_id: chart.dashboard_id,
-        chart_id: chart.chart_id,
-        title: chart.title,
-        color: chart.color
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: req.body.dashboard_id
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
     })
-        .then(chartInserted => {
-            return res.status(HttpStatus.CREATED).send({
-                created: true,
-                dashboard_id: chartInserted.get('dashboard_id'),
-                chart_id: chartInserted.get('chart_id')
-            });
+        .then(dashboard => {
+
+            if(!dashboard)
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    inserted: false,
+                    chart_id: parseInt(chart.chart_id),
+                    error: 'Cannot insert a chart in a dashboard that doesn\'t exists'
+                });
+
+            DashboardCharts.create({
+                dashboard_id: chart.dashboard_id,
+                chart_id: chart.chart_id,
+                title: chart.title,
+                color: chart.color
+            })
+                .then(chartInserted => {
+                    return res.status(HttpStatus.CREATED).send({
+                        created: true,
+                        dashboard_id: chartInserted.get('dashboard_id'),
+                        chart_id: chartInserted.get('chart_id')
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        created: false,
+                        chart_id: parseInt(chart.chart_id),
+                        error: 'Cannot insert the chart'
+                    });
+                })
         })
         .catch(err => {
             console.log(err);
-
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                created: false,
+                inserted: false,
                 chart_id: parseInt(chart.chart_id),
-                error: 'Cannot insert the chart'
+                error: 'Cannot insert the chart into the dashboard'
             });
+        });
+};
+
+// It removes a chart from the dashboard given its identifier
+exports.removeChartFromDashboard = function (req, res, next) {
+
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: req.body.dashboard_id
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
+    })
+        .then(dashboard => {
+
+            if(!dashboard)
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    deleted: false,
+                    chart_id: parseInt(req.body.chart_id),
+                    error: 'Cannot remove a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                });
+
+            DashboardCharts.destroy({
+                where: {
+                    [Op.and]: [{
+                        dashboard_id: req.body.dashboard_id,
+                        chart_id: req.body.chart_id
+                    }]
+                }
+            })
+                .then(chartDeleted => {
+                    console.log(chartDeleted);
+
+                    if(chartDeleted == 0) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            deleted: false,
+                            dashboard_id: req.body.dashboard_id,
+                            chart_id: req.body.chart_id,
+                            message: 'Cannot delete a chart that doesn\'t exists'
+                        })
+                    }
+
+                    return res.status(HttpStatus.CREATED).send({
+                        deleted: true,
+                        dashboard_id: req.body.dashboard_id,
+                        chart_id: req.body.chart_id
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        deleted: false,
+                        dashboard_id: req.body.dashboard_id,
+                        chart_id: req.body.chart_id,
+                        error: 'Cannot delete the chart from the dashboard'
+                    });
+                })
         })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                inserted: false,
+                chart_id: parseInt(chart.chart_id),
+                error: 'Cannot insert the chart into the dashboard'
+            });
+        });
 };
 
 // TODO Delete and update of charts in dashboards

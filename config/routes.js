@@ -33,6 +33,8 @@ module.exports = function (app, passport) {
     const editor = '2';
     const all = [admin, user, editor];
 
+    // TODO gestire le delete bene: se il risultato restituito dalla query è 0, allora non ha eliminato niente
+
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
 
@@ -42,7 +44,6 @@ module.exports = function (app, passport) {
     app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
     app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
-
     /****************** CRUD USER KEYS ********************/
     app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);
     app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);
@@ -51,10 +52,11 @@ module.exports = function (app, passport) {
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);
 
     /****************** CRUD DASHBOARD ********************/
-    app.get(dashPath  + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
-    app.get(dashPath  + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboardByType);
-    app.get(dashPath  + 'getDashboardChartsByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardChartsByType);
-    app.post(dashPath + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
+    app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
+    app.get(dashPath    + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboardByType);
+    app.get(dashPath    + 'getDashboardChartsByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardChartsByType);
+    app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
+    app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
 
     /****************** CRUD CHARTS ********************/
     app.get(chartsPath  + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
