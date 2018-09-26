@@ -131,8 +131,12 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 }
             })
                 .then(finalResult => {
+                    console.log(userDashboards[0].dataValues);
                     if (finalResult.length === 0) {
-                        return res.status(HttpStatus.NO_CONTENT).send({});
+                        return res.status(HttpStatus.PARTIAL_CONTENT).send({
+                            dashboard_id: userDashboards[0].dataValues.dashboard_id,
+                            user_id: req.user.id,
+                        });
                     }
 
                     return res.status(HttpStatus.OK).send(finalResult)
