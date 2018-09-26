@@ -286,12 +286,14 @@ exports.removeChartFromDashboard = function (req, res, next) {
 
 // It updates a chart holded by a dashboard
 exports.updateChartInDashboard = function (req, res, next) {
-    const chart = req.body;
+    const chart = req.body.chart;
+
+    console.log(req.body);
 
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
-            dashboard_id: req.body.dashboard_id
+            dashboard_id: chart.dashboard_id
         },
         attributes: {
             exclude: ['DashboardId']
@@ -302,8 +304,8 @@ exports.updateChartInDashboard = function (req, res, next) {
             if (!dashboard) {
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     updated: false,
-                    chart_id: parseInt(req.body.chart_id),
-                    dashboard_id: parseInt(req.body.dashboard_id),
+                    chart_id: parseInt(chart.chart_id),
+                    dashboard_id: parseInt(chart.dashboard_id),
                     error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
                 });
             }
@@ -327,16 +329,16 @@ exports.updateChartInDashboard = function (req, res, next) {
                     if (chartUpdated[0] === 0) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             updated: false,
-                            dashboard_id: req.body.dashboard_id,
-                            chart_id: req.body.chart_id,
+                            dashboard_id: chart.dashboard_id,
+                            chart_id: chart.chart_id,
                             message: 'Cannot update a chart that doesn\'t exists'
                         })
                     }
 
                     return res.status(HttpStatus.CREATED).send({
                         updated: true,
-                        dashboard_id: req.body.dashboard_id,
-                        chart_id: req.body.chart_id
+                        dashboard_id: chart.dashboard_id,
+                        chart_id: chart.chart_id
                     });
                 })
                 .catch(err => {
@@ -344,8 +346,8 @@ exports.updateChartInDashboard = function (req, res, next) {
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         updated: false,
-                        dashboard_id: req.body.dashboard_id,
-                        chart_id: req.body.chart_id,
+                        dashboard_id: chart.dashboard_id,
+                        chart_id: chart.chart_id,
                         error: 'Cannot update the chart from the dashboard'
                     });
                 })
@@ -354,8 +356,8 @@ exports.updateChartInDashboard = function (req, res, next) {
             console.log(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 updated: false,
-                dashboard_id: req.body.dashboard_id,
-                chart_id: req.body.chart_id,
+                dashboard_id: chart.dashboard_id,
+                chart_id: chart.chart_id,
                 error: 'Cannot update the chart from the dashboard'
             });
         });
