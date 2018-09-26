@@ -19,7 +19,15 @@ module.exports = (sequelize, DataType) => {
     UserDashboards.removeAttribute('id');
 
     UserDashboards.associate = function (models) {
+        UserDashboards.belongsTo(models.Users, {
+            foreignKey: 'user_id',
+            sourceKey: models.Users.id
+        });
 
+        UserDashboards.belongsTo(models.Dashboards, {
+            foreignKey: 'dashboard_id',
+            sourceKey: models.Dashboards.id
+        });
     };
 
     return UserDashboards;

@@ -33,33 +33,36 @@ module.exports = function (app, passport) {
     const editor = '2';
     const all = [admin, user, editor];
 
-    /****************** ACCESS MANAGER ********************/
+    // TODO gestire le delete bene: se il risultato restituito dalla query è 0, allora non ha eliminato niente
 
+    /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
 
     /****************** CRUD USERS ********************/
-    app.post(amPath   + 'create/', AccessManager.createUser);        // Create
-    app.get(amPath    + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById); // Read by ID
-    app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);        // Update
-    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);        // Delete
-
+    app.post(amPath   + 'create/', AccessManager.createUser);
+    app.get(amPath    + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById);
+    app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
+    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
     /****************** CRUD USER KEYS ********************/
-    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);                      // Create
-    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);                // Read all keys by User
-    app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser); // Read a key by User and Service
-    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);                         // Update
-    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);                         // Delete
+    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);
+    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);
+    app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser);
+    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);
+    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);
 
     /****************** CRUD DASHBOARD ********************/
-    app.get(dashPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readAll);
-    app.get(dashPath + 'getAllDashboardCharts/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardCharts);
-    app.get(dashPath + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
-
-
+    app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
+    app.get(dashPath    + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboardByType);
+    app.get(dashPath    + 'getDashboardChartsByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardChartsByType);
+    app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
+    app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
+    app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
 
     /****************** CRUD CHARTS ********************/
-    app.get(chartsPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
+    app.get(chartsPath  + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
+    app.get(chartsPath  + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readByType);
+    app.post(chartsPath + 'insert/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.insert);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFans);
