@@ -19,10 +19,9 @@ module.exports = (sequelize, DataType) => {
     }, {
         freezeTableName: true,
         timestamps: false,
+        underscored: true,
         tableName: 'dashboard_charts'
     });
-
-    DashboardCharts.removeAttribute('id');
 
     DashboardCharts.associate = function (models) {
         DashboardCharts.belongsTo(models.Dashboards, {
@@ -35,6 +34,8 @@ module.exports = (sequelize, DataType) => {
             sourceKey: models.Charts.id
         });
     };
+
+    DashboardCharts.removeAttribute('DashboardId');
 
     return DashboardCharts;
 };

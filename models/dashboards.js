@@ -11,6 +11,10 @@ module.exports = (sequelize, DataType) => {
     });
 
     Dashboards.associate = function (models) {
+        // Dashboards.belongsTo(models.Charts, {
+        //     through: 'DashboardCharts',
+        //     foreignKey: 'dashboard_id',
+        // });
     };
 
     return Dashboards;

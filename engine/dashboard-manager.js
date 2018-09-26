@@ -5,6 +5,8 @@ const Dashboard = Model.Dashboards;
 const Charts = Model.Charts;
 const DashboardCharts = Model.DashboardCharts;
 const UserDashboards = Model.UserDashboards;
+
+const Sequelize = require('../models/index').sequelize;
 const Op = Model.Sequelize.Op;
 
 const HttpStatus = require('http-status-codes');
@@ -30,7 +32,7 @@ exports.readUserDashboards = function (req, res, next) {
     })
         .then(userDashboards => {
 
-            if(userDashboards.length === 0) {
+            if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
 
@@ -70,7 +72,7 @@ exports.readUserDashboardByType = function (req, res, next) {
     })
         .then(userDashboards => {
 
-            if(userDashboards.length === 0) {
+            if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
 
@@ -110,12 +112,12 @@ exports.readDashboardChartsByType = function (req, res, next) {
     })
         .then(userDashboards => {
 
-            if(userDashboards.length === 0) {
+            if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
 
             DashboardCharts.findAll({
-                include:[
+                include: [
                     {
                         model: Charts,
                         required: true,
@@ -129,7 +131,7 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 }
             })
                 .then(finalResult => {
-                    if(finalResult.length === 0) {
+                    if (finalResult.length === 0) {
                         return res.status(HttpStatus.NO_CONTENT).send({});
                     }
 
@@ -172,7 +174,7 @@ exports.addChartToDashboard = function (req, res, next) {
             console.log(dashboard);
             console.log(chart);
 
-            if(!dashboard)
+            if (!dashboard)
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     inserted: false,
                     chart_id: parseInt(chart.chart_id),
@@ -215,8 +217,6 @@ exports.addChartToDashboard = function (req, res, next) {
 // It removes a chart from the dashboard given its identifier
 exports.removeChartFromDashboard = function (req, res, next) {
 
-    console.log(req.body);
-
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
@@ -228,10 +228,11 @@ exports.removeChartFromDashboard = function (req, res, next) {
     })
         .then(dashboard => {
 
-            if(!dashboard)
+            if (!dashboard)
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     deleted: false,
                     chart_id: parseInt(req.body.chart_id),
+                    dashboard_id: parseInt(req.body.dashboard_id),
                     error: 'Cannot remove a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
                 });
 
@@ -246,7 +247,7 @@ exports.removeChartFromDashboard = function (req, res, next) {
                 .then(chartDeleted => {
                     console.log(chartDeleted);
 
-                    if(chartDeleted == 0) {
+                    if (chartDeleted == 0) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             deleted: false,
                             dashboard_id: req.body.dashboard_id,
@@ -275,11 +276,87 @@ exports.removeChartFromDashboard = function (req, res, next) {
         .catch(err => {
             console.log(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                inserted: false,
-                chart_id: parseInt(chart.chart_id),
-                error: 'Cannot insert the chart into the dashboard'
+                deleted: false,
+                dashboard_id: req.body.dashboard_id,
+                chart_id: req.body.chart_id,
+                error: 'Cannot delete the chart from the dashboard'
             });
         });
 };
 
-// TODO Delete and update of charts in dashboards
+// It updates a chart holded by a dashboard
+exports.updateChartInDashboard = function (req, res, next) {
+    const chart = req.body;
+
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: req.body.dashboard_id
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
+    })
+        .then(dashboard => {
+
+            if (!dashboard) {
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    updated: false,
+                    chart_id: parseInt(req.body.chart_id),
+                    dashboard_id: parseInt(req.body.dashboard_id),
+                    error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                });
+            }
+
+            DashboardCharts.update({
+                title: chart.title,
+                color: chart.color
+            }, {
+                where: {
+                    [Op.and]: [{
+                        dashboard_id: chart.dashboard_id,
+                        chart_id: chart.chart_id
+                    }]
+                },
+                logging: console.log
+            })
+                .then(chartUpdated => {
+
+                    console.log(chartUpdated);
+
+                    if (chartUpdated[0] === 0) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            updated: false,
+                            dashboard_id: req.body.dashboard_id,
+                            chart_id: req.body.chart_id,
+                            message: 'Cannot update a chart that doesn\'t exists'
+                        })
+                    }
+
+                    return res.status(HttpStatus.CREATED).send({
+                        updated: true,
+                        dashboard_id: req.body.dashboard_id,
+                        chart_id: req.body.chart_id
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        updated: false,
+                        dashboard_id: req.body.dashboard_id,
+                        chart_id: req.body.chart_id,
+                        error: 'Cannot update the chart from the dashboard'
+                    });
+                })
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                updated: false,
+                dashboard_id: req.body.dashboard_id,
+                chart_id: req.body.chart_id,
+                error: 'Cannot update the chart from the dashboard'
+            });
+        });
+};

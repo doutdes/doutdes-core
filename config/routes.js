@@ -57,6 +57,7 @@ module.exports = function (app, passport) {
     app.get(dashPath    + 'getDashboardChartsByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readDashboardChartsByType);
     app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
+    app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
 
     /****************** CRUD CHARTS ********************/
     app.get(chartsPath  + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
