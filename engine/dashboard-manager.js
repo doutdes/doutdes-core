@@ -72,6 +72,49 @@ exports.readUserDashboardByType = function (req, res, next) {
     })
         .then(userDashboards => {
 
+            console.log(userDashboards.dataValues);
+
+            if (userDashboards.length === 0) {
+                return res.status(HttpStatus.NO_CONTENT).send({});
+            }
+
+            return res.status(HttpStatus.OK).send(userDashboards[0])
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: true,
+                message: 'Cannot get dashboards charts informations'
+            })
+        })
+};
+
+exports.readNotAddedByType = function (req, res, next) {
+    UserDashboards.findAll({
+        include: [
+            {
+                model: Dashboard,
+                required: true,
+                attributes: {
+                    exclude: []
+                },
+                where: {
+                    category: req.params.type
+                }
+            }
+        ],
+        attributes: {
+            exclude: ['DashboardId']
+        },
+        where: {
+            user_id: req.user.id
+        }
+    })
+        .then(userDashboards => {
+
+            console.log(userDashboards.dataValues);
+
             if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
