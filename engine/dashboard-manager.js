@@ -160,6 +160,75 @@ exports.readDashboardChartsByType = function (req, res, next) {
         })
 };
 
+// It returns a single chart in the dashboard, given dashboard_id and chart_id
+exports.readChart = function (req, res, next) {
+    console.log(req.params);
+
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: req.params.dashboard_id
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
+    })
+        .then(dashboard => {
+
+            if (!dashboard) {
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    updated: false,
+                    chart_id: parseInt(req.params.chart_id),
+                    dashboard_id: parseInt(req.params.dashboard_id),
+                    error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                });
+            }
+
+            console.log(dashboard.dataValues);
+
+            DashboardCharts.findOne({
+                where: {
+                    [Op.and]: [{
+                        dashboard_id: req.params.dashboard_id,
+                        chart_id: req.params.chart_id
+                    }]
+                }
+            })
+                .then(chart => {
+
+                    console.log(chart.dataValues);
+
+                    if (chart === 0) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            dashboard_id: req.params.dashboard_id,
+                            chart_id: req.params.chart_id,
+                            message: 'Cannot get a chart that doesn\'t exists'
+                        })
+                    }
+
+                    return res.status(HttpStatus.OK).send(chart);
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        dashboard_id: req.params.dashboard_id,
+                        chart_id: req.params.chart_id,
+                        message: 'Cannot get the chart informations'
+                    });
+                })
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                updated: false,
+                dashboard_id: req.params.dashboard_id,
+                chart_id: req.params.chart_id,
+                message: 'Cannot get the chart informations'
+            });
+        });
+};
+
 // It adds a chart to a choosen dashboard
 exports.addChartToDashboard = function (req, res, next) {
     const chart = req.body.chart;
