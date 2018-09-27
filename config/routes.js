@@ -77,7 +77,10 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
 
     /****************** GOOGLE MANAGER ********************/
-    app.get(googlePath + 'sessions', GoogleManager.ga_getBrowsersSessions);
+    app.get(googlePath + 'sessions', GoogleManager.ga_getLastYearSessions);
+    app.get(googlePath + 'pageviews', GoogleManager.ga_getPageViews);
+    app.get(googlePath + 'mostviews', GoogleManager.ga_getMostPagesViews);
+    app.get(googlePath + 'sources', GoogleManager.ga_getSources);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
