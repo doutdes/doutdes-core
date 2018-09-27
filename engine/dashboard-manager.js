@@ -189,7 +189,6 @@ exports.addChartToDashboard = function (req, res, next) {
                 dashboard_id: chart.dashboard_id,
                 chart_id: chart.chart_id,
                 title: chart.title,
-                color: chart.color
             })
                 .then(chartInserted => {
                     return res.status(HttpStatus.CREATED).send({
@@ -316,7 +315,6 @@ exports.updateChartInDashboard = function (req, res, next) {
 
             DashboardCharts.update({
                 title: chart.title,
-                color: chart.color
             }, {
                 where: {
                     [Op.and]: [{
