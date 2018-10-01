@@ -72,6 +72,49 @@ exports.readUserDashboardByType = function (req, res, next) {
     })
         .then(userDashboards => {
 
+            console.log(userDashboards.dataValues);
+
+            if (userDashboards.length === 0) {
+                return res.status(HttpStatus.NO_CONTENT).send({});
+            }
+
+            return res.status(HttpStatus.OK).send(userDashboards[0])
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: true,
+                message: 'Cannot get dashboards charts informations'
+            })
+        })
+};
+
+exports.readNotAddedByType = function (req, res, next) {
+    UserDashboards.findAll({
+        include: [
+            {
+                model: Dashboard,
+                required: true,
+                attributes: {
+                    exclude: []
+                },
+                where: {
+                    category: req.params.type
+                }
+            }
+        ],
+        attributes: {
+            exclude: ['DashboardId']
+        },
+        where: {
+            user_id: req.user.id
+        }
+    })
+        .then(userDashboards => {
+
+            console.log(userDashboards.dataValues);
+
             if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
@@ -131,8 +174,12 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 }
             })
                 .then(finalResult => {
+                    console.log(userDashboards[0].dataValues);
                     if (finalResult.length === 0) {
-                        return res.status(HttpStatus.NO_CONTENT).send({});
+                        return res.status(HttpStatus.PARTIAL_CONTENT).send({
+                            dashboard_id: userDashboards[0].dataValues.dashboard_id,
+                            user_id: req.user.id,
+                        });
                     }
 
                     return res.status(HttpStatus.OK).send(finalResult)
@@ -154,6 +201,75 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 message: 'Cannot get dashboards charts informations'
             })
         })
+};
+
+// It returns a single chart in the dashboard, given dashboard_id and chart_id
+exports.readChart = function (req, res, next) {
+    console.log(req.params);
+
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: req.params.dashboard_id
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
+    })
+        .then(dashboard => {
+
+            if (!dashboard) {
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    updated: false,
+                    chart_id: parseInt(req.params.chart_id),
+                    dashboard_id: parseInt(req.params.dashboard_id),
+                    error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                });
+            }
+
+            console.log(dashboard.dataValues);
+
+            DashboardCharts.findOne({
+                where: {
+                    [Op.and]: [{
+                        dashboard_id: req.params.dashboard_id,
+                        chart_id: req.params.chart_id
+                    }]
+                }
+            })
+                .then(chart => {
+
+                    console.log(chart.dataValues);
+
+                    if (chart === 0) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            dashboard_id: req.params.dashboard_id,
+                            chart_id: req.params.chart_id,
+                            message: 'Cannot get a chart that doesn\'t exists'
+                        })
+                    }
+
+                    return res.status(HttpStatus.OK).send(chart);
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        dashboard_id: req.params.dashboard_id,
+                        chart_id: req.params.chart_id,
+                        message: 'Cannot get the chart informations'
+                    });
+                })
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                updated: false,
+                dashboard_id: req.params.dashboard_id,
+                chart_id: req.params.chart_id,
+                message: 'Cannot get the chart informations'
+            });
+        });
 };
 
 // It adds a chart to a choosen dashboard
@@ -185,7 +301,6 @@ exports.addChartToDashboard = function (req, res, next) {
                 dashboard_id: chart.dashboard_id,
                 chart_id: chart.chart_id,
                 title: chart.title,
-                color: chart.color
             })
                 .then(chartInserted => {
                     return res.status(HttpStatus.CREATED).send({
@@ -312,7 +427,6 @@ exports.updateChartInDashboard = function (req, res, next) {
 
             DashboardCharts.update({
                 title: chart.title,
-                color: chart.color
             }, {
                 where: {
                     [Op.and]: [{
