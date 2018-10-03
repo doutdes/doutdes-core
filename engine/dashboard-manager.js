@@ -92,7 +92,7 @@ exports.readUserDashboardByType = function (req, res, next) {
 
 // SELECT charts.ID FROM charts WHERE charts.Type = 1 AND charts.ID NOT IN (SELECT charts.ID FROM `user_dashboards`NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id WHERE user_id = 2 AND charts.Type = 1)
 exports.readNotAddedByDashboardAndType = function (req, res, next) {
-    Sequelize.query("SELECT charts.ID FROM charts WHERE charts.Type = 1 AND charts.ID NOT IN (" +
+    Sequelize.query("SELECT charts.ID, charts.title, charts.type FROM charts WHERE charts.Type = 1 AND charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
         "WHERE user_id = :user_id AND charts.Type = :type AND dashboard_id = :dashboard_id" +
         ")", {
