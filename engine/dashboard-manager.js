@@ -90,43 +90,34 @@ exports.readUserDashboardByType = function (req, res, next) {
         })
 };
 
-exports.readNotAddedByType = function (req, res, next) {
-    UserDashboards.findAll({
-        include: [
-            {
-                model: Dashboard,
-                required: true,
-                attributes: {
-                    exclude: []
-                },
-                where: {
-                    category: req.params.type
-                }
-            }
-        ],
-        attributes: {
-            exclude: ['DashboardId']
-        },
-        where: {
-            user_id: req.user.id
+// SELECT charts.ID FROM charts WHERE charts.Type = 1 AND charts.ID NOT IN (SELECT charts.ID FROM `user_dashboards`NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id WHERE user_id = 2 AND charts.Type = 1)
+exports.readNotAddedByDashboardAndType = function (req, res, next) {
+    Sequelize.query("SELECT charts.ID, charts.title, charts.type FROM charts WHERE charts.Type = :type AND charts.ID NOT IN (" +
+        "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
+        "WHERE user_id = :user_id AND charts.Type = :type AND dashboard_id = :dashboard_id" +
+        ")", {
+        replacements: {
+            user_id: req.user.id,
+            dashboard_id: req.params.dashboard_id,
+            type: req.params.type
         }
     })
-        .then(userDashboards => {
+        .then(chartsNotAdded => {
 
-            console.log(userDashboards.dataValues);
+            console.log(chartsNotAdded[0].length);
 
-            if (userDashboards.length === 0) {
+            if (chartsNotAdded[0].length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
 
-            return res.status(HttpStatus.OK).send(userDashboards[0])
+            return res.status(HttpStatus.OK).send(chartsNotAdded[0]);
         })
         .catch(err => {
             console.log(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
-                message: 'Cannot get dashboards charts informations'
+                message: 'Cannot get charts not added informations'
             })
         })
 };
