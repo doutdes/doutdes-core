@@ -14,11 +14,11 @@ module.exports = (sequelize, DataType) => {
     }, {
         freezeTableName: true,
         timestamps: false,
-        tableName: 'fb_user_token'
+        tableName: 'ga_data'
     });
 
     Ga_data.associate = function (models) {
-        Ga_data.hasMany(models.Users, {foreignKey: 'user_id', sourceKey: models.Users.id})
+        Ga_data.hasMany(models.Users, {foreignKey: 'id', sourceKey: models.Users.id})
     };
 
     return Ga_data;

@@ -1,11 +1,12 @@
 'use strict';
 const {google} = require('googleapis');
-const key = require('../Agenda.json');
-
+//const key = require('../Agenda.json');
 const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
-const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
 
-async function getViewID(){
+//const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
+
+async function getViewID(client_email, private_key) {
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').management.profiles.list({
         'auth': jwt,
@@ -15,8 +16,9 @@ async function getViewID(){
     return result.data.items[0].id;
 }
 
-exports.getLastYearSessions = async function () {
-    const view_id = await getViewID();
+exports.getLastYearSessions = async function (client_email, private_key) {
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
@@ -30,9 +32,10 @@ exports.getLastYearSessions = async function () {
     return result.data.rows;
 };
 
-exports.getPageViews = async function () {
+exports.getPageViews = async function (client_email, private_key) {
 
-    const view_id = await getViewID();
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
@@ -47,8 +50,10 @@ exports.getPageViews = async function () {
 
 };
 
-exports.getMostPagesVisited = async function() {
-    const view_id = await getViewID();
+exports.getMostPagesVisited = async function (client_email, private_key) {
+
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
@@ -64,8 +69,10 @@ exports.getMostPagesVisited = async function() {
     return result.data.rows;
 };
 
-exports.getSources = async function() {
-    const view_id = await getViewID();
+exports.getSources = async function (client_email, private_key) {
+
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
