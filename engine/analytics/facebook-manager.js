@@ -1,9 +1,7 @@
 'use strict';
 
 const Model = require('../../models/index');
-const User_keys = Model.User_keys;
-const Op = Model.Sequelize.Op;
-const FB_SERVICE = 0;
+const fb_user_token = Model.Fb_user_token;
 
 const HttpStatus = require('http-status-codes');
 
@@ -12,12 +10,9 @@ const FacebookApi = require('../../api_handler/facebook-api');
 
 exports.fb_getEngagedUsers = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsEngagedUsers(DAY, key.api_key)
@@ -52,12 +47,9 @@ exports.fb_getEngagedUsers = function (req, res, next) {
 
 exports.fb_getPageImpressionsUnique = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageImpressionsUnique(DAY, key.api_key)
@@ -92,12 +84,9 @@ exports.fb_getPageImpressionsUnique = function (req, res, next) {
 
 exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageImpressionsByCityUnique(DAY, key.api_key)
@@ -132,12 +121,9 @@ exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
 
 exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageImpressionsByCountryUnique(DAY, key.api_key)
@@ -172,12 +158,9 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
 
 exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageActionsPostReactionsTotal(DAY, key.api_key)
@@ -212,12 +195,9 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
 
 exports.fb_getPageFans = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageFans(LIFETIME, key.api_key)
@@ -252,12 +232,9 @@ exports.fb_getPageFans = function (req, res, next) {
 
 exports.fb_getPageFansCity = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageFansCity(LIFETIME, key.api_key)
@@ -292,12 +269,9 @@ exports.fb_getPageFansCity = function (req, res, next) {
 
 exports.fb_getPageFansCountry = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageFansCountry(LIFETIME, key.api_key)
@@ -332,12 +306,9 @@ exports.fb_getPageFansCountry = function (req, res, next) {
 
 exports.fb_getPageFansAddsUnique = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageFansAddsUnique(DAY, key.api_key)
@@ -372,12 +343,9 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
 
 exports.fb_getPageFansRemovesUnique = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageFansRemovesUnique(DAY, key.api_key)
@@ -412,12 +380,9 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
 
 exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
 
-    User_keys.findOne({
+    fb_user_token.findOne({
         where: {
-            [Op.and]: [
-                {user_id: req.user.id},
-                {service: FB_SERVICE}
-            ]
+            user_id: req.user.id
         }
     }).then(key => {
         FacebookApi.getInsightsPageViewsExternalReferrals(DAY, key.api_key)

@@ -7,7 +7,7 @@ const GA_SERVICE = 1;
 
 const HttpStatus = require('http-status-codes');
 
-/***************** FACEBOOK *****************/
+/***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
 exports.ga_getLastYearSessions = async function (req, res, next) {
