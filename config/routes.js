@@ -2,6 +2,7 @@ const AccessManager     = require('../engine/access-manager');
 const UserKeysManager   = require('../engine/user-keys-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
 const ChartsManager     = require('../engine/charts-manager');
+const CalendarManager   = require('../engine/calendar-manager');
 
 const FacebookManager   = require('../engine/analytics/facebook-manager');
 const GoogleManager     = require('../engine/analytics/google-manager');
@@ -22,6 +23,7 @@ module.exports = function (app, passport) {
     let keysPath   = indexPath + 'keys/';
     let dashPath   = indexPath + 'dashboards/';
     let chartsPath = indexPath + 'charts/';
+    let calendPath = indexPath + 'calendar/';
 
     let googlePath   = indexPath + 'ga/';
     let facebookPath = indexPath + 'fb/';
@@ -82,6 +84,12 @@ module.exports = function (app, passport) {
     app.get(googlePath + 'pageviews', GoogleManager.ga_getPageViews);
     app.get(googlePath + 'mostviews', GoogleManager.ga_getMostPagesViews);
     app.get(googlePath + 'sources', GoogleManager.ga_getSources);
+
+    /****************** CALENDAR MANAGER ******************/
+    app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
+    app.post(calendPath + 'addEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.addEvent);
+    app.put(calendPath + 'updateEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.updateEvent);
+    app.delete(calendPath + 'deleteEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.deleteEvent);
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);

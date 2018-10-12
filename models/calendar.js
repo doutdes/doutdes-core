@@ -15,7 +15,7 @@ module.exports = (sequelize, DataType) => {
     });
 
     Calendar.associate = function (models) {
-        // Calendar.hasMany(models.Users, {foreignKey: 'user_id', sourceKey: models.Users.id})
+        Calendar.belongsTo(models.Users, {foreignKey: 'user_id'});
     };
 
     return Calendar;

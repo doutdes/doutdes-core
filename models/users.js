@@ -32,6 +32,8 @@ module.exports = (sequelize, DataType) => {
               },
               foreignKey: 'user_id'
           });
+
+          Users.hasMany(models.Calendar, {foreignKey: 'user_id'});
       };
 
     Users.prototype.verifyPassword = function(password) {
