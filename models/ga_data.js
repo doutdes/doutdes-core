@@ -17,9 +17,9 @@ module.exports = (sequelize, DataType) => {
         tableName: 'ga_data'
     });
 
-    Ga_data.associate = function (models) {
-        Ga_data.hasMany(models.Users, {foreignKey: 'id', sourceKey: models.Users.id})
-    };
+    // Ga_data.associate = function (models) {
+    //     Ga_data.belongsTo(models.Users, {foreignKey: 'user_id', targetKey:'id'});
+    // };
 
     return Ga_data;
 };

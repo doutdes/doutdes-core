@@ -15,6 +15,7 @@ exports.ga_getLastYearSessions = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
+        //console.log("manager: " + key.client_email);
         GoogleApi.getLastYearSessions(key.client_email, key.private_key)
             .then(value => {
                 if (value.length === 0) {

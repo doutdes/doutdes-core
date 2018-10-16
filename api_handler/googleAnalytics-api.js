@@ -6,6 +6,8 @@ const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
 //const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
 
 async function getViewID(client_email, private_key) {
+    // console.log('sono in getviewID');
+    // console.log(client_email);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').management.profiles.list({

@@ -15,10 +15,10 @@ module.exports = (sequelize, DataType) => {
         timestamps: false,
         tableName: 'fb_user_token'
     });
-
-    Fb_user_token.associate = function (models) {
-        Fb_user_token.hasMany(models.Users, {foreignKey: 'id', sourceKey: models.Users.id})
-    };
+    //
+    // Fb_user_token.associate = function (models) {
+    //     Fb_user_token.belongsTo(models.Users, {foreignKey: 'user_id', targetKey:'id'});
+    // };
 
     return Fb_user_token;
 };

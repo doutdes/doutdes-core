@@ -47,11 +47,11 @@ module.exports = function (app, passport) {
     app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
     /****************** CRUD USER KEYS ********************/
-    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);
+    // app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);
     app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);
-    app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser);
-    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);
-    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);
+    // app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser);
+    // app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);
+    // app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);
 
     /****************** CRUD DASHBOARD ********************/
     app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);

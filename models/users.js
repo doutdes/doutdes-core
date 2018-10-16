@@ -33,7 +33,9 @@ module.exports = (sequelize, DataType) => {
               foreignKey: 'user_id'
           });
 
-          Users.hasMany(models.Calendar, {foreignKey: 'user_id'});
+          Users.hasMany(models.Calendar, {foreignKey: 'user_id', sourceKey: 'id'});
+          Users.belongsTo(models.Fb_user_token, {foreignKey: 'id', targetKey: 'user_id'});
+          Users.belongsTo(models.Ga_data, {foreignKey: 'id', targetKey: 'user_id'});
       };
 
     Users.prototype.verifyPassword = function(password) {
