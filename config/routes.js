@@ -1,5 +1,5 @@
 const AccessManager     = require('../engine/access-manager');
-const UserKeysManager   = require('../engine/user-keys-manager');
+const TokenManager   = require('../engine/token-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
 const ChartsManager     = require('../engine/charts-manager');
 const CalendarManager   = require('../engine/calendar-manager');
@@ -47,11 +47,11 @@ module.exports = function (app, passport) {
     app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
     /****************** CRUD USER KEYS ********************/
-    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.insertKey);
-    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readAllKeysById);
-    // app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.readServiceKeyByUser);
-    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.update);
-    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), UserKeysManager.delete);
+    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
+    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
+    // app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readServiceKeyByUser);
+    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
+    app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.delete);
 
     /****************** CRUD DASHBOARD ********************/
     app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);

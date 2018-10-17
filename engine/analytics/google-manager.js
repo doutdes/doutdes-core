@@ -1,7 +1,7 @@
 'use strict';
 
 const Model = require('../../models/index');
-const ga_data = Model.Ga_data;
+const GaToken = Model.GaToken;
 
 const HttpStatus = require('http-status-codes');
 
@@ -10,7 +10,7 @@ const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
 exports.ga_getLastYearSessions = async function (req, res, next) {
 
-    ga_data.findOne({
+    GaToken.findOne({
         where: {
             user_id: req.user.id
         }

@@ -1,7 +1,7 @@
 'use strict';
 
 const Model = require('../../models/index');
-const fb_user_token = Model.Fb_user_token;
+const FbToken = Model.FbToken;
 
 const HttpStatus = require('http-status-codes');
 
@@ -10,7 +10,7 @@ const FacebookApi = require('../../api_handler/facebook-api');
 
 exports.fb_getEngagedUsers = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -47,7 +47,7 @@ exports.fb_getEngagedUsers = function (req, res, next) {
 
 exports.fb_getPageImpressionsUnique = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -84,7 +84,7 @@ exports.fb_getPageImpressionsUnique = function (req, res, next) {
 
 exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -121,7 +121,7 @@ exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
 
 exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -158,7 +158,7 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
 
 exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -195,7 +195,7 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
 
 exports.fb_getPageFans = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -232,7 +232,7 @@ exports.fb_getPageFans = function (req, res, next) {
 
 exports.fb_getPageFansCity = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -269,7 +269,7 @@ exports.fb_getPageFansCity = function (req, res, next) {
 
 exports.fb_getPageFansCountry = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -306,7 +306,7 @@ exports.fb_getPageFansCountry = function (req, res, next) {
 
 exports.fb_getPageFansAddsUnique = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -343,7 +343,7 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
 
 exports.fb_getPageFansRemovesUnique = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
@@ -380,7 +380,7 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
 
 exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
 
-    fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }

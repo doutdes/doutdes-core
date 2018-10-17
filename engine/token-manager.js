@@ -1,63 +1,41 @@
 'use strict';
 
 const Model = require('../models/index');
-const FbToken = Model.Fb_user_token;
-const GaToken = Model.Ga_data;
+const Users = Model.Users;
+const FbToken = Model.FbToken;
+const GaToken = Model.GaToken;
 
 const HttpStatus = require('http-status-codes');
 
 exports.readAllKeysById = (req, res, next) => {
-    FbToken.findOne({
-        where: {
-            user_id: req.user.id
+
+    Users.findOne({
+            where: {id: req.user.id},
+            include: [
+                {model: GaToken},
+                {model: FbToken}]
         }
-    })
-        .then(fb_key => {
-            GaToken.findOne({
-                where: {
-                    user_id: req.user.id
-                }
-            }).then(ga_key => {
+    )
+        .then(result => {
+            let fb = result.dataValues.FbTokens[0];
+            let ga = result.dataValues.GaTokens[0];
 
-                // controllare che ci siano sia fb key che ga_key
-                // se uno o l'altro non esiste, mettere null nei suoi campi
-                // se non esiste nulla, rendere NO_CONTENT
+            if (fb == null && ga == null)
+                return res.status(HttpStatus.NO_CONTENT).send({});
 
-                if (fb_key === null && ga_key === null) {
-                    return res.status(HttpStatus.NO_CONTENT).send({});
-                }
+            let fb_token = (fb == null) ? null : fb.dataValues.api_key;       // Token
+            let ga_token = (ga == null) ? null : ga.dataValues.client_email;  // Client email
 
-                if (fb_key === null) {
-                    return res.status(HttpStatus.OK).send({
-                        user_id: req.user.id,
-                        fb_token: null,
-                        ga_client_email: ga_key.client_email,
-                        ga_private_key: ga_key.private_key
-                    });
-                }
-
-                if (ga_key === null) {
-                    return res.status(HttpStatus.OK).send({
-                        user_id: req.user.id,
-                        fb_token: fb_key.api_key,
-                        ga_client_email: null,
-                        ga_private_key: null
-                    });
-                }
-
-                return res.status(HttpStatus.OK).send({
-                    user_id: req.user.id,
-                    fb_token: fb_key.api_key,
-                    ga_client_email: ga_key.client_email,
-                    ga_private_key: ga_key.private_key
-                });
-            })
-
+            return res.status(HttpStatus.OK).send({
+                user_id: req.user.id,
+                fb_token: fb_token,
+                ga_token: ga_token
+            });
         })
         .catch(err => {
             console.log(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                error: err
+                error: 'Cannot retrieve user tokens.'
             })
         });
 };
@@ -75,7 +53,7 @@ exports.insertKey = (req, res, next) => {
                 error: 'Insert unavailable for selected service'
             });
     }
-    ;
+
 };
 
 exports.update = (req, res, next) => {
@@ -91,7 +69,7 @@ exports.update = (req, res, next) => {
                 error: 'Update unavailable for selected service'
             });
     }
-    ;
+
 };
 
 exports.delete = (req, res, next) => {

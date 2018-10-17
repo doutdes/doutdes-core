@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (sequelize, DataType) => {
-    let Ga_data = sequelize.define('Ga_data', {
+    let GaToken = sequelize.define('GaToken', {
         user_id: {
             type: DataType.INTEGER(5),
             primaryKey: true,
@@ -14,13 +14,13 @@ module.exports = (sequelize, DataType) => {
     }, {
         freezeTableName: true,
         timestamps: false,
-        tableName: 'ga_data'
+        tableName: 'ga_token'
     });
 
-    // Ga_data.associate = function (models) {
-    //     Ga_data.belongsTo(models.Users, {foreignKey: 'user_id', targetKey:'id'});
-    // };
+    GaToken.associate = function (models) {
+        GaToken.belongsTo(models.Users, {foreignKey: 'user_id'});
+    };
 
-    return Ga_data;
+    return GaToken;
 };
 

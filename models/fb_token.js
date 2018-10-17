@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (sequelize, DataType) => {
-    let Fb_user_token = sequelize.define('Fb_user_token', {
+    let FbToken = sequelize.define('FbToken', {
         user_id: {
             type: DataType.INTEGER(5),
             primaryKey: true,
@@ -13,13 +13,13 @@ module.exports = (sequelize, DataType) => {
     }, {
         freezeTableName: true,
         timestamps: false,
-        tableName: 'fb_user_token'
+        tableName: 'fb_token'
     });
     //
-    // Fb_user_token.associate = function (models) {
-    //     Fb_user_token.belongsTo(models.Users, {foreignKey: 'user_id', targetKey:'id'});
-    // };
+    FbToken.associate = function (models) {
+         FbToken.belongsTo(models.Users, {foreignKey: 'user_id'});
+    };
 
-    return Fb_user_token;
+    return FbToken;
 };
 
