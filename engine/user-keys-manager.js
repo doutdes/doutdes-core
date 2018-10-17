@@ -135,57 +135,27 @@ exports.insertGaData = (req, res, next) => {
     })
 };
 
-// exports.insertKey = (req, res, next) => {
-//     let user_keys = req.body;
-//
-//     User_keys.findOne({
-//         where: {
-//             [Op.and]: [{
-//                 user_id: req.user.id,
-//                 service: user_keys.service
-//             }]
-//         }
-//     }).then(key => {
-//         console.log(key);
-//         if (key !== null) {
-//             return res.status(HttpStatus.BAD_REQUEST).send({
-//                 error: 'Service already exists',
-//                 service: user_keys.service
-//             })
-//         }
-//         else {
-//             User_keys.create({
-//                 user_id: req.user.id,
-//                 service: user_keys.service,
-//                 api_key: user_keys.api_key
-//             })
-//                 .then(new_key => {
-//                     return res.status(HttpStatus.CREATED).send({
-//                         created: true,
-//                         service: parseInt(new_key.get('service'))
-//                     });
-//                 })
-//                 .catch(err => {
-//                     console.log(err);
-//
-//                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-//                         created: false,
-//                         service: parseInt(user_keys.service),
-//                         error: 'Cannot insert the key'
-//                     });
-//                 })
-//         }
-//     })
-//         .catch(err => {
-//             console.log(err);
-//             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-//                 created: false,
-//                 service: parseInt(user_keys.service),
-//                 error: 'Cannot insert the key'
-//             })
-//         })
-// };
-//
+exports.updateFbKey = (req,res,next) => {
+    Fb_user_token.update({
+        api_key: Fb_user_token.api_key
+    }, {
+        where:{
+            user_id: req.user.id
+        }
+    }).then(up_key => {
+        return res.status(HttpStatus.OK).send({
+                updated: true,
+                api_key: Fb_user_token.api_key
+            })
+    }).catch(err =>{
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                updated: false,
+                api_key: Fb_user_token.api_key,
+                error: 'Cannot update the Facebook key'
+            })
+    })
+};
+
 // exports.update = (req, res, next) => {
 //     let user_keys = req.body;
 //
