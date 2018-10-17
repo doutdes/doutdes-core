@@ -156,6 +156,30 @@ exports.updateFbKey = (req,res,next) => {
     })
 };
 
+exports.updateGaData = (req,res,next) => {
+    Fb_user_token.update({
+        client_email: Ga_data.client_email,
+        private_key: Ga_data.private_key
+    }, {
+        where:{
+            user_id: req.user.id
+        }
+    }).then(up_key => {
+        return res.status(HttpStatus.OK).send({
+            updated: true,
+            client_email: Ga_data.client_email,
+            private_key: Ga_data.private_key
+        })
+    }).catch(err =>{
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            updated: false,
+            client_email: Ga_data.client_email,
+            private_key: Ga_data.private_key
+            error: 'Cannot update the Google Analytics credentials'
+        })
+    })
+};
+
 // exports.update = (req, res, next) => {
 //     let user_keys = req.body;
 //
