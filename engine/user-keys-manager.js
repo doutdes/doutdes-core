@@ -1,21 +1,19 @@
 'use strict';
 
 const Model = require('../models/index');
-const Users = Model.Users;
-const Fb_user_token = Model.Fb_user_token;
-const Ga_data = Model.Ga_data;
-const Op = Model.Sequelize.Op;
+const FbToken = Model.Fb_user_token;
+const GaToken = Model.Ga_data;
 
 const HttpStatus = require('http-status-codes');
 
 exports.readAllKeysById = (req, res, next) => {
-    Fb_user_token.findOne({
+    FbToken.findOne({
         where: {
             user_id: req.user.id
         }
     })
         .then(fb_key => {
-            Ga_data.findOne({
+            GaToken.findOne({
                 where: {
                     user_id: req.user.id
                 }
@@ -64,8 +62,56 @@ exports.readAllKeysById = (req, res, next) => {
         });
 };
 
-exports.insertFbKey = (req, res, next) => {
-    Fb_user_token.findOne({
+exports.insertKey = (req, res, next) => {
+    const service_id = req.body.service_id;
+    switch (service_id) {
+        case 0: //fb
+            return insertFbKey(req, res);
+        case 1: //google
+            return insertGaData(req, res);
+        default:
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                created: false,
+                error: 'Insert unavailable for selected service'
+            });
+    }
+    ;
+};
+
+exports.update = (req, res, next) => {
+    const service_id = req.body.service_id;
+    switch (service_id) {
+        case 0: //fb
+            return updateFbKey(req, res);
+        case 1: //google
+            return updateGaData(req, res);
+        default:
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                created: false,
+                error: 'Update unavailable for selected service'
+            });
+    }
+    ;
+};
+
+exports.delete = (req, res, next) => {
+    const service_id = req.body.service_id;
+    switch (service_id) {
+        case 0: //fb
+            return deleteFbKey(req, res);
+        case 1: //google
+            return deleteGaData(req, res);
+        default:
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                created: false,
+                error: 'Delete unavailable for selected service'
+            });
+    }
+    ;
+};
+
+function insertFbKey(req, res) {
+    FbToken.findOne({
         where: {
             user_id: req.user.id,
         }
@@ -76,9 +122,9 @@ exports.insertFbKey = (req, res, next) => {
             })
         }
         else {
-            Fb_user_token.create({
+            FbToken.create({
                 user_id: req.user.id,
-                api_key: Fb_user_token.api_key
+                api_key: FbToken.api_key
             })
                 .then(new_key => {
                     return res.status(HttpStatus.CREATED).send({
@@ -90,7 +136,7 @@ exports.insertFbKey = (req, res, next) => {
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
-                        api_key: Fb_user_token.api_key,
+                        api_key: FbToken.api_key,
                         error: 'Cannot insert the key'
                     });
                 })
@@ -98,8 +144,8 @@ exports.insertFbKey = (req, res, next) => {
     })
 };
 
-exports.insertGaData = (req, res, next) => {
-    Ga_data.findOne({
+function insertGaData(req, res) {
+    GaToken.findOne({
         where: {
             user_id: req.user.id,
         }
@@ -110,10 +156,10 @@ exports.insertGaData = (req, res, next) => {
             })
         }
         else {
-            Ga_data.create({
+            GaToken.create({
                 user_id: req.user.id,
-                client_email: Ga_data.client_email,
-                private_key: Ga_data.private_key
+                client_email: GaToken.client_email,
+                private_key: GaToken.private_key
             })
                 .then(new_key => {
                     return res.status(HttpStatus.CREATED).send({
@@ -126,8 +172,8 @@ exports.insertGaData = (req, res, next) => {
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
-                        client_email: Ga_data.client_email,
-                        private_key: Ga_data.private_key,
+                        client_email: GaToken.client_email,
+                        private_key: GaToken.private_key,
                         error: 'Cannot insert the credentials'
                     });
                 })
@@ -135,9 +181,9 @@ exports.insertGaData = (req, res, next) => {
     })
 };
 
-exports.updateFbKey = (req, res, next) => {
-    Fb_user_token.update({
-        api_key: Fb_user_token.api_key
+function updateFbKey(req, res) {
+    FbToken.update({
+        api_key: FbToken.api_key
     }, {
         where: {
             user_id: req.user.id
@@ -145,21 +191,21 @@ exports.updateFbKey = (req, res, next) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            api_key: Fb_user_token.api_key
+            api_key: FbToken.api_key
         })
     }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            api_key: Fb_user_token.api_key,
+            api_key: FbToken.api_key,
             error: 'Cannot update the Facebook key'
         })
     })
 };
 
-exports.updateGaData = (req, res, next) => {
-    Ga_data.update({
-        client_email: Ga_data.client_email,
-        private_key: Ga_data.private_key
+function updateGaData(req, res) {
+    GaToken.update({
+        client_email: GaToken.client_email,
+        private_key: GaToken.private_key
     }, {
         where: {
             user_id: req.user.id
@@ -167,21 +213,21 @@ exports.updateGaData = (req, res, next) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            client_email: Ga_data.client_email,
-            private_key: Ga_data.private_key
+            client_email: GaToken.client_email,
+            private_key: GaToken.private_key
         })
     }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            client_email: Ga_data.client_email,
-            private_key: Ga_data.private_key
+            client_email: GaToken.client_email,
+            private_key: GaToken.private_key,
             error: 'Cannot update the Google Analytics credentials'
         })
     })
 };
 
-exports.deleteFbKey = (req, res, next) => {
-    Fb_user_token.destroy({
+function deleteFbKey(req, res) {
+    FbToken.destroy({
         where: {
             user_id: req.user.id
         }
@@ -198,8 +244,8 @@ exports.deleteFbKey = (req, res, next) => {
     })
 };
 
-exports.deleteGaData = (req, res, next) => {
-    Ga_data.destroy({
+function deleteGaData(req, res) {
+    GaToken.destroy({
         where: {
             user_id: req.user.id
         }
