@@ -99,7 +99,7 @@ exports.insertFbKey = (req, res, next) => {
 };
 
 exports.insertGaData = (req, res, next) => {
-   Ga_data.findOne({
+    Ga_data.findOne({
         where: {
             user_id: req.user.id,
         }
@@ -135,33 +135,33 @@ exports.insertGaData = (req, res, next) => {
     })
 };
 
-exports.updateFbKey = (req,res,next) => {
+exports.updateFbKey = (req, res, next) => {
     Fb_user_token.update({
         api_key: Fb_user_token.api_key
     }, {
-        where:{
+        where: {
             user_id: req.user.id
         }
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
-                updated: true,
-                api_key: Fb_user_token.api_key
-            })
-    }).catch(err =>{
+            updated: true,
+            api_key: Fb_user_token.api_key
+        })
+    }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                updated: false,
-                api_key: Fb_user_token.api_key,
-                error: 'Cannot update the Facebook key'
-            })
+            updated: false,
+            api_key: Fb_user_token.api_key,
+            error: 'Cannot update the Facebook key'
+        })
     })
 };
 
-exports.updateGaData = (req,res,next) => {
-    Fb_user_token.update({
+exports.updateGaData = (req, res, next) => {
+    Ga_data.update({
         client_email: Ga_data.client_email,
         private_key: Ga_data.private_key
     }, {
-        where:{
+        where: {
             user_id: req.user.id
         }
     }).then(up_key => {
@@ -170,7 +170,7 @@ exports.updateGaData = (req,res,next) => {
             client_email: Ga_data.client_email,
             private_key: Ga_data.private_key
         })
-    }).catch(err =>{
+    }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
             client_email: Ga_data.client_email,
@@ -180,55 +180,38 @@ exports.updateGaData = (req,res,next) => {
     })
 };
 
-// exports.update = (req, res, next) => {
-//     let user_keys = req.body;
-//
-//     User_keys.update({
-//         api_key: user_keys.api_key
-//     }, {
-//         where: {
-//             [Op.and]: [{
-//                 user_id: req.user.id,
-//                 service: user_keys.service
-//             }]
-//         }
-//     })
-//         .then(up_key => {
-//             console.log(up_key);
-//             return res.status(HttpStatus.OK).json({
-//                 updated: true,
-//                 service: parseInt(user_keys.service)
-//             })
-//         })
-//         .catch(err => {
-//             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-//                 updated: false,
-//                 service: parseInt(user_keys.service),
-//                 error: 'Cannot update the key'
-//             })
-//         });
-// };
-//
-// exports.delete = (req, res, next) => {
-//     User_keys.destroy({
-//         where: {
-//             [Op.and]: [{
-//                 user_id: req.user.id,
-//                 service: req.body.service
-//             }]
-//         }
-//     })
-//         .then(() => {
-//             return res.status(HttpStatus.OK).json({
-//                 deleted: true,
-//                 service: parseInt(req.body.service)
-//             })
-//         })
-//         .catch(err => {
-//             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-//                 deleted: false,
-//                 service: parseInt(req.body.service),
-//                 error: 'Cannot delete the key'
-//             })
-//         })
-// };
+exports.deleteFbKey = (req, res, next) => {
+    Fb_user_token.destroy({
+        where: {
+            user_id: req.user.id
+        }
+    }).then(del => {
+        return res.status(HttpStatus.OK).send({
+            deleted: true,
+            message: 'Facebook token deleted successfully'
+        })
+    }).catch(err => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            deleted: false,
+            error: 'Cannot delete the Facebook key'
+        })
+    })
+};
+
+exports.deleteGaData = (req, res, next) => {
+    Ga_data.destroy({
+        where: {
+            user_id: req.user.id
+        }
+    }).then(del => {
+        return res.status(HttpStatus.OK).send({
+            deleted: true,
+            message: 'Google Analytics data deleted successfully'
+        })
+    }).catch(err => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            deleted: false,
+            error: 'Cannot delete the key'
+        })
+    })
+};
