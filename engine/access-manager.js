@@ -8,6 +8,46 @@ const jwt = require('jsonwebtoken');
 
 const HttpStatus = require('http-status-codes');
 
+
+/**
+ * @api {post} /users/create/ Create new user
+ *
+ * @apiName Create new
+ * @apiGroup User
+ *
+ * @apiParam {String} username Username of the user.
+ * @apiParam {String} email Email of the user.
+ * @apiParam {String} company_name Name of the company of the user.
+ * @apiParam {String} vat_number Vat Number of the company of the user.
+ * @apiParam {String} first_name First name of the user.
+ * @apiParam {String} last_name Last name of the user.
+ * @apiParam {String} birth_place Birth place of the user.
+ * @apiParam {Date} birth_date Birth date of the user.
+ * @apiParam {String} fiscal_code Fiscal code of the user.
+ * @apiParam {String} address Address of residence of the user.
+ * @apiParam {String} province Province of residence of the user.
+ * @apiParam {String} city City of residence of the user.
+ * @apiParam {String} zip Zip code associated to the city of residence of the user.
+ * @apiParam {String} password Password needed by the user to login to the platform.
+ * @apiParam {String} user_type Type of the user into the platform.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 201 CREATED
+ *     {
+ *          "created": true,
+ *          "first_name": "Gianni",
+ *          "last_name": "Sperti"
+ *     }
+ *
+ * @apiError UserAlreadyExists The username or the email has been alredy used.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 BAD REQUEST
+ *     {
+ *          "created": false,
+ *          "error": "Username or email already exists",
+ *     }
+ */
 exports.createUser = function (req, res, next) {
     const Op = Model.Sequelize.Op;
     const user = req.body;
@@ -141,6 +181,42 @@ exports.getUserById = function (req, res, next) {
         })
 };
 
+/**
+ * @api {put} /users/update/ Update
+ *
+ * @apiName Update
+ * @apiGroup User
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {String} username Username of the user.
+ * @apiParam {String} email Email of the user.
+ * @apiParam {String} company_name Name of the company of the user.
+ * @apiParam {String} vat_number Vat Number of the company of the user.
+ * @apiParam {String} first_name First name of the user.
+ * @apiParam {String} last_name Last name of the user.
+ * @apiParam {String} birth_place Birth place of the user.
+ * @apiParam {Date} birth_date Birth date of the user.
+ * @apiParam {String} fiscal_code Fiscal code of the user.
+ * @apiParam {String} address Address of residence of the user.
+ * @apiParam {String} province Province of residence of the user.
+ * @apiParam {String} city City of residence of the user.
+ * @apiParam {String} zip Zip code associated to the city of residence of the user.
+ * @apiParam {String} password Password needed by the user to login to the platform.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "updated": true,
+ *          "user_id": 258,
+ *     }
+ */
 exports.updateUser = function (req, res, next) {
 
     const user = req.body;
@@ -183,12 +259,34 @@ exports.updateUser = function (req, res, next) {
         });
 };
 
+/**
+ * @api {delete} /users/delete/ Delete
+ *
+ * @apiName Delete
+ * @apiGroup User
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {String} username Username of the user.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          "deleted": true,
+ *          "username": "Gianni",
+ *     }
+ */
 exports.deleteUser = function (req, res, next) {
     Model.Users.destroy({where: {user: req.body.username}})
         .then(() => {
             return res.status(HttpStatus.OK).json({
                 deleted: true,
-                service: parseInt(req.body.username)
+                username: parseInt(req.body.username)
             })
         })
         .catch(err => {
