@@ -10,9 +10,10 @@ const HttpStatus = require('http-status-codes');
 
 
 /**
- * @api {post} /users/create/ Create new user
+ * @api {post} /users/create/ Create
  *
- * @apiName Create new
+ * @apiName Create new user
+ * @apiDescriptioon The request create a new user
  * @apiGroup User
  *
  * @apiParam {String} username Username of the user.
@@ -39,7 +40,7 @@ const HttpStatus = require('http-status-codes');
  *          "last_name": "Sperti"
  *     }
  *
- * @apiError UserAlreadyExists The username or the email has been alredy used.
+ * @apiError (400) UserAlreadyExists The username or the email has been alredy used.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 BAD REQUEST
@@ -47,6 +48,16 @@ const HttpStatus = require('http-status-codes');
  *          "created": false,
  *          "error": "Username or email already exists",
  *     }
+ *
+ * @apiError (500) InternalServerError Cannot create the new user
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *          "error": true,
+ *          "message": "Cannot create the new user"
+ *          "username": "administrator"
+ *      }
  */
 exports.createUser = function (req, res, next) {
     const Op = Model.Sequelize.Op;
@@ -68,7 +79,7 @@ exports.createUser = function (req, res, next) {
             if(userbn.length !== 0) {
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     created: false,
-                    error: 'Username or email already exists'
+                    error: 'Username or email already exists',
                 });
             } else {
                 // A new user can be created
@@ -101,6 +112,7 @@ exports.createUser = function (req, res, next) {
                     .catch(err => {
                         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                             created:  false,
+                            message: 'Cannot create the new user',
                             username: user.username
                         });
                     })
@@ -112,6 +124,7 @@ exports.createUser = function (req, res, next) {
 /**
  * @api {get} /users/getFromId/ Get From ID
  * @apiName GetFromId
+ * @apiDescription The request gives to the user who made the call all his informaations.
  * @apiGroup User
  * @apiPermission all
  *
@@ -163,11 +176,20 @@ exports.createUser = function (req, res, next) {
  *          "checksum": "a_nice_checksum"
  *     }
  *
- * @apiError Unauthorized The user is not authorized to do the request.
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot get the user informations
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *          "error": true,
+ *          "message": "Cannot GET the user informations"
+ *      }
  */
 exports.getUserById = function (req, res, next) {
     Model.Users.findById(req.user.id)
@@ -176,7 +198,8 @@ exports.getUserById = function (req, res, next) {
         })
         .catch(err => {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                error: 'Cannot GET the informations about the user.'
+                error: true,
+                message: 'Cannot GET the user informations'
             });
         })
 };
@@ -185,6 +208,7 @@ exports.getUserById = function (req, res, next) {
  * @api {put} /users/update/ Update
  *
  * @apiName Update
+ * @apiDescription This request lets the user who made the call to update his informations.
  * @apiGroup User
  * @apiPermission all
  *
@@ -216,6 +240,16 @@ exports.getUserById = function (req, res, next) {
  *          "updated": true,
  *          "user_id": 258,
  *     }
+ *
+ * @apiError (500) InternalServerError Cannot update the user
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *          "updated": false,
+ *          "user_id": 249,
+ *          "message": "Cannot update the user"
+ *      }
  */
 exports.updateUser = function (req, res, next) {
 
@@ -263,7 +297,9 @@ exports.updateUser = function (req, res, next) {
  * @api {delete} /users/delete/ Delete
  *
  * @apiName Delete
+ * @apiDescription This request lets the admin to delete a user from the platform.
  * @apiGroup User
+ * @apiPermission admin
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -280,6 +316,16 @@ exports.updateUser = function (req, res, next) {
  *          "deleted": true,
  *          "username": "Gianni",
  *     }
+ *
+ * @apiError (500) InternalServerError Cannot delete the user
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *          "deleted": false,
+ *          "user": "Administrator",
+ *          "message": "Cannot delete the user"
+ *      }
  */
 exports.deleteUser = function (req, res, next) {
     Model.Users.destroy({where: {user: req.body.username}})
@@ -293,7 +339,7 @@ exports.deleteUser = function (req, res, next) {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 deleted: false,
                 user: req.body.username,
-                error: 'Cannot delete the user'
+                message: 'Cannot delete the user'
             })
         })
 };
