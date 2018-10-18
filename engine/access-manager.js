@@ -123,8 +123,6 @@ exports.createUser = function (req, res, next) {
  *          "checksum": "a_nice_checksum"
  *     }
  *
- * @apiError InternalServerError Error retrieving the user informations.
- *
  * @apiError Unauthorized The user is not authorized to do the request.
  *
  * @apiErrorExample Error-Response:
