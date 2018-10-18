@@ -103,7 +103,7 @@ function insertFbKey(req, res) {
         else {
             FbToken.create({
                 user_id: req.user.id,
-                api_key: FbToken.api_key
+                api_key: req.body.api_key
             })
                 .then(new_key => {
                     console.log(new_key);
