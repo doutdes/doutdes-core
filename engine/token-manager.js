@@ -74,6 +74,7 @@ exports.update = (req, res, next) => {
 
 exports.delete = (req, res, next) => {
     const service_id = req.body.service_id;
+    console.log ('Service: ' + req.service_id);
     switch (service_id) {
         case 0: //fb
             return deleteFbKey(req, res);
@@ -105,6 +106,7 @@ function insertFbKey(req, res) {
                 api_key: FbToken.api_key
             })
                 .then(new_key => {
+                    console.log(new_key);
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
                         api_key: new_key.api_key
