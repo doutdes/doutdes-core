@@ -13,7 +13,7 @@ const HttpStatus = require('http-status-codes');
  * @api {post} /users/create/ Create
  *
  * @apiName Create new user
- * @apiDescriptioon The request create a new user
+ * @apiDescription The request create a new user
  * @apiGroup User
  *
  * @apiParam {String} username Username of the user.
