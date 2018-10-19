@@ -1,7 +1,6 @@
 const AccessManager     = require('../engine/access-manager');
 const TokenManager   = require('../engine/token-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
-const ChartsManager     = require('../engine/charts-manager');
 const CalendarManager   = require('../engine/calendar-manager');
 
 const FacebookManager   = require('../engine/analytics/facebook-manager');
@@ -22,7 +21,6 @@ module.exports = function (app, passport) {
     let amPath     = indexPath + 'users/';
     let keysPath   = indexPath + 'keys/';
     let dashPath   = indexPath + 'dashboards/';
-    let chartsPath = indexPath + 'charts/';
     let calendPath = indexPath + 'calendar/';
 
     let googlePath   = indexPath + 'ga/';
@@ -62,11 +60,6 @@ module.exports = function (app, passport) {
     app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
     app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
-
-    /****************** CRUD CHARTS ********************/
-    app.get(chartsPath  + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readAll);
-    app.get(chartsPath  + 'getByType/:type', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.readByType);
-    app.post(chartsPath + 'insert/', requireAuth, AccessManager.roleAuthorization(all), ChartsManager.insert);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFans);
