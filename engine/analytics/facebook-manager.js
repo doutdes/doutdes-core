@@ -14,27 +14,28 @@ exports.fb_getEngagedUsers = function (req, res, next) {
         where: {
             user_id: req.user.id
         }
-    }).then(key => {
-        FacebookApi.getInsightsEngagedUsers(DAY, key.api_key)
-            .then(result => {
-                var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
-            })
-            .catch(err => {
-                console.log(err);
-                if (err.statusCode === 400) {
-                    return res.status(HttpStatus.BAD_REQUEST).send({
-                        name: 'Facebook Bad Request',
-                        message: 'Invalid OAuth access token.'
-                    });
-                }
-                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                    name: 'Facebook Internal Server Error',
-                    message: 'There is a problem with Facebook servers'
-                });
-            })
     })
+        .then(key => {
+            FacebookApi.getInsightsEngagedUsers(DAY, key.api_key)
+                .then(result => {
+                    var jsonResult = JSON.parse(result);
+                    console.log('Analytics Manager: ' + jsonResult);
+                    return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                })
+                .catch(err => {
+                    console.log(err);
+                    if (err.statusCode === 400) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            name: 'Facebook Bad Request',
+                            message: 'Invalid OAuth access token.'
+                        });
+                    }
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        name: 'Facebook Internal Server Error',
+                        message: 'There is a problem with Facebook servers'
+                    });
+                })
+        })
         .catch(err => {
             console.log(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
