@@ -44,10 +44,9 @@ module.exports = function (app, passport) {
     app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
     app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
-    /****************** CRUD USER KEYS ********************/
+    /****************** CRUD TOKENS ********************/
     app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
     app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
-    // app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readServiceKeyByUser);
     app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.delete);
 
@@ -73,10 +72,10 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
 
     /****************** GOOGLE MANAGER ********************/
-    app.get(googlePath + 'sessions', GoogleManager.ga_getLastYearSessions);
-    app.get(googlePath + 'pageviews', GoogleManager.ga_getPageViews);
-    app.get(googlePath + 'mostviews', GoogleManager.ga_getMostPagesViews);
-    app.get(googlePath + 'sources', GoogleManager.ga_getSources);
+    app.get(googlePath + 'sessions', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getLastYearSessions);
+    app.get(googlePath + 'pageviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViews);
+    app.get(googlePath + 'mostviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getMostPagesViews);
+    app.get(googlePath + 'sources', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getSources);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);

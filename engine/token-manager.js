@@ -20,6 +20,8 @@ exports.readAllKeysById = (req, res, next) => {
             let fb = result.dataValues.FbTokens[0];
             let ga = result.dataValues.GaTokens[0];
 
+            console.log ("Tokens: " + fb + "\n" + ga);
+
             if (fb == null && ga == null)
                 return res.status(HttpStatus.NO_CONTENT).send({});
 
@@ -41,7 +43,8 @@ exports.readAllKeysById = (req, res, next) => {
 };
 
 exports.insertKey = (req, res, next) => {
-    const service_id = req.body.service_id;
+    const service_id = parseInt(req.body.service_id);
+
     switch (service_id) {
         case 0: //fb
             return insertFbKey(req, res);
@@ -50,14 +53,14 @@ exports.insertKey = (req, res, next) => {
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
-                error: 'Insert unavailable for selected service'
+                error: 'Unrecognized service type.'
             });
     }
 
 };
 
 exports.update = (req, res, next) => {
-    const service_id = req.body.service_id;
+    const service_id = parseInt(req.body.service_id);
     switch (service_id) {
         case 0: //fb
             return updateFbKey(req, res);
@@ -66,14 +69,15 @@ exports.update = (req, res, next) => {
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
-                error: 'Update unavailable for selected service'
+                error: 'Unrecognized service type.'
             });
     }
 
 };
 
 exports.delete = (req, res, next) => {
-    const service_id = req.body.service_id;
+    const service_id = parseInt(req.body.service_id);
+
     switch (service_id) {
         case 0: //fb
             return deleteFbKey(req, res);
@@ -82,7 +86,7 @@ exports.delete = (req, res, next) => {
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
-                error: 'Delete unavailable for selected service'
+                error: 'Unrecognized service type.'
             });
     }
     ;
@@ -102,9 +106,10 @@ function insertFbKey(req, res) {
         else {
             FbToken.create({
                 user_id: req.user.id,
-                api_key: FbToken.api_key
+                api_key: req.body.api_key
             })
                 .then(new_key => {
+                    console.log(new_key);
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
                         api_key: new_key.api_key
@@ -130,14 +135,18 @@ function insertGaData(req, res) {
     }).then(key => {
         if (key !== null) {
             return res.status(HttpStatus.BAD_REQUEST).send({
-                error: 'Google Analytics data already exists'
-            })
+                error: 'Google Analytics access token already exists!'
+            });
         }
         else {
+            let user_id = req.user.id;
+            let client_email = req.body.client_email;
+            let private_key = req.body.private_key;
+
             GaToken.create({
-                user_id: req.user.id,
-                client_email: GaToken.client_email,
-                private_key: GaToken.private_key
+                user_id: user_id,
+                client_email: client_email,
+                private_key: private_key
             })
                 .then(new_key => {
                     return res.status(HttpStatus.CREATED).send({
@@ -150,9 +159,9 @@ function insertGaData(req, res) {
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
-                        client_email: GaToken.client_email,
-                        private_key: GaToken.private_key,
-                        error: 'Cannot insert the credentials'
+                        client_email: client_email,
+                        private_key: private_key,
+                        error: 'Cannot add new Google Analytics access token.'
                     });
                 })
         }
