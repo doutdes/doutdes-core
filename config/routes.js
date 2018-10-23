@@ -44,10 +44,9 @@ module.exports = function (app, passport) {
     app.put(amPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
     app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
-    /****************** CRUD USER KEYS ********************/
+    /****************** CRUD TOKENS ********************/
     app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
     app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
-    // app.get(keysPath    + 'getByUserService/:service_id', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readServiceKeyByUser);
     app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.delete);
 
