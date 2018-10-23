@@ -129,15 +129,17 @@ exports.getEvents = function (req, res, next) {
  *      }
  */
 exports.addEvent = function (req, res, next) {
-    let event = req.body;
+    let event = req.body.event;
+
+    console.log(event);
 
     Calendar.create({
         user_id: req.user.id,
         title: event.title,
         dataStart: event.dataStart,
         dataEnd: event.dataEnd,
-        primaryColor: event.primaryColor,
-        secondaryColor: event.secondaryColor
+        primaryColor: event.color.primary,
+        secondaryColor: event.color.secondary
     })
         .then(new_event => {
             return res.status(HttpStatus.CREATED).send({
