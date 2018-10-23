@@ -136,8 +136,8 @@ exports.addEvent = function (req, res, next) {
     Calendar.create({
         user_id: req.user.id,
         title: event.title,
-        dataStart: event.dataStart,
-        dataEnd: event.dataEnd,
+        dataStart: event.start,
+        dataEnd: event.end,
         primaryColor: event.color.primary,
         secondaryColor: event.color.secondary
     })
@@ -206,18 +206,20 @@ exports.addEvent = function (req, res, next) {
  */
 exports.updateEvent = function (req, res, next) {
 
-    let event = req.body;
+    let event = req.body.event;
+
+    console.log(event);
 
     Calendar.update({
         title: event.title,
-        dataStart: event.dataStart,
-        dataEnd: event.dataEnd,
-        primaryColor: event.primaryColor,
-        secondaryColor: event.secondaryColor
+        dataStart: event.start,
+        dataEnd: event.end,
+        primaryColor: event.color.primary,
+        secondaryColor: event.color.secondary
     }, {
         where: {
             [Op.and]: [
-                { id: event.id },
+                { id: event.meta.id },
                 { user_id: req.user.id }
             ]
         }
