@@ -72,7 +72,7 @@ exports.getEvents = function (req, res, next) {
           return res.status(HttpStatus.NO_CONTENT).send({});
       }
 
-      return res.status(HttpStatus.OK).send(events)
+      return res.status(HttpStatus.OK).send(events);
   })
       .catch(err => {
           console.log(err);
