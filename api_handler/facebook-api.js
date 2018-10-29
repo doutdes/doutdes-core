@@ -67,7 +67,6 @@ function facebookQuery(method, metric, period, pageID, token) {
                 reject(err);
             })
     });
-    ;
 }
 
 /** METRICS **/
