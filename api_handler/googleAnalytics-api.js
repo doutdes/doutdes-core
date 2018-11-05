@@ -25,7 +25,7 @@ exports.getLastYearSessions = async function (client_email, private_key) {
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
+        'start-date': '730daysAgo', // TODO 2 anni fa andrebbe benissimo, da FE mettere 2 settimane di filtro default
         'end-date': 'today',
         'dimensions': 'ga:date',
         'metrics': 'ga:sessions'
@@ -43,7 +43,7 @@ exports.getPageViews = async function (client_email, private_key) {
         'auth': jwt,
         'ids': 'ga:' + view_id,
         'start-date': '365daysAgo',
-        'end-date': 'today',
+        'end-date': 'today', // TODO today must be configurable
         'dimensions': 'ga:date',
         'metrics': 'ga:pageviews'
     });
@@ -61,7 +61,7 @@ exports.getMostPagesVisited = async function (client_email, private_key) {
         'auth': jwt,
         'ids': 'ga:' + view_id,
         'start-date': '365daysAgo',
-        'end-date': 'today',
+        'end-date': 'today', // TODO today must be configurable
         'dimensions': 'ga:pagePath',
         'metrics': 'ga:pageviews',
         'sort': '-ga:pageviews',
@@ -80,7 +80,7 @@ exports.getSources = async function (client_email, private_key) {
         'auth': jwt,
         'ids': 'ga:' + view_id,
         'start-date': '365daysAgo',
-        'end-date': 'today',
+        'end-date': 'today', // TODO today must be configurable
         'dimensions': 'ga:medium',
         'metrics': 'ga:sessions',
         'filters': 'ga:sessions>5'
