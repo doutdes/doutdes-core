@@ -76,6 +76,7 @@ module.exports = function (app, passport) {
     app.get(googlePath + 'pageviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViews);
     app.get(googlePath + 'mostviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getMostPagesViews);
     app.get(googlePath + 'sources', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getSources);
+    app.get(googlePath + 'viewsbycountry', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViewsByCountry);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);

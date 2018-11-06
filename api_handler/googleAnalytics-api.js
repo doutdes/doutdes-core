@@ -89,5 +89,20 @@ exports.getSources = async function (client_email, private_key) {
     return result.data.rows;
 };
 
+exports.getPageViewsByCountry = async function (client_email, private_key) {
 
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': '365daysAgo',
+        'end-date': 'today',
+        'dimensions': 'ga:country',
+        'metrics': 'ga:pageviews',
+    });
+
+    return result.data.rows;
+};
 
