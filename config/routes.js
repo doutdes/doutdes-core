@@ -72,11 +72,11 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
 
     /****************** GOOGLE MANAGER ********************/
-    app.get(googlePath + 'sessions', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getLastYearSessions);
-    app.get(googlePath + 'pageviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViews);
-    app.get(googlePath + 'mostviews', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getMostPagesViews);
-    app.get(googlePath + 'sources', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getSources);
-    app.get(googlePath + 'viewsbycountry', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViewsByCountry);
+    app.get(googlePath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getLastYearSessions);
+    app.get(googlePath + 'pageviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViews);
+    app.get(googlePath + 'mostviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getMostPagesViews);
+    app.get(googlePath + 'sources/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getSources);
+    app.get(googlePath + 'viewsbycountry/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViewsByCountry);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);

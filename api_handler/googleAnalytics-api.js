@@ -1,9 +1,6 @@
 'use strict';
 const {google} = require('googleapis');
-//const key = require('../Agenda.json');
 const scopes = 'https://www.googleapis.com/auth/analytics.readonly';
-
-//const jwt = new google.auth.JWT(key.client_email, null, key.private_key, scopes);
 
 async function getViewID(client_email, private_key) {
     // console.log('sono in getviewID');
@@ -18,15 +15,15 @@ async function getViewID(client_email, private_key) {
     return result.data.items[0].id;
 }
 
-exports.getLastYearSessions = async function (client_email, private_key) {
+exports.getLastYearSessions = async function (client_email, private_key, start_date, end_date) {
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
-        'end-date': 'today',
+        'start-date': start_date,
+        'end-date': end_date,
         'dimensions': 'ga:date',
         'metrics': 'ga:sessions'
     });
@@ -34,7 +31,7 @@ exports.getLastYearSessions = async function (client_email, private_key) {
     return result.data.rows;
 };
 
-exports.getPageViews = async function (client_email, private_key) {
+exports.getPageViews = async function (client_email, private_key, start_date, end_date) {
 
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
@@ -42,8 +39,8 @@ exports.getPageViews = async function (client_email, private_key) {
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
-        'end-date': 'today',
+        'start-date': start_date,
+        'end-date': end_date,
         'dimensions': 'ga:date',
         'metrics': 'ga:pageviews'
     });
@@ -52,7 +49,7 @@ exports.getPageViews = async function (client_email, private_key) {
 
 };
 
-exports.getMostPagesVisited = async function (client_email, private_key) {
+exports.getMostPagesVisited = async function (client_email, private_key, start_date, end_date) {
 
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
@@ -60,8 +57,8 @@ exports.getMostPagesVisited = async function (client_email, private_key) {
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
-        'end-date': 'today',
+        'start-date': start_date,
+        'end-date': end_date,
         'dimensions': 'ga:pagePath',
         'metrics': 'ga:pageviews',
         'sort': '-ga:pageviews',
@@ -71,7 +68,7 @@ exports.getMostPagesVisited = async function (client_email, private_key) {
     return result.data.rows;
 };
 
-exports.getSources = async function (client_email, private_key) {
+exports.getSources = async function (client_email, private_key, start_date, end_date) {
 
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
@@ -79,8 +76,8 @@ exports.getSources = async function (client_email, private_key) {
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
-        'end-date': 'today',
+        'start-date': start_date,
+        'end-date': end_date,
         'dimensions': 'ga:medium',
         'metrics': 'ga:sessions',
         'filters': 'ga:sessions>5'
@@ -89,16 +86,16 @@ exports.getSources = async function (client_email, private_key) {
     return result.data.rows;
 };
 
-exports.getPageViewsByCountry = async function (client_email, private_key) {
-
+exports.getPageViewsByCountry = async function (client_email, private_key, start_date, end_date) {
+    console.log(start_date);
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.analytics('v3').data.ga.get({
         'auth': jwt,
         'ids': 'ga:' + view_id,
-        'start-date': '365daysAgo',
-        'end-date': 'today',
+        'start-date': start_date ,
+        'end-date': end_date,
         'dimensions': 'ga:country',
         'metrics': 'ga:pageviews',
     });

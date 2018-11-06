@@ -15,7 +15,7 @@ exports.ga_getLastYearSessions = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
-        GoogleApi.getLastYearSessions(key.client_email, key.private_key)
+        GoogleApi.getLastYearSessions(key.client_email, key.private_key, req.params.start_date, req.params.end_date)
             .then(value => {
                 if (value.length === 0) {
                     return res.status(HttpStatus.NO_CONTENT).send({});
@@ -50,7 +50,7 @@ exports.ga_getPageViews = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
-        GoogleApi.getPageViews(key.client_email, key.private_key)
+        GoogleApi.getPageViews(key.client_email, key.private_key, req.params.start_date, req.params.end_date)
             .then(value => {
                 if (value.length === 0) {
                     return res.status(HttpStatus.NO_CONTENT).send({});
@@ -84,7 +84,7 @@ exports.ga_getMostPagesViews = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
-        GoogleApi.getMostPagesVisited(key.client_email, key.private_key)
+        GoogleApi.getMostPagesVisited(key.client_email, key.private_key, req.params.start_date, req.params.end_date)
             .then(value => {
                 if (value.length === 0) {
                     return res.status(HttpStatus.NO_CONTENT).send({});
@@ -118,7 +118,7 @@ exports.ga_getSources = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
-        GoogleApi.getSources(key.client_email, key.private_key)
+        GoogleApi.getSources(key.client_email, key.private_key, req.params.start_date, req.params.end_date)
             .then(value => {
                 if (value.length === 0) {
                     return res.status(HttpStatus.NO_CONTENT).send({});
@@ -152,7 +152,7 @@ exports.ga_getPageViewsByCountry = async function (req, res, next) {
             user_id: req.user.id
         }
     }).then(key => {
-        GoogleApi.getPageViewsByCountry(key.client_email, key.private_key)
+        GoogleApi.getPageViewsByCountry(key.client_email, key.private_key, req.params.start_date, req.params.end_date)
             .then(value => {
                 if (value.length === 0) {
                     return res.status(HttpStatus.NO_CONTENT).send({});
