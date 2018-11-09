@@ -109,7 +109,6 @@ function insertFbKey(req, res) {
                 api_key: req.body.api_key
             })
                 .then(new_key => {
-                    console.log(new_key);
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
                         api_key: new_key.api_key

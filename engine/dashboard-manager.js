@@ -177,8 +177,6 @@ exports.readUserDashboardByType = function (req, res, next) {
     })
         .then(userDashboards => {
 
-            console.log(userDashboards.dataValues);
-
             if (userDashboards.length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
@@ -317,7 +315,6 @@ exports.readDashboardChartsByType = function (req, res, next) {
                 }
             })
                 .then(finalResult => {
-                    console.log(userDashboards[0].dataValues);
                     if (finalResult.length === 0) {
                         return res.status(HttpStatus.PARTIAL_CONTENT).send({
                             dashboard_id: userDashboards[0].dataValues.dashboard_id,
@@ -348,8 +345,6 @@ exports.readDashboardChartsByType = function (req, res, next) {
 
 // It returns a single chart in the dashboard, given dashboard_id and chart_id
 exports.readChart = function (req, res, next) {
-    console.log(req.params);
-
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
@@ -370,8 +365,6 @@ exports.readChart = function (req, res, next) {
                 });
             }
 
-            console.log(dashboard.dataValues);
-
             DashboardCharts.findOne({
                 where: {
                     [Op.and]: [{
@@ -381,8 +374,6 @@ exports.readChart = function (req, res, next) {
                 }
             })
                 .then(chart => {
-
-                    console.log(chart.dataValues);
 
                     if (chart === 0) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
@@ -429,9 +420,6 @@ exports.addChartToDashboard = function (req, res, next) {
         },
     })
         .then(dashboard => {
-
-            console.log(dashboard);
-            console.log(chart);
 
             if (!dashboard)
                 return res.status(HttpStatus.BAD_REQUEST).send({
@@ -503,7 +491,6 @@ exports.removeChartFromDashboard = function (req, res, next) {
                 }
             })
                 .then(chartDeleted => {
-                    console.log(chartDeleted);
 
                     if (chartDeleted == 0) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
@@ -546,8 +533,6 @@ exports.removeChartFromDashboard = function (req, res, next) {
 exports.updateChartInDashboard = function (req, res, next) {
     const chart = req.body.chart;
 
-    console.log(req.body);
-
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
@@ -580,8 +565,6 @@ exports.updateChartInDashboard = function (req, res, next) {
                 logging: console.log
             })
                 .then(chartUpdated => {
-
-                    console.log(chartUpdated);
 
                     if (chartUpdated[0] === 0) {
                         return res.status(HttpStatus.BAD_REQUEST).send({

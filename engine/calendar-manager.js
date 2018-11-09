@@ -131,8 +131,6 @@ exports.getEvents = function (req, res, next) {
 exports.addEvent = function (req, res, next) {
     let event = req.body.event;
 
-    console.log(event);
-
     Calendar.create({
         user_id: req.user.id,
         title: event.title,
@@ -207,8 +205,6 @@ exports.addEvent = function (req, res, next) {
 exports.updateEvent = function (req, res, next) {
 
     let event = req.body.event;
-
-    console.log(event);
 
     Calendar.update({
         title: event.title,
