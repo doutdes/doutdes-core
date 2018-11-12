@@ -80,6 +80,7 @@ module.exports = function (app, passport) {
     app.get(googlePath + 'browsers/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getBrowsers);
     app.get(googlePath + 'bouncerate/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getBounceRate);
     app.get(googlePath + 'avgsessionduration/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getAvgSessionDuration);
+    app.get(googlePath + 'pageviewspersession/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageviewsPerSession);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
