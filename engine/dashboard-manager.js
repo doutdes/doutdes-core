@@ -242,7 +242,7 @@ exports.readUserDashboardByType = function (req, res, next) {
  *      }
  */
 exports.readNotAddedByDashboardAndType = function (req, res, next) {
-    Sequelize.query("SELECT charts.ID, charts.title, charts.type FROM charts WHERE charts.Type = :type AND charts.ID NOT IN (" +
+    Sequelize.query("SELECT * FROM charts WHERE charts.Type = :type AND charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
         "WHERE user_id = :user_id AND charts.Type = :type AND dashboard_id = :dashboard_id" +
         ")", {
@@ -272,64 +272,51 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
         })
 };
 
-// It returns all the charts assigned to a choosen type dashboard of the user who makes the call
+// It returns all the charts assigned to a chosen dashboard of the user who makes the call
 exports.readDashboardChartsByType = function (req, res, next) {
-    UserDashboards.findAll({
+    UserDashboards.findAll({ // Fetches the chosen dashboard of the user
         include: [
             {
-                model: Dashboard,
-                required: true,
-                attributes: {
-                    exclude: []
-                },
-                where: {
-                    category: req.params.type
-                }
+                model:      Dashboard,
+                required:   true,
+                where:      { category: req.params.type } // dashboard type (instagram, facebook, ecc)
             }
         ],
-        attributes: {
-            exclude: ['DashboardId']
-        },
-        where: {
-            user_id: req.user.id
-        }
+        attributes: { exclude: ['DashboardId'] },
+        where: { user_id: req.user.id }
     })
         .then(userDashboards => {
 
-            if (userDashboards.length === 0) {
+            if (userDashboards.length === 0) { // dashboard does not exist
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
 
-            DashboardCharts.findAll({
+            DashboardCharts.findAll({ // Retrieves all the charts of the dashboard
                 include: [
                     {
-                        model: Charts,
-                        required: true,
-                        attributes: {
-                            exclude: []
-                        }
+                        model:      Charts,
+                        required:   true,
                     }
                 ],
-                where: {
-                    dashboard_id: userDashboards[0].dataValues.dashboard_id
-                }
+                where: { dashboard_id: userDashboards[0].dataValues.dashboard_id }
             })
                 .then(finalResult => {
-                    if (finalResult.length === 0) {
+
+                    if (finalResult.length === 0) { // dashboard is empty
                         return res.status(HttpStatus.PARTIAL_CONTENT).send({
-                            dashboard_id: userDashboards[0].dataValues.dashboard_id,
-                            user_id: req.user.id,
+                            dashboard_id:   userDashboards[0].dataValues.dashboard_id,
+                            user_id:        req.user.id,
                         });
                     }
 
-                    return res.status(HttpStatus.OK).send(finalResult)
+                    return res.status(HttpStatus.OK).send(finalResult) // returns chart list
                 })
                 .catch(err => {
                     console.log(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         error: true,
-                        message: 'Cannot get dashboards charts informations'
+                        message: 'Cannot get dashboard charts.'
                     })
                 });
         })
@@ -338,21 +325,19 @@ exports.readDashboardChartsByType = function (req, res, next) {
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
-                message: 'Cannot get dashboards charts informations'
+                message: 'Cannot get dashboard charts.'
             })
         })
 };
 
-// It returns a single chart in the dashboard, given dashboard_id and chart_id
+// Given dashboard ID and chart ID, it returns the corresponding chart
 exports.readChart = function (req, res, next) {
-    UserDashboards.findOne({
+    UserDashboards.findOne({ // Retrieves the chosen dashboard
         where: {
-            user_id: req.user.id,
-            dashboard_id: req.params.dashboard_id
+            user_id:        req.user.id,
+            dashboard_id:   req.params.dashboard_id
         },
-        attributes: {
-            exclude: ['DashboardId']
-        },
+        attributes: { exclude: ['DashboardId'] },
     })
         .then(dashboard => {
 
@@ -361,11 +346,11 @@ exports.readChart = function (req, res, next) {
                     updated: false,
                     chart_id: parseInt(req.params.chart_id),
                     dashboard_id: parseInt(req.params.dashboard_id),
-                    error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                    error: 'Cannot update a chart of the selected dashboard: dashboard that doesn\'t exists or is forbidden.'
                 });
             }
 
-            DashboardCharts.findOne({
+            DashboardCharts.findOne({ // Retrieves the chart from the dashboard
                 where: {
                     [Op.and]: [{
                         dashboard_id: req.params.dashboard_id,
@@ -391,7 +376,7 @@ exports.readChart = function (req, res, next) {
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         dashboard_id: req.params.dashboard_id,
                         chart_id: req.params.chart_id,
-                        message: 'Cannot get the chart informations'
+                        message: 'Cannot fetch the selected chart.'
                     });
                 })
         })
@@ -401,12 +386,12 @@ exports.readChart = function (req, res, next) {
                 updated: false,
                 dashboard_id: req.params.dashboard_id,
                 chart_id: req.params.chart_id,
-                message: 'Cannot get the chart informations'
+                message: 'Cannot fetch the selected chart.'
             });
         });
 };
 
-// It adds a chart to a choosen dashboard
+// It adds a chart to a chosen dashboard
 exports.addChartToDashboard = function (req, res, next) {
     const chart = req.body.chart;
 
