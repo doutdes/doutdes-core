@@ -87,7 +87,7 @@ exports.getSources = async function (client_email, private_key, start_date, end_
 };
 
 exports.getPageViewsByCountry = async function (client_email, private_key, start_date, end_date) {
-    console.log(start_date);
+
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
@@ -103,3 +103,71 @@ exports.getPageViewsByCountry = async function (client_email, private_key, start
     return result.data.rows;
 };
 
+exports.getBrowsers = async function (client_email, private_key, start_date, end_date) {
+
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': start_date,
+        'end-date': end_date,
+        'dimensions': 'ga:browser',
+        'metrics': 'ga:sessions'
+    });
+
+    return result.data.rows;
+};
+
+exports.getBounceRate = async function (client_email, private_key, start_date, end_date) {
+
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': start_date,
+        'end-date': end_date,
+        'metrics': 'ga:bounceRate',
+        'dimensions': 'ga:date',
+    });
+
+    return result.data.rows;
+};
+
+exports.getAvgSessionDuration = async function (client_email, private_key, start_date, end_date){
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': start_date,
+        'end-date': end_date,
+        'metrics': 'ga:avgSessionDuration',
+        'dimensions': 'ga:date',
+    });
+
+    return result.data.rows;
+
+};
+
+
+exports.getPageviewsPerSession = async function (client_email, private_key, start_date, end_date){
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': start_date,
+        'end-date': end_date,
+        'metrics': 'ga:avgSessionDuration',
+        'dimensions': 'ga:date',
+    });
+
+    return result.data.rows;
+
+};

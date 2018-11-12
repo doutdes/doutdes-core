@@ -77,6 +77,10 @@ module.exports = function (app, passport) {
     app.get(googlePath + 'mostviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getMostPagesViews);
     app.get(googlePath + 'sources/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getSources);
     app.get(googlePath + 'viewsbycountry/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViewsByCountry);
+    app.get(googlePath + 'browsers/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getBrowsers);
+    app.get(googlePath + 'bouncerate/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getBounceRate);
+    app.get(googlePath + 'avgsessionduration/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getAvgSessionDuration);
+    app.get(googlePath + 'pageviewspersession/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageviewsPerSession);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
