@@ -72,7 +72,7 @@ exports.getEvents = function (req, res, next) {
           return res.status(HttpStatus.NO_CONTENT).send({});
       }
 
-      return res.status(HttpStatus.OK).send(events)
+      return res.status(HttpStatus.OK).send(events);
   })
       .catch(err => {
           console.log(err);
@@ -130,8 +130,6 @@ exports.getEvents = function (req, res, next) {
  */
 exports.addEvent = function (req, res, next) {
     let event = req.body.event;
-
-    console.log(event);
 
     Calendar.create({
         user_id: req.user.id,
@@ -207,8 +205,6 @@ exports.addEvent = function (req, res, next) {
 exports.updateEvent = function (req, res, next) {
 
     let event = req.body.event;
-
-    console.log(event);
 
     Calendar.update({
         title: event.title,

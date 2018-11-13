@@ -130,7 +130,6 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
         FacebookApi.getInsightsPageImpressionsByCountryUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -167,7 +166,6 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
         FacebookApi.getInsightsPageActionsPostReactionsTotal(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -204,7 +202,6 @@ exports.fb_getPageFans = function (req, res, next) {
         FacebookApi.getInsightsPageFans(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -241,7 +238,6 @@ exports.fb_getPageFansCity = function (req, res, next) {
         FacebookApi.getInsightsPageFansCity(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -278,7 +274,6 @@ exports.fb_getPageFansCountry = function (req, res, next) {
         FacebookApi.getInsightsPageFansCountry(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -315,7 +310,6 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
         FacebookApi.getInsightsPageFansAddsUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -352,7 +346,6 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
         FacebookApi.getInsightsPageFansRemovesUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {
@@ -389,7 +382,6 @@ exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
         FacebookApi.getInsightsPageViewsExternalReferrals(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
                 return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
             })
             .catch(err => {

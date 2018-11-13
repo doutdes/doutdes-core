@@ -356,7 +356,16 @@ exports.basicLogin = function (req, res, next) {
             })
         } else {
             const token = jwt.sign(user.dataValues, 'your_jwt_secret');
-            return res.status(HttpStatus.OK).json({user, token});
+            return res.status(HttpStatus.OK).send({
+                'User': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                },
+                'token': token
+            });
         }
     })(req, res, next);
 };

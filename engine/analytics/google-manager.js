@@ -65,6 +65,9 @@ exports.ga_getPageViews = async function (req, res, next) {
                 })
             })
     }).catch(err => {
+
+        console.log(err);
+
         if (err.statusCode === 400) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 name: 'Google Analytics Bad Request',
