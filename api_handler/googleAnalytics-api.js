@@ -171,3 +171,20 @@ exports.getPageviewsPerSession = async function (client_email, private_key, star
     return result.data.rows;
 
 };
+
+exports.getNewUsers = async function (client_email, private_key, start_date, end_date){
+    const view_id = await getViewID(client_email, private_key);
+    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
+    const response = await jwt.authorize();
+    const result = await google.analytics('v3').data.ga.get({
+        'auth': jwt,
+        'ids': 'ga:' + view_id,
+        'start-date': start_date,
+        'end-date': end_date,
+        'metrics': 'ga:newUsers',
+        'dimensions': 'ga:date',
+    });
+
+    return result.data.rows;
+
+};
