@@ -193,6 +193,34 @@ exports.readUserDashboardByType = function (req, res, next) {
         })
 };
 
+// This works for the custom/hybrid dashboards. It doesn't check the type of the chart
+exports.readNotAddedByDashboard = function(req, res, next) {
+    Sequelize.query("SELECT * FROM charts WHERE charts.ID NOT IN (" +
+        "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
+        "WHERE user_id = :user_id AND dashboard_id = :dashboard_id" +
+        ")", {
+        replacements: {
+            user_id: req.user.id,
+            dashboard_id: req.params.dashboard_id,
+        }
+    })
+        .then(chartsNotAdded => {
+            if (chartsNotAdded[0].length === 0) {
+                return res.status(HttpStatus.NO_CONTENT).send({});
+            }
+
+            return res.status(HttpStatus.OK).send(chartsNotAdded[0]);
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: true,
+                message: 'Cannot get charts not added informations'
+            })
+        })
+};
+
 /**
  * @api {get} /dashboards/getChartsNotAddedByDashboardAndType/:dashboard_id/:type/ Get Charts Not Added By Dashboard Id and Type
  * @apiName Get Charts Not Added By Dashboard Id and Type
@@ -253,9 +281,6 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
         }
     })
         .then(chartsNotAdded => {
-
-            console.log(chartsNotAdded[0].length);
-
             if (chartsNotAdded[0].length === 0) {
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
