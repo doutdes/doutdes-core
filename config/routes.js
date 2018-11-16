@@ -70,6 +70,8 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsByCountryUnique);
     app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageActionsPostReactionsTotal);
     app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
+    app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsTotal);
+
 
     /****************** GOOGLE MANAGER ********************/
     app.get(googlePath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getLastYearSessions);

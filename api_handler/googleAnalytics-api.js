@@ -62,7 +62,6 @@ exports.getMostPagesVisited = async function (client_email, private_key, start_d
         'dimensions': 'ga:pagePath',
         'metrics': 'ga:pageviews',
         'sort': '-ga:pageviews',
-        'max-results': '10'
     });
 
     return result.data.rows;
