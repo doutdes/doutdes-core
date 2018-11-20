@@ -194,7 +194,7 @@ exports.readUserDashboardByType = function (req, res, next) {
 };
 
 // This works for the custom/hybrid dashboards. It doesn't check the type of the chart
-exports.readNotAddedByDashboard = function(req, res, next) {
+exports.readNotAddedByDashboard = function (req, res, next) {
     Sequelize.query("SELECT * FROM charts WHERE charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
         "WHERE user_id = :user_id AND dashboard_id = :dashboard_id" +
@@ -302,13 +302,13 @@ exports.readDashboardChartsByType = function (req, res, next) {
     UserDashboards.findAll({ // Fetches the chosen dashboard of the user
         include: [
             {
-                model:      Dashboard,
-                required:   true,
-                where:      { category: req.params.type } // dashboard type (instagram, facebook, ecc)
+                model: Dashboard,
+                required: true,
+                where: {category: req.params.type} // dashboard type (instagram, facebook, ecc)
             }
         ],
-        attributes: { exclude: ['DashboardId'] },
-        where: { user_id: req.user.id }
+        attributes: {exclude: ['DashboardId']},
+        where: {user_id: req.user.id}
     })
         .then(userDashboards => {
 
@@ -319,18 +319,18 @@ exports.readDashboardChartsByType = function (req, res, next) {
             DashboardCharts.findAll({ // Retrieves all the charts of the dashboard
                 include: [
                     {
-                        model:      Charts,
-                        required:   true,
+                        model: Charts,
+                        required: true,
                     }
                 ],
-                where: { dashboard_id: userDashboards[0].dataValues.dashboard_id }
+                where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
             })
                 .then(finalResult => {
 
                     if (finalResult.length === 0) { // dashboard is empty
                         return res.status(HttpStatus.PARTIAL_CONTENT).send({
-                            dashboard_id:   userDashboards[0].dataValues.dashboard_id,
-                            user_id:        req.user.id,
+                            dashboard_id: userDashboards[0].dataValues.dashboard_id,
+                            user_id: req.user.id,
                         });
                     }
 
@@ -359,10 +359,10 @@ exports.readDashboardChartsByType = function (req, res, next) {
 exports.readChart = function (req, res, next) {
     UserDashboards.findOne({ // Retrieves the chosen dashboard
         where: {
-            user_id:        req.user.id,
-            dashboard_id:   req.params.dashboard_id
+            user_id: req.user.id,
+            dashboard_id: req.params.dashboard_id
         },
-        attributes: { exclude: ['DashboardId'] },
+        attributes: {exclude: ['DashboardId']},
     })
         .then(dashboard => {
 
@@ -611,4 +611,85 @@ exports.updateChartInDashboard = function (req, res, next) {
                 error: 'Cannot update the chart from the dashboard'
             });
         });
+};
+
+//
+exports.addUserDashboard = function (req, res, next) {
+    const dashboard_id = req.body.dashboard_id;
+
+    UserDashboards.findOne({
+        where: {
+            dashboard_id: dashboard_id
+        }
+    }).then(dashboard => {
+        if (!dashboard) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                created: false,
+                user_id: req.user.id,
+                dashboard_id: dashboard_id,
+                message: 'Cannot insert a dashboard that is not your or does not exists'
+            })
+        }
+        else {
+            UserDashboards.create({
+                user_id: req.user.id,
+                dashboard_id: dashboard_id
+            })
+                .then(dashboard => {
+                    return res.status(HttpStatus.CREATED).send({
+                        created: true,
+                        user_id: dashboard.user_id,
+                        dashboard_id: dashboard.dashboard_id
+                    })
+                })
+                .catch(err => {
+                    console.log(err);
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        created: false,
+                        user_id: req.user.id,
+                        dashboard_id: dashboard_id,
+                        message: 'Cannot insert the new dashboard'
+                    })
+                })
+        }
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                created: false,
+                user_id: req.user.id,
+                dashboard_id: dashboard_id,
+                message: 'Cannot insert the new dashboard'
+            });
+        });
+
+
+};
+
+exports.deleteUserDashboard = function (req, res, next) {
+    const dashboard_id = req.body.dashboard_id;
+
+    UserDashboards.destroy({
+        where: {
+            [Op.and]: {
+                user_id: req.user.id,
+                dashboard_id: dashboard_id
+            }
+        }
+    })
+        .then(() => {
+            return res.status(HttpStatus.OK).send({
+                deleted: true,
+                user_id: req.user.id,
+                dashboard_id: dashboard_id
+            })
+        })
+        .catch(err => {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                deleted: false,
+                user_id: req.user.id,
+                dashboard_id: dashboard_id,
+                message: 'Cannot delete the dashboard'
+            })
+        })
 };
