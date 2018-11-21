@@ -673,7 +673,6 @@ exports.addUserDashboard = function (req, res, next) {
 // It removes a dashboard from a user
 exports.deleteUserDashboard = function (req, res, next) {
     const dashboard_id = req.body.dashboard_id;
-
     UserDashboards.destroy({
         where: {
             [Op.and]: {
