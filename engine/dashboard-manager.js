@@ -624,7 +624,6 @@ exports.addUserDashboard = function (req, res, next) {
             exclude: ['DashboardId']
         },
     }).then(dashboard => {
-        console.log(dashboard);
         if (dashboard != null) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
@@ -639,7 +638,6 @@ exports.addUserDashboard = function (req, res, next) {
                 dashboard_id: dashboard_id
             })
                 .then(dashboard => {
-                    console.log(dashboard);
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
                         user_id: dashboard.user_id,
@@ -723,5 +721,28 @@ exports.addDashboard = function (req, res, next) {
                 category: dashboard_category,
                 message: 'Cannot insert the new dashboard'
             });
+        })
+};
+
+exports.deleteDashboard = function (req, res, next) {
+    const dashboard_id = req.body.dashboard_id;
+
+    Dashboard.destroy({
+        where: {
+            ID: dashboard_id
+        }
+    })
+        .then(() => {
+            return res.status(HttpStatus.OK).send({
+                deleted: true,
+                dashboard_id: dashboard_id
+            })
+        })
+        .catch(err => {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                deleted: false,
+                dashboard_id: dashboard_id,
+                message: 'Cannot delete the dashboard'
+            })
         })
 };

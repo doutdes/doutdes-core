@@ -63,6 +63,7 @@ module.exports = function (app, passport) {
     app.post(dashPath   + 'addUserDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.addUserDashboard);
     app.delete(dashPath + 'deleteUserDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteUserDashboard);
     app.post(dashPath   + 'addDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.addDashboard);
+    app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFans);
