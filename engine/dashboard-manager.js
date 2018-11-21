@@ -613,16 +613,19 @@ exports.updateChartInDashboard = function (req, res, next) {
         });
 };
 
-//
+// It adds a dashboard to a user
 exports.addUserDashboard = function (req, res, next) {
-    const dashboard_id = req.body.dashboard_id;
-
+    const dashboard_id = parseInt(req.body.dashboard_id);
     UserDashboards.findOne({
         where: {
             dashboard_id: dashboard_id
-        }
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
     }).then(dashboard => {
-        if (!dashboard) {
+        console.log(dashboard);
+        if (dashboard != null) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
                 user_id: req.user.id,
@@ -636,6 +639,7 @@ exports.addUserDashboard = function (req, res, next) {
                 dashboard_id: dashboard_id
             })
                 .then(dashboard => {
+                    console.log(dashboard);
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
                         user_id: dashboard.user_id,
@@ -659,13 +663,14 @@ exports.addUserDashboard = function (req, res, next) {
                 created: false,
                 user_id: req.user.id,
                 dashboard_id: dashboard_id,
-                message: 'Cannot insert the new dashboard'
+                message: 'Cannot insert the new dashboard for the selected user'
             });
         });
 
 
 };
 
+// It removes a dashboard from a user
 exports.deleteUserDashboard = function (req, res, next) {
     const dashboard_id = req.body.dashboard_id;
 
@@ -691,5 +696,33 @@ exports.deleteUserDashboard = function (req, res, next) {
                 dashboard_id: dashboard_id,
                 message: 'Cannot delete the dashboard'
             })
+        })
+};
+
+// It adds a new dashboard
+exports.addDashboard = function (req, res, next) {
+
+    const dashboard_name = req.body.dashboard_name;
+    const dashboard_category = req.body.dashboard_category;
+
+    Dashboard.create({
+        name: dashboard_name,
+        category: dashboard_category
+    })
+        .then(dashboard => {
+            return res.status(HttpStatus.CREATED).send({
+                created: true,
+                name: dashboard.name,
+                category: dashboard.category
+            })
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                created: false,
+                name: dashboard_name,
+                category: dashboard_category,
+                message: 'Cannot insert the new dashboard'
+            });
         })
 };
