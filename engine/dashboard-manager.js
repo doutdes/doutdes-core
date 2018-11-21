@@ -709,6 +709,7 @@ exports.addDashboard = function (req, res, next) {
         .then(dashboard => {
             return res.status(HttpStatus.CREATED).send({
                 created: true,
+                id: dashboard.id,
                 name: dashboard.name,
                 category: dashboard.category
             })
