@@ -1,8 +1,8 @@
 'use strict';
 
-const DashboardManager = require('dashboard-manager');
-const Model = require('../models/index'); // delete me
-const Users = require('../models/index').Users;
+const DashboardManager = require('./dashboard-manager');
+const Model = require('../models');
+const User = require('../models/index').Users;
 const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
@@ -65,11 +65,7 @@ exports.createUser = async function (req, res, next) {
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
 
-    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
-    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
-    const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
-
-    Model.Users.findAll({
+    User.findAll({
         where: {
             [Op.or] : [
                 { username: user.username },
@@ -89,7 +85,7 @@ exports.createUser = async function (req, res, next) {
             } else {
                 // A new user can be created
 
-                Model.Users.create({
+                User.create({
                     username: user.username,
                     email: user.email,
                     company_name: user.company_name,
@@ -110,20 +106,29 @@ exports.createUser = async function (req, res, next) {
                     .then(newUser => {
 
                         const user_id = newUser.get('id');
+                        DashboardManager.internalCreateDefaultDashboards(user_id)
+                            .then(() => {
+                                return res.status(HttpStatus.CREATED).send({
+                                    created: true,
+                                    first_name: newUser.get('first_name'),
+                                    last_name: newUser.get('last_name')
+                                });
+                            })
+                            .catch(err => {
+                                User.destroy({ where: {id : user_id}}); // Deletes the new db row
 
-                        const custom_dashboard_id = await DashboardManager.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
-                        const fb_dashboard_id = await DashboardManager.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
-                        const analytics_dashboard_id = await DashboardManager.internalCreateDashboard(ANALYTICS_DASHBOARD.name, ANALYTICS_DASHBOARD.category);
-
-                        // DashboardManager.internalAssignDashboardToUser(custom_dashboard_id,user_id);
-
-                        return res.status(HttpStatus.CREATED).send({
-                            created:    true,
-                            first_name: newUser.get('first_name'),
-                            last_name:  newUser.get('last_name')
-                        });
+                                console.log('ACCESS_MANAGER ERROR. Details below:');
+                                console.log(err);
+                                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                                    created:  false,
+                                    message: 'Cannot create the new user',
+                                    username: user.username
+                                });
+                            });
                     })
                     .catch(err => {
+                        console.log('ACCESS_MANAGER ERROR. Details below:');
+                        console.log(err);
                         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                             created:  false,
                             message: 'Cannot create the new user',
@@ -390,7 +395,7 @@ exports.roleAuthorization = function(roles){
 
         let user = req.user;
 
-        Users.findById(user.id)
+        User.findById(user.id)
             .then(userFound => {
                 if(roles.indexOf(userFound.user_type) > -1){
                     return next();
