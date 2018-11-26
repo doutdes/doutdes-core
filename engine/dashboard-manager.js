@@ -9,52 +9,40 @@ const Op = Model.Sequelize.Op;
 
 const HttpStatus = require('http-status-codes');
 
-function internalAssignDashboardToUser(dashboard_id, user_id) {
-    // const dashboard_id = parseInt(req.body.dashboard_id);
-    UserDashboards.findOne({
-        where: {
-            dashboard_id: dashboard_id
-        },
-        attributes: {
-            exclude: ['DashboardId']
-        },
-    }).then(() => {
-        UserDashboards.create({ user_id: user_id, dashboard_id: dashboard_id })
-        .then(() => {
-            return true;
+exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
+
+    return new Promise(resolve => {
+        UserDashboards.findOne({
+            where: {dashboard_id: dashboard_id},
+            attributes: {exclude: ['DashboardId']}
+        }).then(() => {
+
+            UserDashboards.create({user_id: user_id, dashboard_id: dashboard_id})
+                .then(() => {
+                    resolve(true);
+                }).catch(err => {
+                    console.log(err);
+                    resolve(false);
+            })
         }).catch(err => {
             console.log(err);
-            return false;
-        })
-    }).catch(err => {
-        console.log(err);
-        return false;
+            resolve(false);
+        });
     });
 }
 
-async function internalCreateDashboard(newDashboard) {
+exports.internalCreateDashboard = async function(name, category) {
+
+    const newDashboard = {name : name, category: category};
 
     return new Promise(resolve => {
         Dashboard.create(newDashboard)
             .then(dashboard => {
-                resolve(dashboard_id);
-
-                // return res.status(HttpStatus.CREATED).send({
-                //     created: true,
-                //     id: dashboard.id,
-                //     name: dashboard.name,
-                //     category: dashboard.category
-                // })
+                return resolve(dashboard.id);
             })
             .catch(err => {
                 console.log(err);
-                resolve(null);
-                // return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                //     created: false,
-                //     name: dashboard_name,
-                //     category: dashboard_category,
-                //     message: 'Cannot insert the new dashboard'
-                // });
+                return resolve(null);
             })
     });
 }
@@ -662,11 +650,12 @@ exports.updateChartInDashboard = function (req, res, next) {
 };
 
 // It adds a dashboard to a user
-exports.assignDashboardToUser = function (req, res, next) {
-    const dashboard_id = req.body.dashboard_id;
+exports.assignDashboardToUser = async function (req, res, next) {
+
+    const dashboard_id = parseInt(req.body.dashboard_id);
     const user_id = req.user.id;
 
-    const result = internalAssignDashboardToUser(dashboard_id,user_id);
+    const result = await internalAssignDashboardToUser(dashboard_id, user_id);
 
     if (result) { // The dashboard has been assigned
         return res.status(HttpStatus.CREATED).send({
@@ -716,24 +705,28 @@ exports.deleteUserDashboard = function (req, res, next) {
 // It adds a new dashboard
 exports.createDashboard = async function (req, res, next) {
 
-    const params = { name: req.body.dashboard_name, category: req.body.dashboard_category };
+    const name = req.body.dashboard_name;
+    const cat = req.body.dashboard_category;
 
-    const resulting_id = await internalCreateDashboard(params);
+    const resulting_id = await internalCreateDashboard(name, cat);
 
-    if (result !== null) {
+    if (resulting_id !== null) {
+        console.log(resulting_id);
         return res.status(HttpStatus.CREATED).send({
             created: true,
-            id: resulting_id,
-            name: req.dashboard.name,
-            category: dashboard.category
+            dashboard_id: resulting_id,
+            name: name,
+            category: cat,
+            message: 'The new dashboard has been created.'
         })
     }
 
+    // Else
     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         created: false,
-        name: dashboard_name,
-        category: dashboard_category,
-        message: 'Cannot insert the new dashboard'
+        name: name,
+        category: cat,
+        message: 'Cannot create the dashboard.'
     });
 };
 

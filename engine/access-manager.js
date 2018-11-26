@@ -1,5 +1,6 @@
 'use strict';
 
+const DashboardManager = require('dashboard-manager');
 const Model = require('../models/index'); // delete me
 const Users = require('../models/index').Users;
 const passport = require('../app').passport;
@@ -59,10 +60,14 @@ const HttpStatus = require('http-status-codes');
  *          "username": "administrator"
  *      }
  */
-exports.createUser = function (req, res, next) {
+exports.createUser = async function (req, res, next) {
     const Op = Model.Sequelize.Op;
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
+
+    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
+    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
+    const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
 
     Model.Users.findAll({
         where: {
@@ -104,9 +109,13 @@ exports.createUser = function (req, res, next) {
                 })
                     .then(newUser => {
 
-                        //(newUser.get('id'))
+                        const user_id = newUser.get('id');
 
+                        const custom_dashboard_id = await DashboardManager.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
+                        const fb_dashboard_id = await DashboardManager.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
+                        const analytics_dashboard_id = await DashboardManager.internalCreateDashboard(ANALYTICS_DASHBOARD.name, ANALYTICS_DASHBOARD.category);
 
+                        // DashboardManager.internalAssignDashboardToUser(custom_dashboard_id,user_id);
 
                         return res.status(HttpStatus.CREATED).send({
                             created:    true,
