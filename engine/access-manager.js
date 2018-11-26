@@ -103,6 +103,11 @@ exports.createUser = function (req, res, next) {
                     checksum: '0'
                 })
                     .then(newUser => {
+
+                        //(newUser.get('id'))
+
+
+
                         return res.status(HttpStatus.CREATED).send({
                             created:    true,
                             first_name: newUser.get('first_name'),

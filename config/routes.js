@@ -60,9 +60,9 @@ module.exports = function (app, passport) {
     app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
     app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
-    app.post(dashPath   + 'addUserDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.addUserDashboard);
+    app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteUserDashboard);
-    app.post(dashPath   + 'addDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.addDashboard);
+    app.post(dashPath   + 'createDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.createDashboard);
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
