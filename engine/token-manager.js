@@ -51,6 +51,7 @@ exports.insertKey = (req, res, next) => {
         case 1: //google
             return insertGaData(req, res);
         default:
+            console.log('ERROR TOKEN-MANAGER. Unrecognized service type: ' + service_id);
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
                 error: 'Unrecognized service type.'
@@ -99,6 +100,7 @@ function insertFbKey(req, res) {
         }
     }).then(key => {
         if (key !== null) {
+            console.log('ERROR TOKEN-MANAGER. Key already exists.');
             return res.status(HttpStatus.BAD_REQUEST).send({
                 error: 'Facebook token already exists'
             })
@@ -115,6 +117,7 @@ function insertFbKey(req, res) {
                     });
                 })
                 .catch(err => {
+                    console.log('ERROR TOKEN-MANAGER. Cannot insert the row in db. Details below:');
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
