@@ -128,22 +128,11 @@ exports.internalCreateDefaultDashboards = async function(user_id) {
  *      }
  */
 exports.readUserDashboards = function (req, res, next) {
+
     UserDashboards.findAll({
-        include: [
-            {
-                model: Dashboard,
-                required: true,
-                attributes: {
-                    exclude: []
-                }
-            }
-        ],
-        attributes: {
-            exclude: ['DashboardId']
-        },
-        where: {
-            user_id: req.user.id
-        }
+        include: [{ model: Dashboard, required: true }],
+        attributes: { exclude: ['DashboardId'] },
+        where: { user_id: req.user.id } // Search for the selected user
     })
         .then(userDashboards => {
 
@@ -158,7 +147,7 @@ exports.readUserDashboards = function (req, res, next) {
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
-                message: 'Cannot get dashboards charts information'
+                message: 'An error occurred when loading user dashboard.'
             })
         })
 };
@@ -216,25 +205,11 @@ exports.readUserDashboards = function (req, res, next) {
  *      }
  */
 exports.readUserDashboardByType = function (req, res, next) {
+
     UserDashboards.findAll({
-        include: [
-            {
-                model: Dashboard,
-                required: true,
-                attributes: {
-                    exclude: []
-                },
-                where: {
-                    category: req.params.type
-                }
-            }
-        ],
-        attributes: {
-            exclude: ['DashboardId']
-        },
-        where: {
-            user_id: req.user.id
-        }
+        include: [{ model: Dashboard, required: true, where: {category: req.params.type }}],
+        attributes: { exclude: ['DashboardId'] },
+        where: { user_id: req.user.id }
     })
         .then(userDashboards => {
 
@@ -256,14 +231,12 @@ exports.readUserDashboardByType = function (req, res, next) {
 
 // This works for the custom/hybrid dashboards. It doesn't check the type of the chart
 exports.readNotAddedByDashboard = function (req, res, next) {
+
     Sequelize.query("SELECT * FROM charts WHERE charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
         "WHERE user_id = :user_id AND dashboard_id = :dashboard_id" +
         ")", {
-        replacements: {
-            user_id: req.user.id,
-            dashboard_id: req.params.dashboard_id,
-        }
+        replacements: { user_id: req.user.id, dashboard_id: req.params.dashboard_id }
     })
         .then(chartsNotAdded => {
             if (chartsNotAdded[0].length === 0) {
@@ -277,7 +250,7 @@ exports.readNotAddedByDashboard = function (req, res, next) {
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
-                message: 'Cannot get charts not added informations'
+                message: 'Error when loading remaining available charts.'
             })
         })
 };
@@ -353,7 +326,7 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
-                message: 'Cannot get charts not added informations'
+                message: 'Cannot get charts not added information'
             })
         })
 };
@@ -450,7 +423,7 @@ exports.readChart = function (req, res, next) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             dashboard_id: req.params.dashboard_id,
                             chart_id: req.params.chart_id,
-                            message: 'Cannot get a chart that doesn\'t exists'
+                            message: 'The selected chart does not exist.'
                         })
                     }
 
