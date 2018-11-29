@@ -154,7 +154,7 @@ exports.getAvgSessionDuration = async function (client_email, private_key, start
 };
 
 
-exports.getPageviewsPerSession = async function (client_email, private_key, start_date, end_date){
+exports.getAvgSessionDuration = async function (client_email, private_key, start_date, end_date){
     const view_id = await getViewID(client_email, private_key);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
