@@ -33,10 +33,10 @@ Object.keys(db).forEach(modelName => {
 sequelize
   .authenticate()
   .then(function(err) {
-    console.log('Connection has been established successfully.');
+    console.log('===> DOUTDES BACKEND SUCCESSFULLY LAUNCHED: database connected.');
   })
   .catch(function (err) {
-    console.log('Unable to connect to the database:', err);
+    console.log('===> FATAL ERROR: unable to connect to the database. ', err);
   });
 
 db.sequelize = sequelize;
