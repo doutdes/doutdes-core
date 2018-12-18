@@ -339,3 +339,27 @@ exports.getInsightsPageViewsExternalReferrals = function (period, token) {
     })
 
 };
+
+exports.getInsightsPageViewsTotal= function (period, token) {
+
+    const metric = 'page_views_total';
+
+    return new Promise((resolve, reject) => {
+
+        getPageId(token)
+            .then(result => {
+                const jsonResult = JSON.parse(result);
+                facebookQuery(GET, metric, period, jsonResult.id, token)
+                    .then(result => {
+                        resolve(result);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+
+};

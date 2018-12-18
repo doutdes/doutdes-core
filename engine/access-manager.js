@@ -1,7 +1,8 @@
 'use strict';
 
-const Model = require('../models/index'); // delete me
-const Users = require('../models/index').Users;
+const DashboardManager = require('./dashboard-manager');
+const Model = require('../models');
+const User = require('../models/index').Users;
 const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
@@ -59,12 +60,12 @@ const HttpStatus = require('http-status-codes');
  *          "username": "administrator"
  *      }
  */
-exports.createUser = function (req, res, next) {
+exports.createUser = async function (req, res, next) {
     const Op = Model.Sequelize.Op;
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
 
-    Model.Users.findAll({
+    User.findAll({
         where: {
             [Op.or] : [
                 { username: user.username },
@@ -75,7 +76,7 @@ exports.createUser = function (req, res, next) {
         .then(userbn => {
             // user !== null then a username or an email already exists in the sistem
             // the registration has to be rejected
-
+            console.log(req.body);
             if(userbn.length !== 0) {
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     created: false,
@@ -84,7 +85,7 @@ exports.createUser = function (req, res, next) {
             } else {
                 // A new user can be created
 
-                Model.Users.create({
+                User.create({
                     username: user.username,
                     email: user.email,
                     company_name: user.company_name,
@@ -103,13 +104,31 @@ exports.createUser = function (req, res, next) {
                     checksum: '0'
                 })
                     .then(newUser => {
-                        return res.status(HttpStatus.CREATED).send({
-                            created:    true,
-                            first_name: newUser.get('first_name'),
-                            last_name:  newUser.get('last_name')
-                        });
+
+                        const user_id = newUser.get('id');
+                        DashboardManager.internalCreateDefaultDashboards(user_id)
+                            .then(() => {
+                                return res.status(HttpStatus.CREATED).send({
+                                    created: true,
+                                    first_name: newUser.get('first_name'),
+                                    last_name: newUser.get('last_name')
+                                });
+                            })
+                            .catch(err => {
+                                User.destroy({ where: {id : user_id}}); // Deletes the new db row
+
+                                console.log('ACCESS_MANAGER ERROR. Details below:');
+                                console.log(err);
+                                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                                    created:  false,
+                                    message: 'Cannot create the new user',
+                                    username: user.username
+                                });
+                            });
                     })
                     .catch(err => {
+                        console.log('ACCESS_MANAGER ERROR. Details below:');
+                        console.log(err);
                         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                             created:  false,
                             message: 'Cannot create the new user',
@@ -376,7 +395,7 @@ exports.roleAuthorization = function(roles){
 
         let user = req.user;
 
-        Users.findById(user.id)
+        User.findById(user.id)
             .then(userFound => {
                 if(roles.indexOf(userFound.user_type) > -1){
                     return next();

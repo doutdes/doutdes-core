@@ -407,3 +407,39 @@ exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
         });
 
 };
+
+exports.fb_getPageViewsTotal = function (req, res, next) {
+
+    FbToken.findOne({
+        where: {
+            user_id: req.user.id
+        }
+    }).then(key => {
+        FacebookApi.getInsightsPageViewsTotal(DAY, key.api_key)
+            .then(result => {
+                var jsonResult = JSON.parse(result);
+                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+            })
+            .catch(err => {
+                console.log(err);
+                if (err.statusCode === 400) {
+                    return res.status(HttpStatus.BAD_REQUEST).send({
+                        name: 'Facebook Bad Request',
+                        message: 'Invalid OAuth access token.'
+                    });
+                }
+                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                    name: 'Facebook Internal Server Error',
+                    message: 'There is a problem with Facebook servers'
+                });
+            })
+    })
+        .catch(err => {
+            console.log(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                name: 'Database Internal Error',
+                message: 'There is a problem with our database'
+            });
+        });
+
+};
