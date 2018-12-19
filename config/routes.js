@@ -1,13 +1,12 @@
 const AccessManager     = require('../engine/access-manager');
-const TokenManager   = require('../engine/token-manager');
+const TokenManager      = require('../engine/token-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
 const CalendarManager   = require('../engine/calendar-manager');
 
-const FacebookManager   = require('../engine/analytics/facebook-manager');
-const GoogleManager     = require('../engine/analytics/google-manager');
+const FacebookManager  = require('../engine/analytics/facebook-manager');
 const InstagramManager = require('../engine/analytics/instagram-manager');
-
-const Google            = require('../api_handler/googleAnalytics-api');
+const GoogleManager    = require('../engine/analytics/google-manager');
+const YoutubeManager   = require('../engine/analytics/youtube-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -24,9 +23,10 @@ module.exports = function (app, passport) {
     let dashPath   = indexPath + 'dashboards/';
     let calendPath = indexPath + 'calendar/';
 
-    let googlePath   = indexPath + 'ga/';
-    let facebookPath = indexPath + 'fb/';
+    let googlePath    = indexPath + 'ga/';
+    let facebookPath  = indexPath + 'fb/';
     let instagramPath = indexPath + 'ig/';
+    let youtubePath   = indexPath + 'yt/';
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
@@ -84,8 +84,6 @@ module.exports = function (app, passport) {
     app.get(instagramPath + 'impressions', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getImpressions);
     app.get(instagramPath + 'profviews', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getProfileViews);
 
-
-
     /****************** GOOGLE MANAGER ********************/
     app.get(googlePath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getLastYearSessions);
     app.get(googlePath + 'pageviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getPageViews);
@@ -97,6 +95,8 @@ module.exports = function (app, passport) {
     app.get(googlePath + 'avgsessionduration/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getAvgSessionDuration);
     app.get(googlePath + 'newusers/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GoogleManager.ga_getNewUsers);
 
+    /****************** GOOGLE MANAGER ********************/
+    app.get(youtubePath + 'proof/', YoutubeManager.proof);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
