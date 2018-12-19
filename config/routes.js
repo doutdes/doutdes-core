@@ -5,6 +5,7 @@ const CalendarManager   = require('../engine/calendar-manager');
 
 const FacebookManager   = require('../engine/analytics/facebook-manager');
 const GoogleManager     = require('../engine/analytics/google-manager');
+const InstagramManager = require('../engine/analytics/instagram-manager');
 
 const Google            = require('../api_handler/googleAnalytics-api');
 
@@ -25,6 +26,7 @@ module.exports = function (app, passport) {
 
     let googlePath   = indexPath + 'ga/';
     let facebookPath = indexPath + 'fb/';
+    let instagramPath = indexPath + 'ig/';
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
@@ -76,6 +78,12 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageActionsPostReactionsTotal);
     app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
     app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsTotal);
+
+    /****************** INSTAGRAM DASHBOARD ********************/
+    app.get(instagramPath + 'reach', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getReach);
+    app.get(instagramPath + 'impressions', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getImpressions);
+    app.get(instagramPath + 'profviews', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getProfileViews);
+
 
 
     /****************** GOOGLE MANAGER ********************/
