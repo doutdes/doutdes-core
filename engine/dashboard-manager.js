@@ -204,7 +204,7 @@ exports.readUserDashboards = function (req, res, next) {
  *          "message": "Cannot get dashboard information"
  *      }
  */
-exports.readUserDashboardByType = function (req, res, next) {
+exports.getDashboardByType = function (req, res, next) {
 
     UserDashboards.findAll({
         include: [{ model: Dashboard, required: true, where: {category: req.params.type }}],
@@ -214,10 +214,13 @@ exports.readUserDashboardByType = function (req, res, next) {
         .then(userDashboards => {
 
             if (userDashboards.length === 0) {
-                return res.status(HttpStatus.NO_CONTENT).send({});
+                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                    error: true,
+                    message: 'Cannot get dashboard information'
+                })
             }
 
-            return res.status(HttpStatus.OK).send(userDashboards[0])
+            return res.status(HttpStatus.OK).send(userDashboards[0]['Dashboard']);
         })
         .catch(err => {
             console.log(err);
@@ -332,20 +335,19 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
 };
 
 // It returns all the charts assigned to a chosen dashboard of the user who makes the call
-exports.readDashboardChartsByType = function (req, res, next) {
+exports.getDashboardByID = function (req, res, next) {
     UserDashboards.findAll({ // Fetches the chosen dashboard of the user
         include: [
             {
                 model: Dashboard,
                 required: true,
-                where: {category: req.params.type} // dashboard type (instagram, facebook, ecc)
+                where: {id: req.params.id} // dashboard type (instagram, facebook, ecc)
             }
         ],
         attributes: {exclude: ['DashboardId']},
         where: {user_id: req.user.id}
     })
         .then(userDashboards => {
-
             if (userDashboards.length === 0) { // dashboard does not exist
                 return res.status(HttpStatus.NO_CONTENT).send({});
             }
@@ -361,14 +363,8 @@ exports.readDashboardChartsByType = function (req, res, next) {
             })
                 .then(finalResult => {
 
-                    if (finalResult.length === 0) { // dashboard is empty
-                        return res.status(HttpStatus.PARTIAL_CONTENT).send({
-                            dashboard_id: userDashboards[0].dataValues.dashboard_id,
-                            user_id: req.user.id,
-                        });
-                    }
-
-                    return res.status(HttpStatus.OK).send(finalResult) // returns chart list
+                    // Also sends empty array if dashboard exists but is empty
+                    return res.status(HttpStatus.OK).send(finalResult); // returns chart list
                 })
                 .catch(err => {
                     console.log(err);
@@ -453,6 +449,8 @@ exports.readChart = function (req, res, next) {
 // It adds a chart to a chosen dashboard
 exports.addChartToDashboard = function (req, res, next) {
     const chart = req.body.chart;
+
+    console.log(chart);
 
     UserDashboards.findOne({
         where: {
