@@ -147,18 +147,15 @@ function insertGaData(req, res) {
         }
         else {
             let user_id = req.user.id;
-            let client_email = req.body.client_email;
             let private_key = req.body.private_key;
 
             GaToken.create({
                 user_id: user_id,
-                client_email: client_email,
                 private_key: private_key
             })
                 .then(new_key => {
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
-                        client_email: new_key.client_email,
                         private_key: new_key.private_key
                     });
                 })
@@ -166,7 +163,6 @@ function insertGaData(req, res) {
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
-                        client_email: client_email,
                         private_key: private_key,
                         error: 'Cannot add new Google Analytics access token.'
                     });
