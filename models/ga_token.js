@@ -6,10 +6,6 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER(5),
             primaryKey: true,
         },
-        client_email: {
-            type : DataType.STRING(100),
-            primaryKey: true,
-        },
         private_key: DataType.STRING(2000)
     }, {
         freezeTableName: true,

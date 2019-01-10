@@ -44,8 +44,19 @@ const readAllKeysById = (req, res) => {
 };
 
 const checkExistence = async (req, res) => {
+    let joinModel;
 
-    const joinModel = req.params.type === 0 ? FbToken : GaToken; // If the type is 0, checks Fb token, else Google
+    switch(req.params.type){
+        case '0': joinModel = FbToken;
+            break;
+        case '1': joinModel = GaToken;
+            break;
+        default:
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'Cannot find a service of type ' + req.params.type + '.'
+            })
+    }
 
     try {
         const key = await Users.findOne({where: {id: req.user.id}, include: [{model: joinModel}]});
@@ -53,7 +64,7 @@ const checkExistence = async (req, res) => {
         if(key) {
             return res.status(HttpStatus.OK).send({
                 exists: true,
-                service: req.params.type
+                service: parseInt(req.params.type)
             })
         } else {
             return res.status(HttpStatus.NO_CONTENT).send({});
