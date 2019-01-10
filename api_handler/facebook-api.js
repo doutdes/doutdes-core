@@ -205,6 +205,7 @@ exports.getInsightsPageFans = function (period, token) {
 
         getPageId(token)
             .then(result => {
+                console.log(result);
                 const jsonResult = JSON.parse(result);
                 facebookQuery(GET, metric, period, jsonResult.id, token)
                     .then(result => {

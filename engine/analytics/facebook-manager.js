@@ -8,6 +8,8 @@ const HttpStatus = require('http-status-codes');
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
 
+// TODO change the response if there are no data
+
 exports.fb_getEngagedUsers = function (req, res, next) {
 
     FbToken.findOne({
@@ -20,7 +22,7 @@ exports.fb_getEngagedUsers = function (req, res, next) {
                 .then(result => {
                     var jsonResult = JSON.parse(result);
                     console.log('Analytics Manager: ' + jsonResult);
-                    return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                    return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
                 })
                 .catch(err => {
                     console.log(err);
@@ -56,8 +58,7 @@ exports.fb_getPageImpressionsUnique = function (req, res, next) {
         FacebookApi.getInsightsPageImpressionsUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                console.log('Analytics Manager: ' + jsonResult);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -94,7 +95,7 @@ exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
             .then(result => {
                 var jsonResult = JSON.parse(result);
                 console.log('Analytics Manager: ' + jsonResult);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -130,7 +131,7 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
         FacebookApi.getInsightsPageImpressionsByCountryUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -166,7 +167,7 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
         FacebookApi.getInsightsPageActionsPostReactionsTotal(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -202,7 +203,7 @@ exports.fb_getPageFans = function (req, res, next) {
         FacebookApi.getInsightsPageFans(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -238,7 +239,8 @@ exports.fb_getPageFansCity = function (req, res, next) {
         FacebookApi.getInsightsPageFansCity(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                console.log(jsonResult);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -274,7 +276,7 @@ exports.fb_getPageFansCountry = function (req, res, next) {
         FacebookApi.getInsightsPageFansCountry(LIFETIME, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -310,7 +312,7 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
         FacebookApi.getInsightsPageFansAddsUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -346,7 +348,7 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
         FacebookApi.getInsightsPageFansRemovesUnique(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -382,7 +384,7 @@ exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
         FacebookApi.getInsightsPageViewsExternalReferrals(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);
@@ -418,7 +420,7 @@ exports.fb_getPageViewsTotal = function (req, res, next) {
         FacebookApi.getInsightsPageViewsTotal(DAY, key.api_key)
             .then(result => {
                 var jsonResult = JSON.parse(result);
-                return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
+                return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
                 console.log(err);

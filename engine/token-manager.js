@@ -6,6 +6,7 @@ const FbToken = Model.FbToken;
 const GaToken = Model.GaToken;
 
 const HttpStatus = require('http-status-codes');
+const Request = require('request-promise');
 
 exports.readAllKeysById = (req, res, next) => {
 
@@ -20,7 +21,7 @@ exports.readAllKeysById = (req, res, next) => {
             let fb = result.dataValues.FbTokens[0];
             let ga = result.dataValues.GaTokens[0];
 
-            console.log ("Tokens: " + fb + "\n" + ga);
+            console.log("Tokens: " + fb + "\n" + ga);
 
             if (fb == null && ga == null)
                 return res.status(HttpStatus.NO_CONTENT).send({});
@@ -90,7 +91,6 @@ exports.delete = (req, res, next) => {
                 error: 'Unrecognized service type.'
             });
     }
-    ;
 };
 
 function insertFbKey(req, res) {
@@ -98,7 +98,7 @@ function insertFbKey(req, res) {
         where: {
             user_id: req.user.id,
         }
-    }).then(key => {
+    }).then(async key => {
         if (key !== null) {
             console.log('ERROR TOKEN-MANAGER. Key already exists.');
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -106,14 +106,19 @@ function insertFbKey(req, res) {
             })
         }
         else {
+            // Get the right token by doing the call to /me/accounts
+            const token = await getPageToken(req.body.api_key);
+
+            console.log(token);
+
             FbToken.create({
                 user_id: req.user.id,
-                api_key: req.body.api_key
+                api_key: token
             })
                 .then(new_key => {
                     return res.status(HttpStatus.CREATED).send({
                         created: true,
-                        api_key: new_key.api_key
+                        api_key: token
                     });
                 })
                 .catch(err => {
@@ -121,7 +126,7 @@ function insertFbKey(req, res) {
                     console.log(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
-                        api_key: FbToken.api_key,
+                        api_key: token,
                         error: 'Cannot insert the key'
                     });
                 })
@@ -250,3 +255,21 @@ function deleteGaData(req, res) {
         })
     })
 };
+
+async function getPageToken(token) {
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/me/accounts',
+        qs: {
+            access_token: token
+        }
+    };
+
+    try {
+        const response = JSON.parse(await Request(options));
+        return response['data'][0]['access_token'];
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
