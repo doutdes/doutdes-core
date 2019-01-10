@@ -8,7 +8,7 @@ const HttpStatus = require('http-status-codes');
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
-exports.ga_getLastYearSessions = async function (req, res, next) {
+exports.ga_getLastYearSessions = async function (req, res) {
 
     GaToken.findOne({
         where: {
@@ -43,7 +43,7 @@ exports.ga_getLastYearSessions = async function (req, res, next) {
     });
 };
 
-exports.ga_getPageViews = async function (req, res, next) {
+exports.ga_getPageViews = async function (req, res) {
 
     GaToken.findOne({
         where: {
@@ -81,7 +81,7 @@ exports.ga_getPageViews = async function (req, res, next) {
     });
 };
 
-exports.ga_getMostPagesViews = async function (req, res, next) {
+exports.ga_getMostPagesViews = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -115,7 +115,7 @@ exports.ga_getMostPagesViews = async function (req, res, next) {
     });
 };
 
-exports.ga_getSources = async function (req, res, next) {
+exports.ga_getSources = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -149,7 +149,7 @@ exports.ga_getSources = async function (req, res, next) {
     });
 };
 
-exports.ga_getPageViewsByCountry = async function (req, res, next) {
+exports.ga_getPageViewsByCountry = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -183,7 +183,7 @@ exports.ga_getPageViewsByCountry = async function (req, res, next) {
     });
 };
 
-exports.ga_getBrowsers = async function (req, res, next) {
+exports.ga_getBrowsers = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -217,7 +217,7 @@ exports.ga_getBrowsers = async function (req, res, next) {
     });
 };
 
-exports.ga_getBounceRate = async function (req, res, next) {
+exports.ga_getBounceRate = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -251,7 +251,7 @@ exports.ga_getBounceRate = async function (req, res, next) {
     });
 };
 
-exports.ga_getAvgSessionDuration = async function (req, res, next) {
+exports.ga_getAvgSessionDuration = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id
@@ -285,7 +285,7 @@ exports.ga_getAvgSessionDuration = async function (req, res, next) {
     });
 };
 
-exports.ga_getNewUsers = async function (req, res, next) {
+exports.ga_getNewUsers = async function (req, res) {
     GaToken.findOne({
         where: {
             user_id: req.user.id

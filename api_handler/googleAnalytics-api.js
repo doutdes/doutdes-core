@@ -167,6 +167,6 @@ const getViewID = async (private_key) => {
         'webPropertyId': '~all'
     });
     return result.data.items[0].id;
-}
+};
 
-exports = {getLastYearSessions, getPageViews, getMostPagesVisited, getSources, getPageViewsByCountry, getBrowsers, getBounceRate, getAvgSessionDuration, getNewUsers};
+module.exports = {getLastYearSessions, getPageViews, getMostPagesVisited, getSources, getPageViewsByCountry, getBrowsers, getBounceRate, getAvgSessionDuration, getNewUsers};

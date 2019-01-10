@@ -8,7 +8,7 @@ const GaToken = Model.GaToken;
 const HttpStatus = require('http-status-codes');
 const Request = require('request-promise');
 
-exports.readAllKeysById = (req, res, next) => {
+const readAllKeysById = (req, res) => {
 
     Users.findOne({
             where: {id: req.user.id},
@@ -43,7 +43,32 @@ exports.readAllKeysById = (req, res, next) => {
         });
 };
 
-exports.insertKey = (req, res, next) => {
+const checkExistence = async (req, res) => {
+
+    const joinModel = req.params.type === 0 ? FbToken : GaToken; // If the type is 0, checks Fb token, else Google
+
+    try {
+        const key = await Users.findOne({where: {id: req.user.id}, include: [{model: joinModel}]});
+
+        if(key) {
+            return res.status(HttpStatus.OK).send({
+                exists: true,
+                service: req.params.type
+            })
+        } else {
+            return res.status(HttpStatus.NO_CONTENT).send({});
+        }
+
+    } catch (e) {
+        console.error(e);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'An error occurred while checking the existence of a token service.'
+        })
+    }
+};
+
+const insertKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
@@ -61,7 +86,7 @@ exports.insertKey = (req, res, next) => {
 
 };
 
-exports.update = (req, res, next) => {
+const update = (req, res) => {
     const service_id = parseInt(req.body.service_id);
     switch (service_id) {
         case 0: //fb
@@ -77,7 +102,7 @@ exports.update = (req, res, next) => {
 
 };
 
-exports.delete = (req, res, next) => {
+const deleteKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
@@ -269,3 +294,5 @@ async function getPageToken(token) {
         return null;
     }
 }
+
+module.exports = {readAllKeysById, insertKey, update, deleteKey, checkExistence};
