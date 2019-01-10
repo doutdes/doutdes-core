@@ -61,7 +61,8 @@ const checkExistence = async (req, res) => {
     try {
         const key = await Users.findOne({where: {id: req.user.id}, include: [{model: joinModel}]});
 
-        if(key) {
+        if((key['dataValues']['FbTokens'] && key['dataValues']['FbTokens'].length > 0) ||
+            (key['dataValues']['GaTokens'] && key['dataValues']['GaTokens'].length > 0)) {
             return res.status(HttpStatus.OK).send({
                 exists: true,
                 service: parseInt(req.params.type)
