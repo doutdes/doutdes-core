@@ -75,7 +75,7 @@ exports.getEvents = function (req, res, next) {
       return res.status(HttpStatus.OK).send(events);
   })
       .catch(err => {
-          console.log(err);
+          console.error(err);
 
           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
               error: true,
@@ -147,7 +147,7 @@ exports.addEvent = function (req, res, next) {
             });
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 created: false,
@@ -228,7 +228,7 @@ exports.updateEvent = function (req, res, next) {
             })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 updated: false,

@@ -118,7 +118,7 @@ exports.createUser = async function (req, res, next) {
                                 User.destroy({ where: {id : user_id}}); // Deletes the new db row
 
                                 console.log('ACCESS_MANAGER ERROR. Details below:');
-                                console.log(err);
+                                console.error(err);
                                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                                     created:  false,
                                     message: 'Cannot create the new user',
@@ -128,7 +128,7 @@ exports.createUser = async function (req, res, next) {
                     })
                     .catch(err => {
                         console.log('ACCESS_MANAGER ERROR. Details below:');
-                        console.log(err);
+                        console.error(err);
                         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                             created:  false,
                             message: 'Cannot create the new user',
@@ -302,7 +302,7 @@ exports.updateUser = function (req, res, next) {
             })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 updated: false,

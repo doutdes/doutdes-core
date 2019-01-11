@@ -25,7 +25,7 @@ exports.fb_getEngagedUsers = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
                     if (err.statusCode === 400) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             name: 'Facebook Bad Request',
@@ -39,7 +39,7 @@ exports.fb_getEngagedUsers = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -61,7 +61,7 @@ exports.fb_getPageImpressionsUnique = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -75,7 +75,7 @@ exports.fb_getPageImpressionsUnique = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -98,7 +98,7 @@ exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -112,7 +112,7 @@ exports.fb_getPageImpressionsByCityUnique = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -134,7 +134,7 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -148,7 +148,7 @@ exports.fb_getPageImpressionsByCountryUnique = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -170,7 +170,7 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -184,7 +184,7 @@ exports.fb_getPageActionsPostReactionsTotal = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -206,7 +206,7 @@ exports.fb_getPageFans = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -220,7 +220,7 @@ exports.fb_getPageFans = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -243,7 +243,7 @@ exports.fb_getPageFansCity = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -257,7 +257,7 @@ exports.fb_getPageFansCity = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -279,7 +279,7 @@ exports.fb_getPageFansCountry = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -293,7 +293,7 @@ exports.fb_getPageFansCountry = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -315,7 +315,7 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -329,7 +329,7 @@ exports.fb_getPageFansAddsUnique = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -351,7 +351,7 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -365,7 +365,7 @@ exports.fb_getPageFansRemovesUnique = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -387,7 +387,7 @@ exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -401,7 +401,7 @@ exports.fb_getPageViewsExternalReferrals = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -423,7 +423,7 @@ exports.fb_getPageViewsTotal = function (req, res, next) {
                 return res.status(HttpStatus.OK).send(jsonResult['data'][0]['values']);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 if (err.statusCode === 400) {
                     return res.status(HttpStatus.BAD_REQUEST).send({
                         name: 'Facebook Bad Request',
@@ -437,7 +437,7 @@ exports.fb_getPageViewsTotal = function (req, res, next) {
             })
     })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'

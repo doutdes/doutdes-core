@@ -25,7 +25,7 @@ exports.ig_getReach = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
                     if (err.statusCode === 400) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             name: 'Instagram Bad Request',
@@ -39,7 +39,7 @@ exports.ig_getReach = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -63,7 +63,7 @@ exports.ig_getProfileViews = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
                     if (err.statusCode === 400) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             name: 'Instagram Bad Request',
@@ -77,7 +77,7 @@ exports.ig_getProfileViews = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'
@@ -100,7 +100,7 @@ exports.ig_getImpressions = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
                     if (err.statusCode === 400) {
                         return res.status(HttpStatus.BAD_REQUEST).send({
                             name: 'Instagram Bad Request',
@@ -114,7 +114,7 @@ exports.ig_getImpressions = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 name: 'Database Internal Error',
                 message: 'There is a problem with our database'

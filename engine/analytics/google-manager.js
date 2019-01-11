@@ -23,7 +23,7 @@ exports.ga_getLastYearSessions = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -58,7 +58,7 @@ exports.ga_getPageViews = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -66,7 +66,7 @@ exports.ga_getPageViews = async function (req, res) {
             })
     }).catch(err => {
 
-        console.log(err);
+        console.error(err);
 
         if (err.statusCode === 400) {
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -95,7 +95,7 @@ exports.ga_getMostPagesViews = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -129,7 +129,7 @@ exports.ga_getSources = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -163,7 +163,7 @@ exports.ga_getPageViewsByCountry = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -197,7 +197,7 @@ exports.ga_getBrowsers = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -231,7 +231,7 @@ exports.ga_getBounceRate = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -265,7 +265,7 @@ exports.ga_getAvgSessionDuration = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'
@@ -299,7 +299,7 @@ exports.ga_getNewUsers = async function (req, res) {
                     return res.status(HttpStatus.OK).send(value);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot retrieve data.'

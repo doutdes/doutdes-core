@@ -21,13 +21,11 @@ const readAllKeysById = (req, res) => {
             let fb = result.dataValues.FbTokens[0];
             let ga = result.dataValues.GaTokens[0];
 
-            console.log("Tokens: " + fb + "\n" + ga);
-
             if (fb == null && ga == null)
                 return res.status(HttpStatus.NO_CONTENT).send({});
 
-            let fb_token = (fb == null) ? null : fb.dataValues.api_key;       // Token
-            let ga_token = (ga == null) ? null : ga.dataValues.client_email;  // Client email
+            let fb_token = (fb == null) ? null : fb.dataValues.api_key;      // FB Token
+            let ga_token = (ga == null) ? null : ga.dataValues.private_key;  // GA Token
 
             return res.status(HttpStatus.OK).send({
                 user_id: req.user.id,
@@ -36,7 +34,7 @@ const readAllKeysById = (req, res) => {
             });
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: 'Cannot retrieve user tokens.'
             })
@@ -84,9 +82,9 @@ const insertKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
-        case 0: //fb
+        case 0: // fb
             return insertFbKey(req, res);
-        case 1: //google
+        case 1: // google
             return insertGaData(req, res);
         default:
             console.log('ERROR TOKEN-MANAGER. Unrecognized service type: ' + service_id);
@@ -95,7 +93,6 @@ const insertKey = (req, res) => {
                 error: 'Unrecognized service type.'
             });
     }
-
 };
 
 const update = (req, res) => {
@@ -160,7 +157,7 @@ function insertFbKey(req, res) {
                 })
                 .catch(err => {
                     console.log('ERROR TOKEN-MANAGER. Cannot insert the row in db. Details below:');
-                    console.log(err);
+                    console.error(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
                         api_key: token,
@@ -197,7 +194,7 @@ function insertGaData(req, res) {
                     });
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
                         private_key: private_key,

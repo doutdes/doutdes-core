@@ -21,11 +21,11 @@ exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
                 .then(() => {
                     resolve(true);
                 }).catch(err => {
-                    console.log(err);
+                    console.error(err);
                     resolve(false);
             })
         }).catch(err => {
-            console.log(err);
+            console.error(err);
             resolve(false);
         });
     });
@@ -41,7 +41,7 @@ exports.internalCreateDashboard = async function(name, category) {
                 return resolve(dashboard.id);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 return resolve(null);
             })
     });
@@ -143,7 +143,7 @@ exports.readUserDashboards = function (req, res, next) {
             return res.status(HttpStatus.OK).send(userDashboards)
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
@@ -223,7 +223,7 @@ exports.getDashboardByType = function (req, res, next) {
             return res.status(HttpStatus.OK).send(userDashboards[0]['Dashboard']);
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
@@ -249,7 +249,7 @@ exports.readNotAddedByDashboard = function (req, res, next) {
             return res.status(HttpStatus.OK).send(chartsNotAdded[0]);
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
@@ -325,7 +325,7 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
             return res.status(HttpStatus.OK).send(chartsNotAdded[0]);
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
@@ -367,7 +367,7 @@ exports.getDashboardByID = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(finalResult); // returns chart list
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         error: true,
@@ -376,7 +376,7 @@ exports.getDashboardByID = function (req, res, next) {
                 });
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
 
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 error: true,
@@ -426,7 +426,7 @@ exports.readChart = function (req, res, next) {
                     return res.status(HttpStatus.OK).send(chart);
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         dashboard_id: req.params.dashboard_id,
@@ -436,7 +436,7 @@ exports.readChart = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 updated: false,
                 dashboard_id: req.params.dashboard_id,
@@ -483,7 +483,7 @@ exports.addChartToDashboard = function (req, res, next) {
                     });
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         created: false,
@@ -493,7 +493,7 @@ exports.addChartToDashboard = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 inserted: false,
                 chart_id: parseInt(chart.chart_id),
@@ -550,7 +550,7 @@ exports.removeChartFromDashboard = function (req, res, next) {
                     });
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         deleted: false,
@@ -561,7 +561,7 @@ exports.removeChartFromDashboard = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 deleted: false,
                 dashboard_id: req.body.dashboard_id,
@@ -624,7 +624,7 @@ exports.updateChartInDashboard = function (req, res, next) {
                     });
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.error(err);
 
                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                         updated: false,
@@ -635,7 +635,7 @@ exports.updateChartInDashboard = function (req, res, next) {
                 })
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                 updated: false,
                 dashboard_id: chart.dashboard_id,
