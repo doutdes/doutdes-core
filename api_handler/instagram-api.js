@@ -33,7 +33,7 @@ function getPageId(token) {
                 resolve(result);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 reject(err);
             })
     });
@@ -61,7 +61,7 @@ function instagramQuery(method, metric, period, pageID, token) {
                 resolve(result);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 reject(err);
             })
     });

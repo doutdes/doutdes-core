@@ -1,6 +1,6 @@
 /**
  * API calls from Page Insights Facebook
- * */
+**/
 
 /** IMPORTS **/
 const Request = require('request-promise');
@@ -8,6 +8,22 @@ const Request = require('request-promise');
 /** CONSTANTS **/
 const fbInsightURI = 'https://graph.facebook.com/';
 const date_preset = 'this_year';
+
+/** METRIC COSTANT **/
+const METRICS = {
+    P_ENGAGED_USERS: 'page_engaged_users',
+    P_IMPRESSIONS_UNIQUE: 'page_impressions_unique',
+    P_IMPRESSIONS_BY_CITY_UNIQUE: 'page_impressions_by_city_unique',
+    P_IMPRESSIONS_BY_COUNTRY_UNIQUE: 'page_impressions_by_country_unique',
+    P_ACTION_POST_REACTIONS_TOTAL: 'page_actions_post_reactions_total',
+    P_FANS: 'page_fans',
+    P_FANS_CITY: 'page_fans_city',
+    P_FANS_COUNTRY: 'page_fans_country',
+    P_FANS_ADD_UNIQUE: 'page_fan_adds_unique',
+    P_FANS_REMOVES_UNIQUE: 'page_fan_removes_unique',
+    P_VIEWS_EXT_REFERRALS: 'page_views_external_referrals',
+    P_VIEWS_TOTAL: 'page_views_total',
+};
 
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
@@ -17,9 +33,9 @@ global.WEEK = 'week';
 global.DAY = 'day';
 global.LIFETIME = 'lifetime';
 
-/**GET pageID from facebook token**/
-
-function getPageId(token) {
+/** GET pageID from facebook token **/
+async function getPageId(token) {
+    let result;
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me',
@@ -28,23 +44,17 @@ function getPageId(token) {
         }
     };
 
-    return new Promise((resolve, reject) => {
-
-        Request(options)
-            .then(result => {
-                resolve(result);
-            })
-            .catch(err => {
-                console.log(err);
-                reject(err);
-            })
-    });
-};
+    try {
+        result = JSON.parse(await Request(options));
+        return result['id'];
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 /** Facebook Page/Insight query **/
-
-function facebookQuery(method, metric, period, pageID, token) {
-
+async function facebookQuery(method, metric, period, pageID, token) {
+    let result;
     const options = {
         method: method,
         uri: fbInsightURI + pageID + '/insights',
@@ -56,311 +66,27 @@ function facebookQuery(method, metric, period, pageID, token) {
         }
     };
 
-    return new Promise((resolve, reject) => {
-
-        Request(options)
-            .then(result => {
-                resolve(result);
-            })
-            .catch(err => {
-                console.log(err);
-                reject(err);
-            })
-    });
+    try {
+        result = JSON.parse(await Request(options));
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 /** METRICS **/
+const getFacebookData = async (metric, period, token) => {
+    let pageId, result;
 
-/** The number of people who engaged with your Page. Engagement includes any click or story created. (Unique Users)**/
+    try {
+        pageId = await getPageId(token);
+        result = await facebookQuery(GET, metric, period, pageId, token);
 
-exports.getInsightsEngagedUsers = function (period, token) {
-
-    const metric = 'page_engaged_users';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
 };
 
-/** The number of people who had any content from your Page or about your Page enter their screen. This includes posts, check-ins, ads, social information from people who interact with your Page and more. (Unique Users) **/
-
-exports.getInsightsPageImpressionsUnique = function (period, token) {
-
-    const metric = 'page_impressions_unique';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-/** **/
-
-exports.getInsightsPageImpressionsByCityUnique = function (period, token) {
-
-    const metric = 'page_impressions_by_city_unique';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageImpressionsByCountryUnique = function (period, token) {
-
-    const metric = 'page_impressions_by_country_unique';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageActionsPostReactionsTotal = function (period, token) {
-
-    const metric = 'page_actions_post_reactions_total';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageFans = function (period, token) {
-
-    const metric = 'page_fans';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                console.log(result);
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-};
-
-exports.getInsightsPageFansCity = function (period, token) {
-
-    const metric = 'page_fans_city';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageFansCountry = function (period, token) {
-
-    const metric = 'page_fans_country';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageFansAddsUnique = function (period, token) {
-
-    const metric = 'page_fan_adds_unique';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageFansRemovesUnique = function (period, token) {
-
-    const metric = 'page_fan_removes_unique';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageViewsExternalReferrals = function (period, token) {
-
-    const metric = 'page_views_external_referrals';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
-
-exports.getInsightsPageViewsTotal= function (period, token) {
-
-    const metric = 'page_views_total';
-
-    return new Promise((resolve, reject) => {
-
-        getPageId(token)
-            .then(result => {
-                const jsonResult = JSON.parse(result);
-                facebookQuery(GET, metric, period, jsonResult.id, token)
-                    .then(result => {
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        reject(err);
-                    });
-            })
-            .catch(err => {
-                reject(err);
-            })
-    })
-
-};
+/** EXPORTS **/
+module.exports = {getFacebookData, METRICS};

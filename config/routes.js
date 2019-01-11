@@ -37,6 +37,8 @@ module.exports = function (app, passport) {
 
     // TODO gestire le delete bene: se il risultato restituito dalla query è 0, allora non ha eliminato niente
 
+    const FB_METRIC = require('../api_handler/facebook-api').METRICS;
+
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
 
@@ -69,16 +71,16 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFans);
-    app.get(facebookPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageFansCity);
-    app.get(facebookPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageFansCountry);
-    app.get(facebookPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getEngagedUsers);
-    app.get(facebookPath + 'pageimpressions', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsUnique);
-    app.get(facebookPath + 'pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsByCityUnique);
-    app.get(facebookPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.fb_getPageImpressionsByCountryUnique);
-    app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageActionsPostReactionsTotal);
-    app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsExternalReferrals);
-    app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.fb_getPageViewsTotal);
+    app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_FANS), FacebookManager.fb_getData);
+    app.get(facebookPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_FANS_CITY), FacebookManager.fb_getData);
+    app.get(facebookPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FacebookManager.setMetric(FB_METRIC.P_FANS_COUNTRY), FacebookManager.fb_getData);
+    app.get(facebookPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_ENGAGED_USERS), FacebookManager.fb_getData);
+    app.get(facebookPath + 'pageimpressions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_IMPRESSIONS_UNIQUE), FacebookManager.fb_getData);
+    app.get(facebookPath + 'pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_IMPRESSIONS_BY_CITY_UNIQUE),  FacebookManager.fb_getData);
+    app.get(facebookPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FacebookManager.fb_getData);
+    app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_ACTION_POST_REACTIONS_TOTAL), FacebookManager.fb_getData);
+    app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_VIEWS_EXT_REFERRALS), FacebookManager.fb_getData);
+    app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FacebookManager.setMetric(FB_METRIC.P_VIEWS_TOTAL), FacebookManager.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(instagramPath + 'reach', requireAuth, AccessManager.roleAuthorization(all), InstagramManager.ig_getReach);
