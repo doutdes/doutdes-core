@@ -15,7 +15,7 @@ const setMetric = (metric) => {
         next();
     }
 };
-const fb_getData = async (req, res, next) => {
+const fb_getData = async (req, res) => {
     let key;
     let data;
 
