@@ -1,12 +1,11 @@
 const AccessManager = require('../../engine/access-manager');
 const BasicStrategy = require('passport-http').BasicStrategy;
-const model = require('../../models/index');
+const User = require('../../models/index').Users;
 
 module.exports =
     new BasicStrategy(
         function (username, password, cb) {
-            // AccessManager.getUserFromUsername(username)
-            model.Users.findOne({where: {username: username}})
+            User.findOne({where: {username: username}})
                 .then(user => {
                     if (!user) {
                         return cb(null, false);

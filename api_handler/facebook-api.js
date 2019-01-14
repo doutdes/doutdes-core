@@ -34,11 +34,11 @@ global.DAY = 'day';
 global.LIFETIME = 'lifetime';
 
 /** GET pageID from facebook token **/
-async function getPageId(token) {
+async function getPageAccessToken(token, pageID) {
     let result;
     const options = {
         method: GET,
-        uri: 'https://graph.facebook.com/me',
+        uri: 'https://graph.facebook.com/' + pageID + '/?fields=access_token',
         qs: {
             access_token: token
         }
@@ -46,7 +46,26 @@ async function getPageId(token) {
 
     try {
         result = JSON.parse(await Request(options));
-        return result['id'];
+        return result['access_token'];
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/** GET pageID and Name of the page from FB User Access Token **/
+async function getPagesID(token) {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/me/accounts',
+        qs: {
+            access_token: token
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result;
     } catch (e) {
         console.error(e);
     }
@@ -75,12 +94,13 @@ async function facebookQuery(method, metric, period, pageID, token) {
 }
 
 /** METRICS **/
-const getFacebookData = async (metric, period, token) => {
-    let pageId, result;
+const getFacebookData = async (pageID, metric, period, token) => {
+    let result, access_token;
 
     try {
-        pageId = await getPageId(token);
-        result = await facebookQuery(GET, metric, period, pageId, token);
+        // pageId = await getPageId(token);
+        access_token = await getPageAccessToken(token, pageID);
+        result = await facebookQuery(GET, metric, period, pageID, access_token);
 
         return result;
     } catch (e) {
@@ -89,4 +109,4 @@ const getFacebookData = async (metric, period, token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, METRICS};
+module.exports = {getFacebookData, getPagesID, METRICS};

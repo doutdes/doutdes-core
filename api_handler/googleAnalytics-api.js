@@ -35,9 +35,12 @@ const getViewID = async (private_key) => {
 };
 
 const getData = async(private_key, start_date, end_date, metrics, dimensions, sort=null, filters=null) => {
+
     const view_id = await getViewID(private_key);
     const OaClient = new google.auth.OAuth2();
     OaClient.setCredentials({access_token: private_key});
+
+    // OaClient.setCredentials({refresh_token: private_key});
 
     let params = {
         auth: OaClient,
