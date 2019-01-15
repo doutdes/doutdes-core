@@ -289,26 +289,22 @@ const deleteGaData = (req, res) => {
     })
 };
 
-// const upsertFbKey = (req, res) => {
-//
-//     return res.redirect('http://localhost:4200')
+const upsertFbKey = (req, res, next) => {
 
-    // console.log(req);
-    //
-    // FbToken.upsert({
-    //     user_id: req.user.id,
-    //     api_key: req.new_token
-    // }).then(upserted => {
-    //     if(upserted) {
-    //         return res.status(HttpStatus.OK).send({updated: true, key: 'FB Token'});
-    //     } else {
-    //         return res.status(HttpStatus.CREATED).send({created: true, key: 'FB Token'});
-    //     }
-    // }).catch(err => {
-    //     console.error(err);
-    //     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({error: true, message: 'Error upserting the FB Token'});
-    // })
-// };
+    FbToken.upsert({
+        user_id: req.user.id,
+        api_key: req.new_token
+    }).then(upserted => {
+        if(upserted) {
+            return res.status(HttpStatus.OK).send({updated: true, key: 'FB Token'});
+        } else {
+            return res.status(HttpStatus.CREATED).send({created: true, key: 'FB Token'});
+        }
+    }).catch(err => {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({error: true, message: 'Error upserting the FB Token'});
+    })
+};
 
 const getPageToken = async (token) => {
     const options = {
@@ -328,4 +324,4 @@ const getPageToken = async (token) => {
     }
 }
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, checkExistence};
+module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, checkExistence};

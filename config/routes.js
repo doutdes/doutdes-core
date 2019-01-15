@@ -25,6 +25,7 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
+    const fbAuth = (req,res,next) => { passport.authenticate('facebook', {state: req.query.id})(req, res, next)};
 
     const admin  = '0';
     const user   = '1';
@@ -74,20 +75,12 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get(facebookPath + 'login',
-        function(req,res,next) {
-            req.user_fucking_id = 'something';
-            console.log(req.query.id);
-            var callback_url = 'http://localhost:443/fb/login/success?id=17';
-            passport.authenticate('facebook', {state: req.query.id})(req, res, next)
-        }
-    );
+    app.get(facebookPath + 'login', fbAuth);
 
     app.get(facebookPath + 'login/success', function (req, res, next) {
-        passport.authenticate('facebook', { state: req.quer});
+        passport.authenticate('facebook');
         console.log('success');
-        console.log(req.query);
-        // console.log(req.session.user_fucking_id);
+        console.log(req.query.state);
         return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
     });
 
@@ -135,3 +128,4 @@ module.exports = function (app, passport) {
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
 };
+

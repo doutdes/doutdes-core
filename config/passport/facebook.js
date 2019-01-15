@@ -12,14 +12,7 @@ module.exports = new FacebookStrategy({
     callbackURL: callbackURL,
     passReqToCallback: true,
     scope: 'manage_pages',
-    enableProof: true
 }, (req, access_token, refreshToken, profile, done) => {
-    // It creates or it updates the entry in the Facebook table in the Database
-
-    console.log(req);
-
-    console.log('access_token_strategy: ' + access_token);
-
     done(null, access_token);
 });
 
