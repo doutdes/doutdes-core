@@ -53,7 +53,7 @@ async function getPageAccessToken(token, pageID) {
 }
 
 /** GET pageID and Name of the page from FB User Access Token **/
-async function getPageId(token) {
+async function getPagesID(token) {
     let result;
     const options = {
         method: GET,
@@ -71,13 +71,14 @@ async function getPageId(token) {
     }
 }
 
-async function getPagesID(token) {
+async function getIgPagesID(token) {
     let result;
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
-            access_token: token
+            access_token: token,
+            fields: 'name,id,access_token,instagram_business_account'
         }
     };
 
@@ -112,12 +113,12 @@ async function facebookQuery(method, metric, period, pageID, token) {
 }
 
 /** METRICS **/
-const getFacebookData = async (pageID=null, metric, period, token) => {
-    let result, access_token, pageId;
+const getFacebookData = async (pageID, metric, period, token) => {
+    let result, access_token;
 
     try {
-        pageID = await getPageId(token);
-        // access_token = await getPageAccessToken(token, pageID);
+        // pageId = await getPageId(token);
+        access_token = await getPageAccessToken(token, pageID);
         result = await facebookQuery(GET, metric, period, pageID, access_token);
 
         return result;
@@ -127,4 +128,4 @@ const getFacebookData = async (pageID=null, metric, period, token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getPageId, METRICS};
+module.exports = {getFacebookData, getPagesID, getIgPagesID, METRICS};

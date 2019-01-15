@@ -50,7 +50,7 @@ const fb_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookData(null, req.metric, DAY, key.api_key);
+        data = await FacebookApi.getFacebookData(req.params.page_id, req.metric, DAY, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
@@ -85,5 +85,38 @@ const fb_login = (req, res, next) => {
     })(req, res, next);
 };
 
+const ig_getPages = async (req, res) => {
+    let data, key;
+    let pages = [];
+
+    try {
+        console.log(req.user.id);
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = (await FacebookApi.getIgPagesID(key.api_key))['data'];
+
+        for(const index in data) {
+            // console.log(data[index]);
+
+            if(data[index]['instagram_business_account']) {
+
+                const page = {
+                    name: data[index]['name'],
+                    id: data[index]['instagram_business_account']['id']
+                };
+
+                pages.push(page);
+            }
+        }
+
+        return res.status(HttpStatus.OK).send(pages);
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+};
+
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, fb_login};
+module.exports = {setMetric, fb_getData, fb_getPages, ig_getPages, fb_login};
