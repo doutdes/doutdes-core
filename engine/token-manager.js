@@ -127,7 +127,7 @@ const deleteKey = (req, res) => {
     }
 };
 
-function insertFbKey(req, res) {
+const insertFbKey = (req, res) => {
     FbToken.findOne({
         where: {
             user_id: req.user.id,
@@ -168,7 +168,7 @@ function insertFbKey(req, res) {
     })
 };
 
-function insertGaData(req, res) {
+const insertGaData = (req, res) => {
     GaToken.findOne({
         where: {
             user_id: req.user.id,
@@ -205,7 +205,7 @@ function insertGaData(req, res) {
     })
 };
 
-function updateFbKey(req, res) {
+const updateFbKey = (req, res) => {
     FbToken.update({
         api_key: FbToken.api_key
     }, {
@@ -226,7 +226,7 @@ function updateFbKey(req, res) {
     })
 };
 
-function updateGaData(req, res) {
+const updateGaData = (req, res) => {
     GaToken.update({
         client_email: GaToken.client_email,
         private_key: GaToken.private_key
@@ -250,7 +250,7 @@ function updateGaData(req, res) {
     })
 };
 
-function deleteFbKey(req, res) {
+const deleteFbKey = (req, res) => {
     FbToken.destroy({
         where: {
             user_id: req.user.id
@@ -268,7 +268,7 @@ function deleteFbKey(req, res) {
     })
 };
 
-function deleteGaData(req, res) {
+const deleteGaData = (req, res) => {
     GaToken.destroy({
         where: {
             user_id: req.user.id
@@ -286,7 +286,28 @@ function deleteGaData(req, res) {
     })
 };
 
-async function getPageToken(token) {
+// const upsertFbKey = (req, res) => {
+//
+//     return res.redirect('http://localhost:4200')
+
+    // console.log(req);
+    //
+    // FbToken.upsert({
+    //     user_id: req.user.id,
+    //     api_key: req.new_token
+    // }).then(upserted => {
+    //     if(upserted) {
+    //         return res.status(HttpStatus.OK).send({updated: true, key: 'FB Token'});
+    //     } else {
+    //         return res.status(HttpStatus.CREATED).send({created: true, key: 'FB Token'});
+    //     }
+    // }).catch(err => {
+    //     console.error(err);
+    //     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({error: true, message: 'Error upserting the FB Token'});
+    // })
+// };
+
+const getPageToken = async (token) => {
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me/accounts',

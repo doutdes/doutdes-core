@@ -4,6 +4,7 @@ const Model = require('../../models/index');
 const FbToken = Model.FbToken;
 
 const HttpStatus = require('http-status-codes');
+const passport = require('../../app').passport;
 
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
@@ -68,5 +69,21 @@ const fb_getData = async (req, res) => {
     }
 };
 
+const fb_login = (req, res, next) => {
+    passport.authenticate('facebook', {scope: 'manage_pages'}, (err, token, info) =>  {
+        if (err) {
+            return next(err);
+        }
+        if (!token) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: 'Bad Facebook Login'
+            });
+        } else {
+            req.new_token = token;
+            next();
+        }
+    })(req, res, next);
+};
+
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages};
+module.exports = {setMetric, fb_getData, fb_getPages, fb_login};

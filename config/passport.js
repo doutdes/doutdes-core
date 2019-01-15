@@ -1,12 +1,16 @@
-const basic     = require('./passport/basic');
-const jwt  = require('./passport/jwt');
+const basic    = require('./passport/basic');
+const jwt      = require('./passport/jwt');
+const facebook = require('./passport/facebook');
 
 const Users = require('../models/index').Users;
 
 module.exports = function (passport) {
 
     // serialize sessions
-    passport.serializeUser((user, done) => done(null, user.id));
+    passport.serializeUser((data, done) => {
+        if(data.id) done(null, data.id);
+        else        done(null, data);
+    });
 
     passport.deserializeUser((id, done) => {
         Users.findById(id).then(user => {
@@ -21,4 +25,5 @@ module.exports = function (passport) {
     // strategies
     passport.use(basic);
     passport.use('jwt', jwt);
+    passport.use('facebook', facebook);
 };

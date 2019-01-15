@@ -25,6 +25,8 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
+    const fbAuth = passport.authenticate('facebook', {scope: 'manage_pages'});
+
     const admin  = '0';
     const user   = '1';
     const editor = '2';
@@ -43,7 +45,6 @@ module.exports = function (app, passport) {
 
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
-
 
     /****************** CRUD USERS ********************/
     app.post(amPath     + 'create/', AccessManager.createUser);
@@ -74,6 +75,13 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
+    app.get(facebookPath + 'login', passport.authenticate('facebook', {scope: 'manage_pages'}));
+    app.get(facebookPath + 'login/success', passport.authenticate('facebook'), function (req, res) {
+        console.log('success');
+        console.log(req.user);
+        return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
+    });
+
     app.get(facebookPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
 
     app.get(facebookPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
