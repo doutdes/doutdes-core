@@ -109,4 +109,4 @@ const getFacebookData = async (pageID, metric, period, token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getIgPagesID, METRICS};
+module.exports = {getFacebookData, getPagesID, METRICS};

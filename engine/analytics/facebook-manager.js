@@ -3,15 +3,16 @@
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
 
+const TokenManager = require('../token-manager');
+
 const HttpStatus = require('http-status-codes');
-const passport = require('../../app').passport;
 
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
 
 // TODO change the response if there are no data
 const setMetric = (metric) => {
-    return function(req, res, next){
+    return (req, res, next) => {
         req.metric = metric;
         next();
     }
@@ -25,7 +26,7 @@ const fb_getPages = async (req, res) => {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await FacebookApi.getPagesID(key.api_key))['data'];
 
-        for(const index in data) {
+        for (const index in data) {
             const page = {
                 name: data[index]['name'],
                 id: data[index]['id']
@@ -69,20 +70,29 @@ const fb_getData = async (req, res) => {
     }
 };
 
-const fb_login = (req, res, next) => {
-    passport.authenticate('facebook', {scope: 'manage_pages'}, (err, token, info) =>  {
-        if (err) {
-            return next(err);
-        }
-        if (!token) {
-            return res.status(HttpStatus.BAD_REQUEST).send({
-                error: 'Bad Facebook Login'
-            });
-        } else {
-            req.new_token = token;
-            next();
-        }
-    })(req, res, next);
+const fb_login_success = async (req, res) => {
+    const user_id = req.query.state;
+    const token = req.user;
+
+    try {
+        const upserting = await TokenManager.upsertFbKey(user_id, token);
+
+        res.redirect('http://localhost:4200/#/preferences/api-keys/')
+
+        // if(upserting) {
+        //     return res.status(HttpStatus.OK).send({
+        //         logged: true,
+        //         service: 'Facebook',
+        //         service_id: '1'
+        //     })
+        // }
+    } catch (err) {
+        console.error(err);
+        // return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        //     error: true,
+        //     message: 'Error logging to Facebook'
+        // })
+    }
 };
 
 const ig_getPages = async (req, res) => {
@@ -94,10 +104,10 @@ const ig_getPages = async (req, res) => {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await FacebookApi.getIgPagesID(key.api_key))['data'];
 
-        for(const index in data) {
+        for (const index in data) {
             // console.log(data[index]);
 
-            if(data[index]['instagram_business_account']) {
+            if (data[index]['instagram_business_account']) {
 
                 const page = {
                     name: data[index]['name'],
@@ -119,4 +129,4 @@ const ig_getPages = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, ig_getPages, fb_login};
+module.exports = {setMetric, fb_getData, fb_getPages, ig_getPages, fb_login_success};

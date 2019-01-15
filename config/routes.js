@@ -25,7 +25,8 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
-    const fbAuth = (req,res,next) => { passport.authenticate('facebook', {state: req.query.id})(req, res, next)};
+    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: 'manage_pages', state: req.query.user_id})(req, res, next)};
+    const fbAuth = passport.authenticate('facebook');
 
     const admin  = '0';
     const user   = '1';
@@ -36,12 +37,10 @@ module.exports = function (app, passport) {
 
     /* SERVICE METRICS*/
     const FBM = require('../api_handler/facebook-api').METRICS;
-
     const GAM = require('../api_handler/googleAnalytics-api').METRICS;
     const GAD = require('../api_handler/googleAnalytics-api').DIMENSIONS;
     const GAS = require('../api_handler/googleAnalytics-api').SORT;
     const GAF = require('../api_handler/googleAnalytics-api').FILTER;
-
 
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
@@ -70,19 +69,13 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
     app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
     // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.assignDashboardToUser);
-    app.delete(dashPath + 'deleteUserDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteUserDashboard);
-    app.post(dashPath   + 'createDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.createDashboard);
-    app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
+    app.delete(dashPath + 'deleteUserDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.deleteUserDashboard);
+    app.post(dashPath   + 'createDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.createDashboard);
+    app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get(facebookPath + 'login', fbAuth);
-
-    app.get(facebookPath + 'login/success', function (req, res, next) {
-        passport.authenticate('facebook');
-        console.log('success');
-        console.log(req.query.state);
-        return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
-    });
+    app.get(facebookPath + 'login', fbReqAuth);
+    app.get(facebookPath + 'login/success', fbAuth, FbManager.fb_login_success);
 
     app.get(facebookPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
 

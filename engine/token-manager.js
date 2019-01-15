@@ -289,21 +289,25 @@ const deleteGaData = (req, res) => {
     })
 };
 
-const upsertFbKey = (req, res, next) => {
+const upsertFbKey = async (user_id, token) => {
 
-    FbToken.upsert({
-        user_id: req.user.id,
-        api_key: req.new_token
-    }).then(upserted => {
-        if(upserted) {
-            return res.status(HttpStatus.OK).send({updated: true, key: 'FB Token'});
+    let userFind, result;
+
+    try {
+        userFind = await FbToken.findOne({where: {user_id: user_id}});
+
+        // If an occurrence alread exists, then update it, else insert a new row
+        if(userFind) {
+            result = await FbToken.update({api_key: token}, {where: {user_id: user_id}});
         } else {
-            return res.status(HttpStatus.CREATED).send({created: true, key: 'FB Token'});
+            result = await FbToken.create({user_id: user_id, api_key: token});
         }
-    }).catch(err => {
+
+        return !!result;
+    } catch (err) {
         console.error(err);
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({error: true, message: 'Error upserting the FB Token'});
-    })
+        return false;
+    }
 };
 
 const getPageToken = async (token) => {
