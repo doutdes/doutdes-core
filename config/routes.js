@@ -89,9 +89,8 @@ module.exports = function (app, passport) {
         return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
     });
 
-    app.get(facebookPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
-
-    app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
+    app.get(facebookPath + 'page', requireAuth, AccessManager.roleAuthorization(all), IgManager.?);
+    app.get(facebookPath + 'audiencecity', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
     app.get(facebookPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
     app.get(facebookPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
     app.get(facebookPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ENGAGED_USERS), FbManager.fb_getData);
@@ -103,6 +102,33 @@ module.exports = function (app, passport) {
     app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_TOTAL), FbManager.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
+    app.get(instagramPath + 'login',
+        function(req,res,next) {
+            req.user_fucking_id = req.query.id;
+            console.log(req.query.id);
+            passport.authenticate('instagram', {scope: 'instagram_basics,instagram_manage_insights,manage_pages'})(req, res, next)
+        }
+    );
+
+    app.get(instagramPath + 'login/success', passport.authenticate('instagram'), function (req, res) {
+        console.log('success');
+        console.log(req.user);
+        // console.log(req.session.user_fucking_id);
+        return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
+    });
+
+    app.get(instagramPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
+    app.get(instagramPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
+    app.get(instagramPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
+    app.get(instagramPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
+    app.get(instagramPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ENGAGED_USERS), FbManager.fb_getData);
+    app.get(instagramPath + 'pageimpressions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbManager.fb_getData);
+    app.get(instagramPath + 'pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE),  FbManager.fb_getData);
+    app.get(instagramPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbManager.fb_getData);
+    app.get(instagramPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbManager.fb_getData);
+    app.get(instagramPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbManager.fb_getData);
+    app.get(instagramPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_TOTAL), FbManager.fb_getData);
+
     app.get(instagramPath + 'reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getReach);
     app.get(instagramPath + 'impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getImpressions);
     app.get(instagramPath + 'profviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getProfileViews);
