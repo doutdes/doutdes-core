@@ -76,15 +76,17 @@ module.exports = function (app, passport) {
     /****************** FACEBOOK MANAGER ********************/
     app.get(facebookPath + 'login',
         function(req,res,next) {
-            req.user_fucking_id = req.query.id;
+            req.user_fucking_id = 'something';
             console.log(req.query.id);
-            passport.authenticate('facebook', {scope: 'manage_pages'})(req, res, next)
+            var callback_url = 'http://localhost:443/fb/login/success?id=17';
+            passport.authenticate('facebook', {state: req.query.id})(req, res, next)
         }
     );
 
-    app.get(facebookPath + 'login/success', passport.authenticate('facebook'), function (req, res) {
+    app.get(facebookPath + 'login/success', function (req, res, next) {
+        passport.authenticate('facebook', { state: req.quer});
         console.log('success');
-        console.log(req.user);
+        console.log(req.query);
         // console.log(req.session.user_fucking_id);
         return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
     });

@@ -50,7 +50,7 @@ const fb_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookData(req.params.page_id, req.metric, DAY, key.api_key);
+        data = await FacebookApi.getFacebookData(null, req.metric, DAY, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
