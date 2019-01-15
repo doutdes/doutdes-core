@@ -25,7 +25,6 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
-    const fbAuth = passport.authenticate('facebook', {scope: 'manage_pages'});
 
     const admin  = '0';
     const user   = '1';
@@ -75,25 +74,33 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get(facebookPath + 'login', passport.authenticate('facebook', {scope: 'manage_pages'}));
+    app.get(facebookPath + 'login',
+        function(req,res,next) {
+            req.user_fucking_id = req.query.id;
+            console.log(req.query.id);
+            passport.authenticate('facebook', {scope: 'manage_pages'})(req, res, next)
+        }
+    );
+
     app.get(facebookPath + 'login/success', passport.authenticate('facebook'), function (req, res) {
         console.log('success');
         console.log(req.user);
+        // console.log(req.session.user_fucking_id);
         return res.redirect('http://localhost:4200/#/preferences/api-keys/' + req.user);
     });
 
     app.get(facebookPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
 
-    app.get(facebookPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/fancountry', requireAuth, AccessManager.roleAuthorization(all),  FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/engageduser', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ENGAGED_USERS), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pageimpressions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE),  FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pagereactions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbManager.fb_getData);
-    app.get(facebookPath + ':page_id/pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_TOTAL), FbManager.fb_getData);
+    app.get(facebookPath + 'fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
+    app.get(facebookPath + 'fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
+    app.get(facebookPath + 'fancountry', requireAuth, AccessManager.roleAuthorization(all),  FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
+    app.get(facebookPath + 'engageduser', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ENGAGED_USERS), FbManager.fb_getData);
+    app.get(facebookPath + 'pageimpressions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbManager.fb_getData);
+    app.get(facebookPath + 'pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE),  FbManager.fb_getData);
+    app.get(facebookPath + 'pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbManager.fb_getData);
+    app.get(facebookPath + 'pagereactions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbManager.fb_getData);
+    app.get(facebookPath + 'pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbManager.fb_getData);
+    app.get(facebookPath + 'pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_TOTAL), FbManager.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(instagramPath + 'reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getReach);
