@@ -66,7 +66,10 @@ const checkExistence = async (req, res) => {
                 service: parseInt(req.params.type)
             })
         } else {
-            return res.status(HttpStatus.NO_CONTENT).send({});
+            return res.status(HttpStatus.OK).send({
+                exists: false,
+                service: parseInt(req.params.type)
+            });
         }
 
     } catch (e) {

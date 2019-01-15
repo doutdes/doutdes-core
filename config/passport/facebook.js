@@ -1,10 +1,9 @@
 const FacebookStrategy = require('passport-facebook').Strategy;
 const FbToken = require('../../models/index').FbToken;
 
-const clientID = '';
-const clientSecret = '';
+const clientID = '2465723383501355';
+const clientSecret = '52179fb1d97377d14444390bab168855';
 const callbackURL = 'http://localhost:443/fb/login/success';
-
 
 module.exports = new FacebookStrategy({
     clientID: clientID,
