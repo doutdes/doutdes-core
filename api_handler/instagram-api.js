@@ -33,30 +33,60 @@ global.WEEK = 'week';
 global.DAY = 'day';
 global.LIFETIME = 'lifetime';
 
-/**GET pageID from instagram token**/
-
-function getPageId(token) {
+async function getPageAccessToken(token, pageID) {
+    let result;
     const options = {
         method: GET,
-        uri: 'https://graph.facebook.com/me',
+        uri: 'https://graph.facebook.com/me/accounts',
         qs: {
-            access_token: token
+            access_token: token,
+            fields: 'name,id,access_token,instagram_business_account'
         }
     };
 
-    return new Promise((resolve, reject) => {
+    try {
+        result = JSON.parse(await Request(options));
+        const page = {
+            access_token,
+            id
+        };
+        for (const index in result) {
+            page.access_token = result[index]['access_token'],
+                page.id = result[index]['id']
+            if (page.id == ID)
+                return page.access_token;
+        }
+    } catch (e) {
+        console.error(e);
+    };
 
-        Request(options)
-            .then(result => {
-                resolve(result);
-            })
-            .catch(err => {
-                console.error(err);
-                reject(err);
-            })
-    });
-};
+    try {
+        result = JSON.parse(await Request(options));
+        return result['access_token'];
+    } catch (e) {
+        console.error(e);
+    }
+}
 
+/**GET pageID from instagram token**/
+async function getPagesID(token) {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/me/accounts',
+        qs: {
+            access_token: token,
+            fields: 'name,id,access_token,instagram_business_account'
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
+}
 /** Facebook Page/Insight query **/
 
 function instagramQuery(method, metric, period, pageID, token) {
@@ -85,25 +115,16 @@ function instagramQuery(method, metric, period, pageID, token) {
     });
 }
 
-/** METRICS **/
+const getInstagramData = async (pageID, metric, period, token) => {
+    let result, access_token;
 
-/*Getter for business page reach*/
-exports.getReach = function (period, token) {
-    console.log("Pending App Review");
-    return 0;
+    try {
+        // pageId = await getPageId(token);
+        access_token = await getPageAccessToken(token, pageID);
+        result = await instagramQuery(GET, metric, period, pageID, access_token);
 
-};
-
-/*Getter for business page profile views*/
-exports.getProfileViews = function (period, token) {
-    console.log("Pending App Review");
-    return 0;
-
-};
-
-/*Getter for business page impressions*/
-exports.getImpressions = function (period, token) {
-    console.log("Pending App Review");
-    return 0;
-
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
 };
