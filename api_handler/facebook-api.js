@@ -71,25 +71,6 @@ async function getPagesID(token) {
     }
 }
 
-async function getIgPagesID(token) {
-    let result;
-    const options = {
-        method: GET,
-        uri: 'https://graph.facebook.com/me/accounts',
-        qs: {
-            access_token: token,
-            fields: 'name,id,access_token,instagram_business_account'
-        }
-    };
-
-    try {
-        result = JSON.parse(await Request(options));
-        return result;
-    } catch (e) {
-        console.error(e);
-    }
-}
-
 /** Facebook Page/Insight query **/
 async function facebookQuery(method, metric, period, pageID, token) {
     let result;
