@@ -53,7 +53,7 @@ async function getPageAccessToken(token, pageID) {
         for (const index in result) {
             page.access_token = result[index]['access_token'],
                 page.id = result[index]['id']
-            if (page.id == ID)
+            if (page.id == pageID)
                 return page.access_token;
         }
     } catch (e) {
@@ -128,3 +128,5 @@ const getInstagramData = async (pageID, metric, period, token) => {
         console.error(e);
     }
 };
+
+module.exports = {getInstagramData, getPagesID, METRICS};

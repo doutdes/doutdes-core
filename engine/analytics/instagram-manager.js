@@ -3,122 +3,108 @@
 'use strict';
 
 const Model = require('../../models/index');
-const IgToken = Model.FbToken;
+const FbToken = Model.FbToken;
+
+const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
 
 /***************** INSTAGRAM *****************/
 const InstagramApi = require('../../api_handler/instagram-api');
 
-exports.ig_getReach = function (req, res, next) {
-
-    IgToken.findOne({
-        where: {
-            user_id: req.user.id
-        }
-    })
-        .then(key => {
-            InstagramApi.getReach(DAY, key.api_key)
-                .then(result => {
-                    var jsonResult = JSON.parse(result);
-                    console.log('Analytics Manager: ' + jsonResult);
-                    return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
-                })
-                .catch(err => {
-                    console.error(err);
-                    if (err.statusCode === 400) {
-                        return res.status(HttpStatus.BAD_REQUEST).send({
-                            name: 'Instagram Bad Request',
-                            message: 'Invalid OAuth access token.'
-                        });
-                    }
-                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                        name: 'Instagram Internal Server Error',
-                        message: 'There is a problem with Instagram servers'
-                    });
-                })
-        })
-        .catch(err => {
-            console.error(err);
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                name: 'Database Internal Error',
-                message: 'There is a problem with our database'
-            });
-        })
-
+// TODO change the response if there are no data
+const setMetric = (metric) => {
+    return (req, res, next) => {
+        req.metric = metric;
+        next();
+    }
 };
 
-exports.ig_getProfileViews = function (req, res, next) {
+const ig_getPages = async (req, res) => {
+    let data, key;
+    let pages = [];
 
-    IgToken.findOne({
-        where: {
-            user_id: req.user.id
+    try {
+        console.log(req.user.id);
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = (await FacebookApi.getIgPagesID(key.api_key))['data'];
+
+        for (const index in data) {
+            // console.log(data[index]);
+
+            if (data[index]['instagram_business_account']) {
+
+                const page = {
+                    name: data[index]['name'],
+                    id: data[index]['instagram_business_account']['id']
+                };
+
+                pages.push(page);
+            }
         }
-    })
-        .then(key => {
-            InstagramApi.getProfileViews(DAY, key.api_key)
-                .then(result => {
-                    var jsonResult = JSON.parse(result);
-                    console.log('Analytics Manager: ' + jsonResult);
-                    return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
-                })
-                .catch(err => {
-                    console.error(err);
-                    if (err.statusCode === 400) {
-                        return res.status(HttpStatus.BAD_REQUEST).send({
-                            name: 'Instagram Bad Request',
-                            message: 'Invalid OAuth access token.'
-                        });
-                    }
-                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                        name: 'Instagram Internal Server Error',
-                        message: 'There is a problem with Instagram servers'
-                    });
-                })
+
+        return res.status(HttpStatus.OK).send(pages);
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
         })
-        .catch(err => {
-            console.error(err);
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                name: 'Database Internal Error',
-                message: 'There is a problem with our database'
-            });
-        })
+    }
 };
 
-exports.ig_getImpressions = function (req, res, next) {
+const ig_getData = async (req, res) => {
+    let key;
+    let data;
 
-    IgToken.findOne({
-        where: {
-            user_id: req.user.id
-        }
-    })
-        .then(key => {
-            InstagramApi.getImpressions(DAY, key.api_key)
-                .then(result => {
-                    var jsonResult = JSON.parse(result);
-                    console.log('Analytics Manager: ' + jsonResult);
-                    return res.status(HttpStatus.OK).send(jsonResult.data[0].values);
-                })
-                .catch(err => {
-                    console.error(err);
-                    if (err.statusCode === 400) {
-                        return res.status(HttpStatus.BAD_REQUEST).send({
-                            name: 'Instagram Bad Request',
-                            message: 'Invalid OAuth access token.'
-                        });
-                    }
-                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                        name: 'Instagram Internal Server Error',
-                        message: 'There is a problem with Instagram servers'
-                    });
-                })
-        })
-        .catch(err => {
-            console.error(err);
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                name: 'Database Internal Error',
-                message: 'There is a problem with our database'
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, DAY, key.api_key);
+
+        return res.status(HttpStatus.OK).send(data);
+    } catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Instagram Bad Request',
+                message: 'Invalid OAuth access token.'
             });
-        })
+        }
 
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        });
+    }
 };
+
+//???
+const ig_login_success = async (req, res) => {
+    const user_id = req.query.state;
+    const token = req.user;
+
+    try {
+        const upserting = await TokenManager.upsertFbKey(user_id, token);
+
+        res.redirect('http://localhost:4200/#/preferences/api-keys/')
+
+        // if(upserting) {
+        //     return res.status(HttpStatus.OK).send({
+        //         logged: true,
+        //         service: 'Facebook',
+        //         service_id: '1'
+        //     })
+        // }
+    } catch (err) {
+        console.error(err);
+        // return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        //     error: true,
+        //     message: 'Error logging to Facebook'
+        // })
+    }
+};
+
+
+
+/** EXPORTS **/
+module.exports = {setMetric, ig_getData, ig_getPages, ig_login_success};
