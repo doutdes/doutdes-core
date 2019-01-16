@@ -25,6 +25,11 @@ const METRICS = {
     P_WEBSITE_CLICKS: 'website_clicks',
 };
 
+const PERIOD = {
+
+};
+
+
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
@@ -129,6 +134,4 @@ const getInstagramData = async (pageID, metric, period, token) => {
     }
 };
 
-module.exports = {getInstagramData, getPagesID, METRICS};
-
-//FORCE COMMIT
+module.exports = {getInstagramData, getPagesID, METRICS, PERIOD};

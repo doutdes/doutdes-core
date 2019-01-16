@@ -13,9 +13,10 @@ const HttpStatus = require('http-status-codes');
 const InstagramApi = require('../../api_handler/instagram-api');
 
 // TODO change the response if there are no data
-const setMetric = (metric) => {
+const setMetric = (metric, period) => {
     return (req, res, next) => {
         req.metric = metric;
+        req.period = period;
         next();
     }
 };
@@ -27,7 +28,7 @@ const ig_getPages = async (req, res) => {
     try {
         console.log(req.user.id);
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = (await FacebookApi.getIgPagesID(key.api_key))['data'];
+        data = (await InstagramApi.getPagesID(key.api_key))['data'];
 
         for (const index in data) {
             // console.log(data[index]);
@@ -59,7 +60,7 @@ const ig_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, DAY, key.api_key);
+        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
@@ -104,9 +105,5 @@ const ig_login_success = async (req, res) => {
     }
 };
 
-
-
 /** EXPORTS **/
 module.exports = {setMetric, ig_getData, ig_getPages, ig_login_success};
-
-//FORCE COMMIT
