@@ -37,6 +37,7 @@ module.exports = function (app, passport) {
 
     /* SERVICE METRICS*/
     const FBM = require('../api_handler/facebook-api').METRICS;
+    const IGM = require('..api/handler/facebook-api').METRICS;
     const GAM = require('../api_handler/googleAnalytics-api').METRICS;
     const GAD = require('../api_handler/googleAnalytics-api').DIMENSIONS;
     const GAS = require('../api_handler/googleAnalytics-api').SORT;
@@ -91,12 +92,21 @@ module.exports = function (app, passport) {
     app.get(facebookPath + ':page_id/pageviewstotal', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_TOTAL), FbManager.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
+    app.get(instagramPath + ':page_id/audcity', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_AUDIENCE_CITY), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/audcountry', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_AUDIENCE_COUNTRY), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/audgenderage', requireAuth, AccessManager.roleAuthorization(all),  IgManager.setMetric(IGM.P_AUDIENCE_GENDER_AGE), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/audlocale', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_AUDIENCE_LOCALE), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/emailcontacts', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_EMAIL_CONTACTS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/followercount', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_FOLLOWER_COUNT),  IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/getdirclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_GET_DIRECTIONS_CLICKS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_IMPRESSIONS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/onlinefollowers', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_ONLINE_FOLLOWERS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/phonecallclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_PHONE_CALL_CLICKS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/profileviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_PROFILE_VIEWS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_REACH), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/textmessageclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_TEXT_MESSAGE_CLICKS), IgManager.ig_getData);
+    app.get(instagramPath + ':page_id/websiteclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.P_WEBSITE_CLICKS), IgManager.ig_getData);
 
-    app.get(instagramPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.ig_getPages);
-
-    app.get(instagramPath + 'reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getReach);
-    app.get(instagramPath + 'impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getImpressions);
-    app.get(instagramPath + 'profviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getProfileViews);
 
     /****************** GOOGLE MANAGER ********************/
     app.get(googlePath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.SESSIONS, GAD.DATE), GaManager.ga_getData);
