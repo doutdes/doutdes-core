@@ -310,6 +310,26 @@ const upsertFbKey = async (user_id, token) => {
     }
 };
 
+const upsertGaKey = async (user_id, token) => {
+    let userFind, result;
+
+    try {
+        userFind = await GaToken.findOne({where: {user_id: user_id}});
+
+        // If an occurrence alread exists, then update it, else insert a new row
+        if(userFind) {
+            result = await GaToken.update({private_key: token}, {where: {user_id: user_id}});
+        } else {
+            result = await GaToken.create({user_id: user_id, private_key: token});
+        }
+
+        return !!result;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
 const getPageToken = async (token) => {
     const options = {
         method: GET,
@@ -328,4 +348,4 @@ const getPageToken = async (token) => {
     }
 }
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, checkExistence};
+module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence};

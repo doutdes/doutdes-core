@@ -27,6 +27,15 @@ module.exports = function (app, passport) {
     const requireAuth = passport.authenticate('jwt', {session: false});
     const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: 'manage_pages', state: req.query.user_id})(req, res, next)};
     const fbAuth = passport.authenticate('facebook');
+    const gaReqAuth = (req,res,next) => {
+        passport.authenticate('google', {
+            scope: 'https://www.googleapis.com/auth/userinfo.email  https://www.googleapis.com/auth/analytics.readonly',
+            accessType: 'offline',
+            prompt: 'consent',
+            state: req.query.user_id
+        })(req, res, next)
+    };
+    const gaAuth = passport.authenticate('google');
 
     const admin  = '0';
     const user   = '1';
@@ -45,6 +54,12 @@ module.exports = function (app, passport) {
 
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
+
+    app.get(fbPath + 'login', fbReqAuth);
+    app.get(fbPath + 'login/success', fbAuth, FbManager.fb_login_success);
+
+    app.get(gaPath + 'login', gaReqAuth);
+    app.get(gaPath + 'login/success', gaAuth, GaManager.ga_login_success);
 
     /****************** CRUD USERS ********************/
     app.post(amPath     + 'create/', AccessManager.createUser);
@@ -75,9 +90,6 @@ module.exports = function (app, passport) {
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
-    app.get(fbPath + 'login', fbReqAuth);
-    app.get(fbPath + 'login/success', fbAuth, FbManager.fb_login_success);
-
     app.get(fbPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
 
     app.get(fbPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);

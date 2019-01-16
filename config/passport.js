@@ -1,5 +1,6 @@
-const basic    = require('./passport/basic');
 const jwt      = require('./passport/jwt');
+const basic    = require('./passport/basic');
+const google   = require('./passport/google');
 const facebook = require('./passport/facebook');
 
 const Users = require('../models/index').Users;
@@ -26,5 +27,6 @@ module.exports = function (passport) {
     // strategies
     passport.use(basic);
     passport.use('jwt', jwt);
+    passport.use('google', google);
     passport.use('facebook', facebook);
 };

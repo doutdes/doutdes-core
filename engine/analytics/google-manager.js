@@ -3,6 +3,8 @@
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
 
+const TokenManager = require('../token-manager');
+
 const HttpStatus = require('http-status-codes');
 
 /***************** GOOGLE ANALYTICS *****************/
@@ -17,6 +19,20 @@ const setMetrics = (metrics, dimensions, sort=null, filters=null) => {
         next();
     }
 };
+
+const ga_login_success = async (req, res) => {
+    const user_id = req.query.state;
+    const token = req.user.refreshToken;
+
+    try {
+        const upserting = await TokenManager.upsertGaKey(user_id, token);
+
+        res.redirect('http://localhost:4200/#/preferences/api-keys/')
+    } catch (err) {
+        console.error(err);
+    }
+};
+
 const ga_getData = async (req, res) => {
     let key;
     let data;
@@ -43,4 +59,4 @@ const ga_getData = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetrics, ga_getData};
+module.exports = {setMetrics, ga_login_success, ga_getData};
