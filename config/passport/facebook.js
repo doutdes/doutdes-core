@@ -1,5 +1,4 @@
 const FacebookStrategy = require('passport-facebook').Strategy;
-const FbToken = require('../../models/index').FbToken;
 
 const clientID = '2465723383501355';
 const clientSecret = '066a7043258396eeb0df8581bef8b0c8';
