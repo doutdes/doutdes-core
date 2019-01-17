@@ -94,20 +94,14 @@ async function facebookQuery(method, metric, period, pageID, token, date_preset)
 
 /** METRICS **/
 const getFacebookData = async (pageID, metric, period, token) => {
-    let result, access_token, this_year, last_year;
+    let access_token, this_year, last_year;
 
     try {
-        // pageId = await getPageId(token);
         access_token = await getPageAccessToken(token, pageID);
         this_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'this_year'))['data'][0]['values'];
         last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
 
-        // for(const index in this_year) {
-        //     console.log(last_year[index]);
-        //     last_year.push(this_year[index]);
-        // }
-
-        return this_year.concat(last_year);
+        return last_year.concat(this_year);
     } catch (e) {
         console.error(e);
     }
