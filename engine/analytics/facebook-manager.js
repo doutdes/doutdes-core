@@ -78,20 +78,8 @@ const fb_login_success = async (req, res) => {
         const upserting = await TokenManager.upsertFbKey(user_id, token);
 
         res.redirect('http://localhost:4200/#/preferences/api-keys/')
-
-        // if(upserting) {
-        //     return res.status(HttpStatus.OK).send({
-        //         logged: true,
-        //         service: 'Facebook',
-        //         service_id: '1'
-        //     })
-        // }
     } catch (err) {
         console.error(err);
-        // return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-        //     error: true,
-        //     message: 'Error logging to Facebook'
-        // })
     }
 };
 

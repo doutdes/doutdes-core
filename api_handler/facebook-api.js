@@ -7,7 +7,6 @@ const Request = require('request-promise');
 
 /** CONSTANTS **/
 const fbInsightURI = 'https://graph.facebook.com/';
-const date_preset = 'this_year';
 
 /** METRIC COSTANT **/
 const METRICS = {
@@ -72,7 +71,7 @@ async function getPagesID(token) {
 }
 
 /** Facebook Page/Insight query **/
-async function facebookQuery(method, metric, period, pageID, token) {
+async function facebookQuery(method, metric, period, pageID, token, date_preset) {
     let result;
     const options = {
         method: method,
@@ -95,14 +94,20 @@ async function facebookQuery(method, metric, period, pageID, token) {
 
 /** METRICS **/
 const getFacebookData = async (pageID, metric, period, token) => {
-    let result, access_token;
+    let result, access_token, this_year, last_year;
 
     try {
         // pageId = await getPageId(token);
         access_token = await getPageAccessToken(token, pageID);
-        result = await facebookQuery(GET, metric, period, pageID, access_token);
+        this_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'this_year'))['data'][0]['values'];
+        last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
 
-        return result;
+        // for(const index in this_year) {
+        //     console.log(last_year[index]);
+        //     last_year.push(this_year[index]);
+        // }
+
+        return this_year.concat(last_year);
     } catch (e) {
         console.error(e);
     }
