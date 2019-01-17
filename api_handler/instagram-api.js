@@ -104,6 +104,9 @@ async function getPagesID(token) {
 
 function instagramQuery(method, metric, period, pageID, token, date_preset) {
 
+    const until = new Date();
+    const since = until;
+    since.setDate(since.getDate()-30);
     const options = {
         method: method,
         uri: igInsightURI + pageID + '/insights/',
@@ -111,7 +114,9 @@ function instagramQuery(method, metric, period, pageID, token, date_preset) {
             access_token: token,
             metric: metric,
             period: period,
-            date_preset: date_preset
+            date_preset: date_preset,
+            since: since,
+            util: until,
         }
     };
 
@@ -134,8 +139,8 @@ const getInstagramData = async (pageID, metric, period, token) => {
         //pageId = await getPageId(token);
         access_token = await getPageAccessToken(token, pageID);
         //console.log('TOKEN OF ID '+pageID+': '+access_token);
-        result = await instagramQuery(GET, metric, period, pageID, access_token);
-        return result;
+        result = JSON.parse(await instagramQuery(GET, metric, period, pageID, access_token));
+        return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
     }
