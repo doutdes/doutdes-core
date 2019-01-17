@@ -26,7 +26,10 @@ const METRICS = {
 };
 
 const PERIOD = {
-
+    DAY: 'day',
+    LIFETIME: 'lifetime',
+    WEEK: 'week',
+    D_28: 'days_28',
 };
 
 
@@ -52,13 +55,18 @@ async function getPageAccessToken(token, pageID) {
     try {
         result = JSON.parse(await Request(options));
         const page = {
-            access_token,
-            id
+            'access_token': null,
+            'id': null
         };
-        for (const index in result) {
-            page.access_token = result[index]['access_token'],
-                page.id = result[index]['id']
-            if (page.id == pageID)
+        //console.log('RESULT: ');
+        //console.log(result['data']);
+        for (const index in result['data']) {
+            page.access_token = result['data'][index]['access_token'],
+            page.business_id = result['data'][index]['instagram_business_account']['id']
+            //console.log('Now seeing ID: '+page.id);
+            //console.log('With token: '+page.access_token);
+
+            if (page.business_id == pageID)
                 return page.access_token;
         }
     } catch (e) {
@@ -94,11 +102,11 @@ async function getPagesID(token) {
 }
 /** Facebook Page/Insight query **/
 
-function instagramQuery(method, metric, period, pageID, token) {
+function instagramQuery(method, metric, period, pageID, token, date_preset) {
 
     const options = {
         method: method,
-        uri: igInsightURI + pageID + '/insights',
+        uri: igInsightURI + pageID + '/insights/',
         qs: {
             access_token: token,
             metric: metric,
@@ -122,12 +130,11 @@ function instagramQuery(method, metric, period, pageID, token) {
 
 const getInstagramData = async (pageID, metric, period, token) => {
     let result, access_token;
-
     try {
-        // pageId = await getPageId(token);
+        //pageId = await getPageId(token);
         access_token = await getPageAccessToken(token, pageID);
+        //console.log('TOKEN OF ID '+pageID+': '+access_token);
         result = await instagramQuery(GET, metric, period, pageID, access_token);
-
         return result;
     } catch (e) {
         console.error(e);

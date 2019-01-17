@@ -26,13 +26,10 @@ const ig_getPages = async (req, res) => {
     let pages = [];
 
     try {
-        console.log(req.user.id);
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await InstagramApi.getPagesID(key.api_key))['data'];
 
         for (const index in data) {
-            // console.log(data[index]);
-
             if (data[index]['instagram_business_account']) {
 
                 const page = {
@@ -61,7 +58,6 @@ const ig_getData = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, key.api_key);
-
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -106,4 +102,4 @@ const ig_login_success = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, ig_getData, ig_getPages, ig_login_success};
+module.exports = {setMetric, ig_getData, ig_getPages};
