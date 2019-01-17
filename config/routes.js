@@ -25,8 +25,11 @@ module.exports = function (app, passport) {
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
+
     const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: 'manage_pages', state: req.query.user_id})(req, res, next)};
     const fbAuth = passport.authenticate('facebook');
+
+    const gaAuth = passport.authenticate('google');
     const gaReqAuth = (req,res,next) => {
         passport.authenticate('google', {
             scope: 'https://www.googleapis.com/auth/userinfo.email  https://www.googleapis.com/auth/analytics.readonly',
@@ -35,7 +38,6 @@ module.exports = function (app, passport) {
             state: req.query.user_id
         })(req, res, next)
     };
-    const gaAuth = passport.authenticate('google');
 
     const admin  = '0';
     const user   = '1';

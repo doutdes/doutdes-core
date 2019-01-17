@@ -1,7 +1,9 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-const clientID      = '677265943833-pk2h68akq4u3o6elhcupu8bt89qg4cjl.apps.googleusercontent.com';
-const clientSecret  = 'cXLadVc3IgSPrkRHwSqdgEZy';
+const config = require('../config').production;
+
+const clientID      = config.ga_client_id;
+const clientSecret  = config.ga_client_secret;
 const callbackURL   = 'http://localhost:443/ga/login/success';
 
 module.exports = new GoogleStrategy({

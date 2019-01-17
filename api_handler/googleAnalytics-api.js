@@ -1,5 +1,8 @@
 'use strict';
 const {google} = require('googleapis');
+const Request = require('request-promise');
+
+const config = require('../config/config').production;
 
 const METRICS = {
     SESSIONS: 'ga:sessions',
@@ -22,28 +25,43 @@ const FILTER = {
     SESSIONS_GT_5: 'ga:sessions>5'
 };
 
+const getAccessToken = async (refresh_token) => {
+    let result;
+    const options = {
+        method: 'POST',
+        uri: 'https://www.googleapis.com/oauth2/v4/token',
+        qs: {
+            client_id: config.ga_client_id,
+            client_secret: config.ga_client_secret,
+            refresh_token: refresh_token,
+            grant_type: 'refresh_token'
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result['access_token'];
+    } catch (e) {
+        console.error(e);
+    }
+};
 const getViewID = async (private_key) => {
-    const OaClient = new google.auth.OAuth2();
-    OaClient.setCredentials({access_token: private_key});
+    const access_token = await getAccessToken(private_key);
 
     const result = await google.analytics('v3').management.profiles.list({
-        auth: OaClient,
+        'access_token': access_token ,
         'accountId': '~all',
         'webPropertyId': '~all'
     });
     return result.data.items[0].id;
 };
-
 const getData = async(private_key, start_date, end_date, metrics, dimensions, sort=null, filters=null) => {
 
     const view_id = await getViewID(private_key);
-    const OaClient = new google.auth.OAuth2();
-    OaClient.setCredentials({access_token: private_key});
-
-    // OaClient.setCredentials({refresh_token: private_key});
+    const access_token = await getAccessToken(private_key);
 
     let params = {
-        auth: OaClient,
+        'access_token': access_token ,
         'ids': 'ga:' + view_id,
         'start-date': start_date,
         'end-date': end_date,
