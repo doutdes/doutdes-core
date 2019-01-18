@@ -24,9 +24,6 @@ const ga_login_success = async (req, res) => {
     const user_id = req.query.state;
     const token = req.user.refreshToken;
 
-    console.log(token);
-    console.log(req.user);
-
     try {
         const upserting = await TokenManager.upsertGaKey(user_id, token);
 

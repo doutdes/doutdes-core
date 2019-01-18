@@ -20,7 +20,7 @@ const setMetric = (metric) => {
 
 const fb_getPages = async (req, res) => {
     let data, key;
-    let pages = []
+    let pages = [];
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
@@ -75,46 +75,15 @@ const fb_login_success = async (req, res) => {
     const token = req.user;
 
     try {
-        const upserting = await TokenManager.upsertFbKey(user_id, token);
+        // Before to upsert the token to the database, the token has to be exchanged with a long-live token
+        const longToken = await FacebookApi.getLongLiveAccessToken(token);
+        const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
-        res.redirect('http://localhost:4200/#/preferences/api-keys/')
+        res.redirect('http://localhost:4200/#/preferences/api-keys/'); // TODO to choose a url to send an error
     } catch (err) {
         console.error(err);
-    }
-};
-
-const ig_getPages = async (req, res) => {
-    let data, key;
-    let pages = [];
-
-    try {
-        console.log(req.user.id);
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = (await FacebookApi.getIgPagesID(key.api_key))['data'];
-
-        for (const index in data) {
-            // console.log(data[index]);
-
-            if (data[index]['instagram_business_account']) {
-
-                const page = {
-                    name: data[index]['name'],
-                    id: data[index]['instagram_business_account']['id']
-                };
-
-                pages.push(page);
-            }
-        }
-
-        return res.status(HttpStatus.OK).send(pages);
-    } catch (err) {
-        console.error(err);
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
-        })
     }
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, ig_getPages, fb_login_success};
+module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success};

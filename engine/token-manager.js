@@ -146,8 +146,6 @@ const insertFbKey = (req, res) => {
             // Get the right token by doing the call to /me/accounts
             const token = await getPageToken(req.body.api_key);
 
-            console.log(token);
-
             FbToken.create({
                 user_id: req.user.id,
                 api_key: token

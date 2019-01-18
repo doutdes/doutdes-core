@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * API calls from Page Insights Facebook
 **/
@@ -7,6 +9,7 @@ const Request = require('request-promise');
 
 /** CONSTANTS **/
 const fbInsightURI = 'https://graph.facebook.com/';
+const config       = require('../app').config;
 
 /** METRIC COSTANT **/
 const METRICS = {
@@ -33,7 +36,7 @@ global.DAY = 'day';
 global.LIFETIME = 'lifetime';
 
 /** GET pageID from facebook token **/
-async function getPageAccessToken(token, pageID) {
+const getPageAccessToken = async (token, pageID) => {
     let result;
     const options = {
         method: GET,
@@ -48,11 +51,38 @@ async function getPageAccessToken(token, pageID) {
         return result['access_token'];
     } catch (e) {
         console.error(e);
+        throw new Error('getPageAccessToken -> Error getting the page access token');
     }
-}
+};
+
+/** GET Given a short-live token, it returns a long-live token **/
+const getLongLiveAccessToken = async (token) => {
+    const FB_CLIENT_ID     = config['fb_client_id'];
+    const FB_CLIENT_SECRET = config['fb_client_secret'];
+
+    let result;
+    const options = {
+        method: GET,
+        uri: fbInsightURI + 'oauth/access_token',
+        qs: {
+            grant_type: 'fb_exchange_token',
+            client_id: FB_CLIENT_ID,
+            client_secret: FB_CLIENT_SECRET,
+            fb_exchange_token: token
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result['access_token'];
+    } catch (e) {
+        console.error(e);
+        throw new Error('getLongLiveAccessToken -> Error getting the long live access token');
+    }
+};
 
 /** GET pageID and Name of the page from FB User Access Token **/
-async function getPagesID(token) {
+const getPagesID = async (token) =>  {
     let result;
     const options = {
         method: GET,
@@ -67,11 +97,12 @@ async function getPagesID(token) {
         return result;
     } catch (e) {
         console.error(e);
+        throw new Error('getPagesID -> Error getting the pages ID');
     }
-}
+};
 
 /** Facebook Page/Insight query **/
-async function facebookQuery(method, metric, period, pageID, token, date_preset) {
+const facebookQuery = async (method, metric, period, pageID, token, date_preset) => {
     let result;
     const options = {
         method: method,
@@ -89,10 +120,10 @@ async function facebookQuery(method, metric, period, pageID, token, date_preset)
         return result;
     } catch (e) {
         console.error(e);
+        throw new Error('facebookQuery -> Error during the Facebook query');
     }
-}
+};
 
-/** METRICS **/
 const getFacebookData = async (pageID, metric, period, token) => {
     let access_token, this_year, last_year;
 
@@ -104,8 +135,9 @@ const getFacebookData = async (pageID, metric, period, token) => {
         return last_year.concat(this_year);
     } catch (e) {
         console.error(e);
+        throw new Error('getFacebookData -> Error getting the Facebook Data');
     }
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, METRICS};
+module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken ,METRICS};
