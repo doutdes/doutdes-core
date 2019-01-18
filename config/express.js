@@ -44,5 +44,4 @@ module.exports = function (app, passport) {
         res.status(err.status || 500);
         res.render('error');
     });
-
 };
