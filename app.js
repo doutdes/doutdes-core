@@ -6,7 +6,6 @@ const passport = require('passport');
 
 /** Configuration load according to the environment**/
 const env = process.env.NODE_ENV || 'development';
-console.log(env);
 const config = require('./config/config')[env];
 
 /** Export of app, passport and the right configuration **/
