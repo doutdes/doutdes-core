@@ -9,7 +9,6 @@ module.exports = function (passport) {
 
     // serialize sessions
     passport.serializeUser((data, done) => {
-        console.log('11' + data);
         if(data.id) done(null, data.id);
         else        done(null, data);
     });
