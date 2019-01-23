@@ -2,8 +2,6 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 
 const config = require('../../app').config;
 
-console.log(config);
-
 const clientID      = config['fb_client_id'];
 const clientSecret  = config['fb_client_secret'];
 const callbackURL   = config['site_URL'] + 'fb/login/success';

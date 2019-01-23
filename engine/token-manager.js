@@ -314,6 +314,9 @@ const upsertGaKey = async (user_id, token) => {
     try {
         userFind = await GaToken.findOne({where: {user_id: user_id}});
 
+        console.log('user_id: ' + token);
+        console.log('tokToAdd: ' + token);
+
         // If an occurrence alread exists, then update it, else insert a new row
         if(userFind) {
             result = await GaToken.update({private_key: token}, {where: {user_id: user_id}});
