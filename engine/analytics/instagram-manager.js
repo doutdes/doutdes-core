@@ -13,16 +13,25 @@ const HttpStatus = require('http-status-codes');
 const InstagramApi = require('../../api_handler/instagram-api');
 
 // TODO change the response if there are no data
-const setMetric = (metric, period, interval) => {
-    const until = new Date();
-    const since = new Date();
-    since.setDate(since.getDate()-interval);
+const setMetric = (metric, period, interval=null) => {
+    let until = null;
+    let since = null;
+
+    if(interval) {
+        until = new Date();
+        since = new Date();
+        since.setDate(since.getDate()-interval);
+    }
+
 
     return (req, res, next) => {
         req.metric = metric;
         req.period = period;
-        req.since = since;
-        req.until = until;
+        if(interval)
+        {
+            req.since = since;
+            req.until = until;
+        }
         next();
     }
 };
@@ -57,6 +66,7 @@ const ig_getPages = async (req, res) => {
     }
 };
 
+/*Fetches the latest n media objects in profile (IMG/VID, stories excluded, use direct method instead)*/
 const ig_getMedia = async(req,res) =>  {
     let data, key;
     let n = req.params.n;
@@ -74,6 +84,7 @@ const ig_getMedia = async(req,res) =>  {
         })
     }
 };
+
 /*Fetches the images in the latest n media objects*/
 const ig_getImages = async(req,res) =>  {
     let data, key;
@@ -132,7 +143,10 @@ const ig_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key);
+        if(req.params.media_id)
+            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key,req.params.media_id);
+        else
+            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key, null);
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -150,5 +164,24 @@ const ig_getData = async (req, res) => {
     }
 };
 
+/*Fetches he latest n story frames (avaiable for 24 hours only)*/
+const ig_getStories = async(req,res) =>  {
+    let data, key;
+    let n = req.params.n;
+    let pageID = req.params.page_id;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = (await InstagramApi.getStories(pageID,key.api_key,n))['data'];
+        return res.status(HttpStatus.OK).send(data);
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+};
+
 /** EXPORTS **/
-module.exports = {setMetric, ig_getData, ig_getPages, ig_getMedia, ig_getVideos, ig_getImages};
+module.exports = {setMetric, ig_getData, ig_getPages, ig_getMedia, ig_getVideos, ig_getImages, ig_getStories};
