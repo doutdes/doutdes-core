@@ -18,6 +18,10 @@
     "password": null,
     "database": "database_production",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "ga_client_id" : "677265943833-pk2h68akq4u3o6elhcupu8bt89qg4cjl.apps.googleusercontent.com",
+    "ga_client_secret": "z-1cvuB9eKCmdnJeuthD3zlE",
+    "fb_client_id": "2465723383501355",
+    "fb_client_secret": "066a7043258396eeb0df8581bef8b0c8"
   }
 }

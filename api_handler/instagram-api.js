@@ -9,20 +9,27 @@ const date_preset = 'this_year';
 
 /** METRIC COSTANT **/
 const METRICS = {
-    P_AUDIENCE_CITY: 'audience_city',
-    P_AUDIENCE_COUNTRY: 'audience_country',
-    P_AUDIENCE_GENDER_AGE: 'audience_gender_age',
-    P_AUDIENCE_LOCALE: 'audience_locale',
-    P_EMAIL_CONTACTS: 'email_contacts',
-    P_FOLLOWER_COUNT: 'follower_count',
-    P_GET_DIRECTIONS_CLICKS: 'get_directions_clicks',
-    P_IMPRESSIONS: 'impressions',
-    P_ONLINE_FOLLOWERS: 'online_followers',
-    P_PHONE_CALL_CLICKS: 'phone_call_clicks',
-    P_PROFILE_VIEWS: 'profile_views',
-    P_REACH: 'reach',
-    P_TEXT_MESSAGE_CLICKS: 'text_message_clicks',
-    P_WEBSITE_CLICKS: 'website_clicks',
+    AUDIENCE_CITY: 'audience_city',
+    AUDIENCE_COUNTRY: 'audience_country',
+    AUDIENCE_GENDER_AGE: 'audience_gender_age',
+    AUDIENCE_LOCALE: 'audience_locale',
+    EMAIL_CONTACTS: 'email_contacts',
+    FOLLOWER_COUNT: 'follower_count',
+    GET_DIRECTIONS_CLICKS: 'get_directions_clicks',
+    IMPRESSIONS: 'impressions',
+    ONLINE_FOLLOWERS: 'online_followers',
+    PHONE_CALL_CLICKS: 'phone_call_clicks',
+    PROFILE_VIEWS: 'profile_views',
+    REACH: 'reach',
+    TEXT_MESSAGE_CLICKS: 'text_message_clicks',
+    WEBSITE_CLICKS: 'website_clicks',
+    ENGAGEMENT: 'engagement',
+    SAVED: 'saved',
+    VIDEO_VIEWS: 'video_views',
+    EXITS: 'exits',
+    REPLIES: 'replies',
+    TAPS_F: 'taps_forward',
+    TAPS_B: 'taps_back'
 };
 
 const PERIOD = {
@@ -100,25 +107,71 @@ async function getPagesID(token) {
         console.error(e);
     }
 }
+
+/**GET the latest n media from instagram **/
+async function getMedia(pageID, token, n=20) {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/'+pageID+'/media?limit='+n+'&fields=media_type',
+        qs: {
+            access_token: token,
+            fields: 'id,media_type'
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/**GET the latest n stories from instagram **/
+async function getStories(pageID, token, n=20) {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/'+pageID+'/stories?limit='+n,
+        qs: {
+            access_token: token,
+            fields: 'id,media_type'
+        }
+    };
+
+    try {
+        result = JSON.parse(await Request(options));
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 /** Facebook Page/Insight query **/
 
-function instagramQuery(method, metric, period, pageID, token, date_preset) {
+function instagramQuery(method, metric, period=null, since=null, until=null,pageID, token, date_preset=null, mediaID=null) {
 
-    const until = new Date();
-    const since = until;
-    since.setDate(since.getDate()-30);
+    if(since){
+        since.setDate(since.getDate()-1);
+    }
     const options = {
         method: method,
-        uri: igInsightURI + pageID + '/insights/',
         qs: {
             access_token: token,
             metric: metric,
-            period: period,
-            date_preset: date_preset,
-            since: since,
-            util: until,
         }
     };
+
+    if (since)       options['qs']['since'] = since;
+    if (until)    options['qs']['until'] = until;
+
+    if(period)    options['qs']['period'] = period;
+    if(date_preset) options['qs']['date_preset'] = date_preset;
+
+    if(mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
+    else          options['uri'] = igInsightURI + pageID + '/insights/';
+
 
     return new Promise((resolve, reject) => {
 
@@ -133,17 +186,20 @@ function instagramQuery(method, metric, period, pageID, token, date_preset) {
     });
 }
 
-const getInstagramData = async (pageID, metric, period, token) => {
+const getInstagramData = async (pageID, metric, period, since, until, token, mediaID=null) => {
     let result, access_token;
     try {
-        //pageId = await getPageId(token);
         access_token = await getPageAccessToken(token, pageID);
-        //console.log('TOKEN OF ID '+pageID+': '+access_token);
-        result = JSON.parse(await instagramQuery(GET, metric, period, pageID, access_token));
+        if(mediaID)
+            result = JSON.parse(await instagramQuery(GET, metric, null, null, null, pageID, access_token, null, mediaID));
+        else
+            result = JSON.parse(await instagramQuery(GET, metric, period, since, until, pageID, access_token));
+        console.log(result);
         return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
+        throw new Error("Bad Instagram Request");
     }
 };
 
-module.exports = {getInstagramData, getPagesID, METRICS, PERIOD};
+module.exports = {getInstagramData, getPagesID, getMedia, getStories, METRICS, PERIOD};
