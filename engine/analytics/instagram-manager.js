@@ -138,15 +138,12 @@ const ig_getVideos = async(req,res) =>  {
 };
 
 const ig_getData = async (req, res) => {
-    let key;
-    let data;
+    let key, data;
+    let media_id = req.params.media_id | null;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        if(req.params.media_id)
-            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key,req.params.media_id);
-        else
-            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key, null);
+        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, req.since, req.until, key.api_key, media_id);
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);

@@ -61,28 +61,21 @@ async function getPageAccessToken(token, pageID) {
 
     try {
         result = JSON.parse(await Request(options));
+
         const page = {
             'access_token': null,
             'business_id': null
         };
-        //console.log('RESULT: ');
-        //console.log(result['data']);
         for (const index in result['data']) {
-            page.access_token = result['data'][index]['access_token'],
-            page.business_id = result['data'][index]['instagram_business_account']['id']
-            //console.log('Now seeing ID: '+page.id);
-            //console.log('With token: '+page.access_token);
+            page.access_token = result['data'][index]['access_token'];
+            page.business_id = result['data'][index].hasOwnProperty('instagram_business_account') ? result['data'][index]['instagram_business_account']['id'] : null;
 
-            if (page.business_id == pageID)
+            if (page.business_id === pageID) {
                 return page.access_token;
+            }
         }
-    } catch (e) {
-        console.error(e);
-    };
 
-    try {
-        result = JSON.parse(await Request(options));
-        return result['access_token'];
+        return null;
     } catch (e) {
         console.error(e);
     }
@@ -163,11 +156,11 @@ function instagramQuery(method, metric, period=null, since=null, until=null,page
         }
     };
 
-    if (since)       options['qs']['since'] = since;
+    if (since)    options['qs']['since'] = since;
     if (until)    options['qs']['until'] = until;
 
-    if(period)    options['qs']['period'] = period;
-    if(date_preset) options['qs']['date_preset'] = date_preset;
+    if (period)      options['qs']['period'] = period;
+    if (date_preset) options['qs']['date_preset'] = date_preset;
 
     if(mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
     else          options['uri'] = igInsightURI + pageID + '/insights/';
@@ -194,7 +187,6 @@ const getInstagramData = async (pageID, metric, period, since, until, token, med
             result = JSON.parse(await instagramQuery(GET, metric, null, null, null, pageID, access_token, null, mediaID));
         else
             result = JSON.parse(await instagramQuery(GET, metric, period, since, until, pageID, access_token));
-        console.log(result);
         return result['data'][0]['values'];
     } catch (e) {
         console.error(e);

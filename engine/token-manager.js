@@ -84,13 +84,16 @@ const checkExistence = async (req, res) => {
 };
 
 const permissionGranted = async (req, res) => {
-    let scopes;
+    let scopes = [];
+    let service, hasPermission, key;
 
     try {
         switch (req.params.type) {
             case '0': // Facebook
-                scopes = await FbAPI.getScopes();
-
+                service = 'Facebook';
+                key = await FbToken.findOne({where: {user_id: req.user.id}});
+                scopes = await FbAPI.getScopes(key['api_key']);
+                hasPermission = checkFBContains(scopes);
                 break;
             case '1': // Google Analytics
                 break;
@@ -102,8 +105,17 @@ const permissionGranted = async (req, res) => {
                 break;
         }
 
-    } catch (err) {
+        return res.status(HttpStatus.OK).send({
+            granted: hasPermission,
+            service: service
+        })
 
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'There is a problem with our servers.'
+        })
     }
 };
 
@@ -357,7 +369,7 @@ const upsertGaKey = async (user_id, token) => {
     }
 };
 
-const getPageToken = async (token) => {
+const getPageToken = async (token) => { // TODO edit
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me/accounts',
@@ -373,6 +385,15 @@ const getPageToken = async (token) => {
         console.error(e);
         return null;
     }
-}
+};
+
+const checkFBContains = (scopes) => {
+    const hasManage  = scopes.includes('manage_pages');
+    const hasInsight = scopes.includes('read_insights');
+    const hasAdsRead = scopes.includes('ads_read');
+    const hasAudNet  = scopes.includes('read_audience_network_insights');
+
+    return hasManage & hasInsight & hasAdsRead & hasAudNet;
+};
 
 module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted};
