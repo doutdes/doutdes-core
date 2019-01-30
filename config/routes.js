@@ -26,7 +26,7 @@ module.exports = function (app, passport) {
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
 
-    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: 'manage_pages', state: req.query.user_id})(req, res, next)};
+    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'], state: req.query.user_id})(req, res, next)};
     const igReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['instagram_basic', 'instagram_manage_insights'], state: req.query.user_id})(req, res, next)};
     const fbAuth = passport.authenticate('facebook');
 
@@ -76,6 +76,7 @@ module.exports = function (app, passport) {
     app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
     app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
     app.get(keysPath    + 'checkIfExists/:type', requireAuth, AccessManager.roleAuthorization(all), TokenManager.checkExistence);
+    app.get(keysPath    + 'isPermissionGranted/:type', requireAuth, AccessManager.roleAuthorization(all), TokenManager.permissionGranted);
     app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.deleteKey);
 
@@ -96,6 +97,7 @@ module.exports = function (app, passport) {
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
+    app.get(fbPath + 'scopes', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getScopes);
 
     app.get(fbPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
     app.get(fbPath + ':page_id/fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);

@@ -63,7 +63,7 @@ async function getPageAccessToken(token, pageID) {
         result = JSON.parse(await Request(options));
         const page = {
             'access_token': null,
-            'id': null
+            'business_id': null
         };
         //console.log('RESULT: ');
         //console.log(result['data']);

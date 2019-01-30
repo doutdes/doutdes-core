@@ -18,6 +18,33 @@ const setMetric = (metric) => {
     }
 };
 
+/*
+ name: 'StatusCodeError',
+  statusCode: 401,
+  message: '401 - {"error":{"message":"Error validating access token: The user has not authorized application 2465723383501355.","type":"OAuthException","code":190,"error_subcode":458,"fbtrace_id":"CvTw/5ZRNKE"}}',
+  error:
+   { error:
+      { message: 'Error validating access token: The user has not authorized application 2465723383501355.',
+        type: 'OAuthException',
+* */
+
+const fb_getScopes = async (req, res) => {
+    let key, data;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = await FacebookApi.getScopes(key.api_key);
+
+        return res.status(HttpStatus.OK).send({scopes: data});
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+};
+
 const fb_getPages = async (req, res) => {
     let data, key;
     let pages = [];
@@ -76,8 +103,8 @@ const fb_login_success = async (req, res) => {
 
     try {
         // Before to upsert the token to the database, the token has to be exchanged with a long-live token
-        // const longToken = await FacebookApi.getLongLiveAccessToken(token);
-        // const upserting = await TokenManager.upsertFbKey(user_id, longToken);
+        const longToken = await FacebookApi.getLongLiveAccessToken(token);
+        const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
         res.redirect('http://localhost:4200/#/preferences/api-keys/'); // TODO to choose a url to send an error
     } catch (err) {
@@ -86,4 +113,4 @@ const fb_login_success = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success};
+module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success, fb_getScopes};

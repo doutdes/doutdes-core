@@ -8,6 +8,8 @@ const GaToken = Model.GaToken;
 const HttpStatus = require('http-status-codes');
 const Request = require('request-promise');
 
+const FbAPI = require('../api_handler/facebook-api');
+
 const readAllKeysById = (req, res) => {
 
     Users.findOne({
@@ -78,6 +80,30 @@ const checkExistence = async (req, res) => {
             error: true,
             message: 'An error occurred while checking the existence of a token service.'
         })
+    }
+};
+
+const permissionGranted = async (req, res) => {
+    let scopes;
+
+    try {
+        switch (req.params.type) {
+            case '0': // Facebook
+                scopes = await FbAPI.getScopes();
+
+                break;
+            case '1': // Google Analytics
+                break;
+            case '2': // Instagram
+                break;
+            case '3': // YouTube
+                break;
+            default:
+                break;
+        }
+
+    } catch (err) {
+
     }
 };
 
@@ -349,4 +375,4 @@ const getPageToken = async (token) => {
     }
 }
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence};
+module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted};

@@ -43,11 +43,12 @@ const getPageAccessToken = async (token, pageID) => {
         uri: 'https://graph.facebook.com/' + pageID + '/?fields=access_token',
         qs: {
             access_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result['access_token'];
     } catch (e) {
         console.error(e);
@@ -69,11 +70,12 @@ const getLongLiveAccessToken = async (token) => {
             client_id: FB_CLIENT_ID,
             client_secret: FB_CLIENT_SECRET,
             fb_exchange_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result['access_token'];
     } catch (e) {
         console.error(e);
@@ -89,11 +91,12 @@ const getPagesID = async (token) =>  {
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result;
     } catch (e) {
         console.error(e);
@@ -112,11 +115,12 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
             metric: metric,
             period: period,
             date_preset: date_preset
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result;
     } catch (e) {
         console.error(e);
@@ -139,5 +143,29 @@ const getFacebookData = async (pageID, metric, period, token) => {
     }
 };
 
+/** GET all the scopes of the token **/
+const getScopes = async (token) => {
+    let result;
+    const options = {
+        method: GET,
+        uri: fbInsightURI + 'debug_token',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        qs: {
+            input_token: token
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result['data']['scopes'];
+    } catch (e) {
+        console.error(e);
+        throw new Error('getScopes -> Error during the Facebook query');
+    }
+};
+
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken ,METRICS};
+module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getScopes, METRICS};
