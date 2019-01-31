@@ -78,6 +78,9 @@ const fb_login_success = async (req, res) => {
         // Before to upsert the token to the database, the token has to be exchanged with a long-live token
         // const longToken = await FacebookApi.getLongLiveAccessToken(token);
         // const upserting = await TokenManager.upsertFbKey(user_id, longToken);
+        // Before to upsert the token to the database, the token has to be exchanged with a long-live token
+        const longToken = await FacebookApi.getLongLiveAccessToken(token);
+        const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
         res.redirect('http://localhost:4200/#/preferences/api-keys/'); // TODO to choose a url to send an error
     } catch (err) {
