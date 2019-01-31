@@ -1,14 +1,18 @@
 'use strict';
 
+/* External services */
+const HttpStatus = require('http-status-codes');
+const Request = require('request-promise');
+
+/* DB Models */
 const Model = require('../models/index');
 const Users = Model.Users;
 const FbToken = Model.FbToken;
 const GaToken = Model.GaToken;
 
-const HttpStatus = require('http-status-codes');
-const Request = require('request-promise');
-
+/* Api Handlers */
 const FbAPI = require('../api_handler/facebook-api');
+const GaAPI = require('../api_handler/googleAnalytics-api');
 
 const readAllKeysById = (req, res) => {
 
@@ -94,20 +98,40 @@ const permissionGranted = async (req, res) => {
                 key = await FbToken.findOne({where: {user_id: req.user.id}});
                 scopes = await FbAPI.getScopes(key['api_key']);
                 hasPermission = checkFBContains(scopes);
+                scopes = scopes.filter(el => !el.includes('instagram'));
                 break;
             case '1': // Google Analytics
+                service = 'Google Analytics';
+                key = await GaToken.findOne({where: {user_id: req.user.id}});
+                scopes = await GaAPI.getScopes(key['private_key']);
+                hasPermission = checkGAContains(scopes);
+                scopes = scopes.filter(el => !el.includes('yt-analytics'));
                 break;
             case '2': // Instagram
+                service = 'Instagram';
+                key = await FbToken.findOne({where: {user_id: req.user.id}});
+                scopes = await FbAPI.getScopes(key['api_key']);
+                hasPermission = checkIGContains(scopes);
+                scopes = scopes.filter(el => el.includes('instagram'));
                 break;
             case '3': // YouTube
+                service = 'YouTube';
+                key = await GaToken.findOne({where: {user_id: req.user.id}});
+                scopes = await GaAPI.getScopes(key['private_key']);
+                hasPermission = checkYTContains(scopes);
+                scopes = scopes.filter(el => el.includes('yt-analytics'));
                 break;
             default:
-                break;
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    error: true,
+                    message: 'The service with id ' + req.params.type + ' does not exist.'
+                });
         }
 
         return res.status(HttpStatus.OK).send({
-            granted: hasPermission,
-            service: service
+            service: service,
+            granted: hasPermission === 1,
+            scopes: hasPermission === 1 ? scopes : null
         })
 
     } catch (err) {
@@ -394,6 +418,31 @@ const checkFBContains = (scopes) => {
     const hasAudNet  = scopes.includes('read_audience_network_insights');
 
     return hasManage & hasInsight & hasAdsRead & hasAudNet;
+};
+
+const checkIGContains = (scopes) => {
+    const hasBasic   = scopes.includes('instagram_basic');
+    const hasInsight = scopes.includes('instagram_manage_insights');
+
+    return hasBasic & hasInsight;
+};
+
+const checkGAContains = (scopes) => {
+
+    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
+    const hasPlus = !!scopes.find(el => el.includes('plus.me'));
+    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly'));
+
+    return hasEmail & hasAnalytics & hasPlus;
+};
+
+const checkYTContains = (scopes) => {
+    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
+    const hasPlus = !!scopes.find(el => el.includes('plus.me'));
+    const hasAnalytics = !!scopes.find(el => el.includes('yt-analytics.readonly'));
+    const hasMonetary = !!scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
+
+    return hasEmail & hasPlus & hasMonetary & hasAnalytics;
 };
 
 module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted};

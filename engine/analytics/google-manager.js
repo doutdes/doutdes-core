@@ -11,8 +11,8 @@ const host = require('../../app').config['site_URL'];
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
-const setMetrics = (metrics, dimensions, sort=null, filters=null) => {
-    return function(req, res, next){
+const setMetrics = (metrics, dimensions, sort = null, filters = null) => {
+    return function (req, res, next) {
         req.metrics = metrics;
         req.dimensions = dimensions;
         req.sort = sort;
@@ -59,5 +59,32 @@ const ga_getData = async (req, res) => {
     }
 };
 
+const ga_getScopes = async (req, res) => {
+    let key;
+    let scopes;
+
+    try {
+        key = await GaToken.findOne({where: {user_id: req.user.id}});
+        scopes = await GoogleApi.getScopes(key.private_key);
+
+        return res.status(HttpStatus.OK).send({
+            scopes: scopes
+        });
+    } catch (e) {
+        console.error(e);
+        if (e.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Google Analytics Bad Request',
+                message: 'Invalid access token.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Google servers or with our database'
+        });
+    }
+};
+
 /** EXPORTS **/
-module.exports = {setMetrics, ga_login_success, ga_getData};
+module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes};

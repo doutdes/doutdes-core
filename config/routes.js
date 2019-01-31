@@ -97,7 +97,7 @@ module.exports = function (app, passport) {
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getPages);
-    app.get(fbPath + 'scopes', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getScopes);
+    app.get(fbPath + 'getScopes/', requireAuth, AccessManager.roleAuthorization(all), FbManager.fb_getScopes);
 
     app.get(fbPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
     app.get(fbPath + ':page_id/fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
@@ -146,6 +146,8 @@ module.exports = function (app, passport) {
     app.get(igPath + ':page_id/taps_b/:media_id', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.TAPS_B), IgManager.ig_getData);
 
     /****************** GOOGLE MANAGER ********************/
+    app.get(gaPath + 'getScopes/', requireAuth, AccessManager.roleAuthorization(all), GaManager.ga_getScopes);
+
     app.get(gaPath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.SESSIONS, GAD.DATE), GaManager.ga_getData);
     app.get(gaPath + 'pageviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaManager.ga_getData);
     app.get(gaPath + 'mostviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.PAGE_VIEWS, GAD.PAGE_PATH, GAS.PAGE_VIEWS_DESC), GaManager.ga_getData);
