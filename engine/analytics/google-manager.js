@@ -10,8 +10,8 @@ const HttpStatus = require('http-status-codes');
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
-const setMetrics = (metrics, dimensions, sort=null, filters=null) => {
-    return function(req, res, next){
+const setMetrics = (metrics, dimensions, sort = null, filters = null) => {
+    return function (req, res, next) {
         req.metrics = metrics;
         req.dimensions = dimensions;
         req.sort = sort;
