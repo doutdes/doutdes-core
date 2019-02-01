@@ -50,9 +50,9 @@ const getPageAccessToken = async (token, pageID) => {
     try {
         result = await Request(options);
         return result['access_token'];
-    } catch (e) {
-        console.error(e);
-        throw new Error('getPageAccessToken -> Error getting the page access token');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getPageAccessToken -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -77,9 +77,9 @@ const getLongLiveAccessToken = async (token) => {
     try {
         result = await Request(options);
         return result['access_token'];
-    } catch (e) {
-        console.error(e);
-        throw new Error('getLongLiveAccessToken -> Error getting the long live access token');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getLongLiveAccessToken -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -98,9 +98,9 @@ const getPagesID = async (token) =>  {
     try {
         result = await Request(options);
         return result;
-    } catch (e) {
-        console.error(e);
-        throw new Error('getPagesID -> Error getting the pages ID');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getPagesID -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -122,9 +122,9 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
     try {
         result = await Request(options);
         return result;
-    } catch (e) {
-        console.error(e);
-        throw new Error('facebookQuery -> Error during the Facebook query');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -161,9 +161,9 @@ const getScopes = async (token) => {
     try {
         result = await Request(options);
         return result['data']['scopes'];
-    } catch (e) {
-        console.error(e);
-        throw new Error('getScopes -> Error during the Facebook query');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getScopes -> Error during the Facebook query -> ' + err['message']);
     }
 };
 

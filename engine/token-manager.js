@@ -95,7 +95,7 @@ const permissionGranted = async (req, res) => {
         switch (req.params.type) {
             case '0': // Facebook
                 service = 'Facebook';
-                key = await FbToken.findOne({where: {user_id: req.user.id}});
+                key = await FbToken.findOne({where: {user_id: req.user.id}}); // TODO TypeError: Cannot read property 'api_key' of null at permissionGranted (C:\Users\Federico\Documents\Cluster\doutdes-core\engine\token-manager.js:99:51)
                 scopes = await FbAPI.getScopes(key['api_key']);
                 hasPermission = checkFBContains(scopes);
                 scopes = scopes.filter(el => !el.includes('instagram'));
@@ -130,6 +130,7 @@ const permissionGranted = async (req, res) => {
 
         return res.status(HttpStatus.OK).send({
             service: service,
+            type: parseInt(req.params.type),
             granted: hasPermission === 1,
             scopes: hasPermission === 1 ? scopes : null
         })

@@ -18,16 +18,6 @@ const setMetric = (metric) => {
     }
 };
 
-/*
- name: 'StatusCodeError',
-  statusCode: 401,
-  message: '401 - {"error":{"message":"Error validating access token: The user has not authorized application 2465723383501355.","type":"OAuthException","code":190,"error_subcode":458,"fbtrace_id":"CvTw/5ZRNKE"}}',
-  error:
-   { error:
-      { message: 'Error validating access token: The user has not authorized application 2465723383501355.',
-        type: 'OAuthException',
-* */
-
 const fb_getScopes = async (req, res) => {
     let key, data;
 
