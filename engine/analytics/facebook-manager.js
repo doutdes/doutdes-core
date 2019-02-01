@@ -23,9 +23,11 @@ const fb_getScopes = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getScopes(key.api_key);
+        data = await FacebookApi.getTokenInfo(key.api_key);
 
-        return res.status(HttpStatus.OK).send({scopes: data});
+
+
+        return res.status(HttpStatus.OK).send({scopes: data});//['data']['scopes']});
     } catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({

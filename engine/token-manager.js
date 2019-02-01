@@ -47,6 +47,46 @@ const readAllKeysById = (req, res) => {
         });
 };
 
+const checkFbTokenValidity = async (req, res) => {
+    let key, data;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+
+        if(!key) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Token not found',
+                message: 'Before to check the validity of the Facebook token, you should provide one token instead.'
+            })
+        }
+
+        data = await FbAPI.getTokenInfo(key.api_key);
+
+        if (!data['is_valid']) throw new Error(HttpStatus.UNAUTHORIZED.toString());
+
+        return res.status(HttpStatus.OK).send({
+            valid: data['is_valid'],
+            type: data['type'],
+            application: data['application']
+        });
+
+    } catch (err) {
+        console.error(err);
+
+        if((err + '').includes(HttpStatus.UNAUTHORIZED.toString())) {
+            return res.status(HttpStatus.UNAUTHORIZED).send({
+                name: 'Facebook Token Error',
+                message: 'The token is no longer valid.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+};
+
 const checkExistence = async (req, res) => {
     let joinModel;
 
@@ -91,32 +131,41 @@ const permissionGranted = async (req, res) => {
     let scopes = [];
     let service, hasPermission, key;
 
+    if(req.params.type == '0' || req.params.type == '2') {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+    } else {
+        key = await GaToken.findOne({where: {user_id: req.user.id}});
+    }
+
+    if(!key){ // If a key is not set, return error
+        return res.status(HttpStatus.BAD_REQUEST).send({
+            name: 'Permissions granted error',
+            message: 'You can\'t check the permissions granted without providing a token'
+        });
+    }
+
     try {
         switch (req.params.type) {
             case '0': // Facebook
                 service = 'Facebook';
-                key = await FbToken.findOne({where: {user_id: req.user.id}}); // TODO TypeError: Cannot read property 'api_key' of null at permissionGranted (C:\Users\Federico\Documents\Cluster\doutdes-core\engine\token-manager.js:99:51)
                 scopes = await FbAPI.getScopes(key['api_key']);
                 hasPermission = checkFBContains(scopes);
                 scopes = scopes.filter(el => !el.includes('instagram'));
                 break;
             case '1': // Google Analytics
                 service = 'Google Analytics';
-                key = await GaToken.findOne({where: {user_id: req.user.id}});
                 scopes = await GaAPI.getScopes(key['private_key']);
                 hasPermission = checkGAContains(scopes);
                 scopes = scopes.filter(el => !el.includes('yt-analytics'));
                 break;
             case '2': // Instagram
                 service = 'Instagram';
-                key = await FbToken.findOne({where: {user_id: req.user.id}});
                 scopes = await FbAPI.getScopes(key['api_key']);
                 hasPermission = checkIGContains(scopes);
                 scopes = scopes.filter(el => el.includes('instagram'));
                 break;
             case '3': // YouTube
                 service = 'YouTube';
-                key = await GaToken.findOne({where: {user_id: req.user.id}});
                 scopes = await GaAPI.getScopes(key['private_key']);
                 hasPermission = checkYTContains(scopes);
                 scopes = scopes.filter(el => el.includes('yt-analytics'));
@@ -446,4 +495,4 @@ const checkYTContains = (scopes) => {
     return hasEmail & hasPlus & hasMonetary & hasAnalytics;
 };
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted};
+module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted, checkFbTokenValidity};

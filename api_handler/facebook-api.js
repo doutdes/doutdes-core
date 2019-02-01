@@ -143,8 +143,8 @@ const getFacebookData = async (pageID, metric, period, token) => {
     }
 };
 
-/** GET all the scopes of the token **/
-const getScopes = async (token) => {
+/** GET informations about the token - It is useful either to know if the token is valid or the scopes authorized **/
+const getTokenInfo = async (token) => {
     let result;
     const options = {
         method: GET,
@@ -160,12 +160,12 @@ const getScopes = async (token) => {
 
     try {
         result = await Request(options);
-        return result['data']['scopes'];
+        return result;
     } catch (err) {
         console.error(err['message']);
-        throw new Error('getScopes -> Error during the Facebook query -> ' + err['message']);
+        throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getScopes, METRICS};
+module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getTokenInfo, METRICS};
