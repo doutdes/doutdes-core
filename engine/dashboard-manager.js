@@ -45,32 +45,38 @@ exports.internalCreateDashboard = async function(name, category) {
                 return resolve(null);
             })
     });
-}
+};
 
 exports.internalCreateDefaultDashboards = async function(user_id) {
 
-    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
-    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
+    const CUSTOM_DASHBOARD    = {category: 0, name: 'Custom'};
+    const FACEBOOK_DASHBOARD  = {category: 1, name: 'Facebook'};
     const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
+    const INSTAGRAM_DASHBOARD = {category: 3, name: 'Instagram'};
+    const YOUTUBE_DASHBOARD   = {category: 4, name: 'YouTube'};
 
     const dash1 = await this.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
     const dash2 = await this.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
     const dash3 = await this.internalCreateDashboard(ANALYTICS_DASHBOARD.name, ANALYTICS_DASHBOARD.category);
+    const dash4 = await this.internalCreateDashboard(INSTAGRAM_DASHBOARD.name, INSTAGRAM_DASHBOARD.category);
+    const dash5 = await this.internalCreateDashboard(YOUTUBE_DASHBOARD.name, YOUTUBE_DASHBOARD.category);
 
     let check1 = (dash1 == null) ? false : await this.internalAssignDashboardToUser(dash1, user_id); // Recall that this function returns true or false (doesn't fail)
     let check2 = (dash2 == null) ? false : await this.internalAssignDashboardToUser(dash2, user_id);
     let check3 = (dash3 == null) ? false : await this.internalAssignDashboardToUser(dash3, user_id);
+    let check4 = (dash4 == null) ? false : await this.internalAssignDashboardToUser(dash4, user_id);
+    let check5 = (dash5 == null) ? false : await this.internalAssignDashboardToUser(dash5, user_id);
 
     return new Promise((resolve, reject) => {
 
-        if (!check1 || !check2 || !check3) { // At least one dashboard has not been created
+        if (!check1 || !check2 || !check3 || !check4 || !check5) { // At least one dashboard has not been created
             reject('One of the default dashboards as not been created.');
         }
         else {
             resolve();
         }
     });
-}
+};
 
 /**
  * @api {get} /dashboards/getAllUserDashboards/ Get all by user
