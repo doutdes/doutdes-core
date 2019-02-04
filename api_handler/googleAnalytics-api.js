@@ -47,7 +47,7 @@ const getAccessToken = async (refresh_token) => {
         console.error(e);
     }
 };
-const getScopes = async (private_key) => {
+const getTokenInfo = async (private_key) => {
     let result = null;
     let access_token;
     const options = {
@@ -64,12 +64,10 @@ const getScopes = async (private_key) => {
         result = await Request(options);
     } catch (e) {
         console.error(e);
-        throw new Error('getScopes -> Error getting scopes in Google');
+        throw new Error('getTokenInfo -> Error getting scopes in Google');
     }
 
-
-
-    return result['scope'].split(' ');
+    return result;//['scope'].split(' ');
 };
 const getViewID = async (private_key) => {
     const access_token = await getAccessToken(private_key);
@@ -95,8 +93,6 @@ const getData = async(private_key, start_date, end_date, metrics, dimensions, so
         'dimensions': dimensions
     };
 
-    console.log(access_token);
-
     // Optional fields: if they exist, then they can be added to the query params
     if (sort)       params['sort'] = sort;
     if (filters)    params['filters'] = filters;
@@ -107,4 +103,4 @@ const getData = async(private_key, start_date, end_date, metrics, dimensions, so
 };
 
 /** EXPORTS **/
-module.exports = {getData, getScopes, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getData, getTokenInfo, METRICS, DIMENSIONS, SORT, FILTER};

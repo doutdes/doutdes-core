@@ -14,6 +14,9 @@ const GaToken = Model.GaToken;
 const FbAPI = require('../api_handler/facebook-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
+const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
+const DS_TYPE = require('../engine/dashboard-manager').DS_TYPE;
+
 const readAllKeysById = (req, res) => {
 
     Users.findOne({
@@ -129,44 +132,46 @@ const checkExistence = async (req, res) => {
 
 const permissionGranted = async (req, res) => {
     let scopes = [];
-    let service, hasPermission, key;
+    let hasPermission, key;
 
-    if(req.params.type == '0' || req.params.type == '2') {
+    if(req.params.type == '0' || req.params.type == '2') { // Facebook or Instagram
         key = await FbToken.findOne({where: {user_id: req.user.id}});
     } else {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
     }
 
     if(!key){ // If a key is not set, return error
-        return res.status(HttpStatus.BAD_REQUEST).send({
-            name: 'Permissions granted error',
-            message: 'You can\'t check the permissions granted without providing a token'
+        return res.status(HttpStatus.OK).send({
+            name: DS_TYPE[parseInt(req.params.type)],
+            type: parseInt(req.params.type),
+            granted: false,
+            scopes: null
         });
+        /*        return res.status(HttpStatus.BAD_REQUEST).send({
+            name: 'Permissions granted error - Key not available',
+            message: 'You can\'t check the permissions granted without providing a token'
+        });*/
     }
 
     try {
-        switch (req.params.type) {
-            case '0': // Facebook
-                service = 'Facebook';
-                scopes = await FbAPI.getScopes(key['api_key']);
+        switch (parseInt(req.params.type)) {
+            case D_TYPE.FB: // Facebook
+                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
                 hasPermission = checkFBContains(scopes);
                 scopes = scopes.filter(el => !el.includes('instagram'));
                 break;
-            case '1': // Google Analytics
-                service = 'Google Analytics';
-                scopes = await GaAPI.getScopes(key['private_key']);
+            case D_TYPE.GA: // Google Analytics
+                scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
                 hasPermission = checkGAContains(scopes);
                 scopes = scopes.filter(el => !el.includes('yt-analytics'));
                 break;
-            case '2': // Instagram
-                service = 'Instagram';
-                scopes = await FbAPI.getScopes(key['api_key']);
+            case D_TYPE.IG: // Instagram
+                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
                 hasPermission = checkIGContains(scopes);
                 scopes = scopes.filter(el => el.includes('instagram'));
                 break;
-            case '3': // YouTube
-                service = 'YouTube';
-                scopes = await GaAPI.getScopes(key['private_key']);
+            case D_TYPE.YT: // YouTube
+                scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
                 hasPermission = checkYTContains(scopes);
                 scopes = scopes.filter(el => el.includes('yt-analytics'));
                 break;
@@ -178,7 +183,7 @@ const permissionGranted = async (req, res) => {
         }
 
         return res.status(HttpStatus.OK).send({
-            service: service,
+            name: DS_TYPE[parseInt(req.params.type)],
             type: parseInt(req.params.type),
             granted: hasPermission === 1,
             scopes: hasPermission === 1 ? scopes : null

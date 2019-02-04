@@ -65,7 +65,15 @@ const ga_getScopes = async (req, res) => {
 
     try {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
-        scopes = await GoogleApi.getScopes(key.private_key);
+
+        if(!key) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Token not available',
+                message: 'Before get the scopes of the Google token, you should provide an access token instead.'
+            })
+        }
+
+        scopes = await GoogleApi.getTokenInfo(key.private_key);
 
         return res.status(HttpStatus.OK).send({
             scopes: scopes

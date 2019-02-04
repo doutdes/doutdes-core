@@ -9,6 +9,23 @@ const Op = Model.Sequelize.Op;
 
 const HttpStatus = require('http-status-codes');
 
+const D_TYPE = {
+    FB: 0,
+    GA: 1,
+    IG: 2,
+    YT: 3
+};
+
+const DS_TYPE = {
+    0: 'Facebook',
+    1: 'Google Analytics',
+    2: 'Instagram',
+    3: 'YouTube'
+};
+
+exports.D_TYPE = D_TYPE;
+exports.DS_TYPE = DS_TYPE;
+
 exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
 
     return new Promise(resolve => {
@@ -29,7 +46,7 @@ exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
             resolve(false);
         });
     });
-}
+};
 
 exports.internalCreateDashboard = async function(name, category) {
 

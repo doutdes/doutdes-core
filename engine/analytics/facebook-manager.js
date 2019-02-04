@@ -27,7 +27,7 @@ const fb_getScopes = async (req, res) => {
 
 
 
-        return res.status(HttpStatus.OK).send({scopes: data});//['data']['scopes']});
+        return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
     } catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
