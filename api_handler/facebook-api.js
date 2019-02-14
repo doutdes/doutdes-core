@@ -30,10 +30,6 @@ const METRICS = {
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
-global.DAYS_28 = 'days_28';
-global.WEEK = 'week';
-global.DAY = 'day';
-global.LIFETIME = 'lifetime';
 
 /** GET pageID from facebook token **/
 const getPageAccessToken = async (token, pageID) => {
@@ -83,6 +79,27 @@ const getLongLiveAccessToken = async (token) => {
     }
 };
 
+/** DELETE the permissions from the token **/
+const revokePermission = async (token, permission) => {
+    let result;
+    const options = {
+        method: 'DELETE',
+        uri: fbInsightURI + 'me/permissions/' + permission,
+        qs: {
+            access_token: token,
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('deletePermissions -> Error during the Facebook query -> ' + err['message']);
+    }
+};
+
 /** GET pageID and Name of the page from FB User Access Token **/
 const getPagesID = async (token) =>  {
     let result;
@@ -127,7 +144,6 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
 const getFacebookData = async (pageID, metric, period, token) => {
     let access_token, this_year, last_year;
 
@@ -168,4 +184,4 @@ const getTokenInfo = async (token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getTokenInfo, METRICS};
+module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};

@@ -12,44 +12,13 @@ const GaToken = Model.GaToken;
 
 /* Api Handlers */
 const FbAPI = require('../api_handler/facebook-api');
+const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 const DS_TYPE = require('../engine/dashboard-manager').DS_TYPE;
 
-const readAllKeysById = (req, res) => {
-
-    Users.findOne({
-            where: {id: req.user.id},
-            include: [
-                {model: GaToken},
-                {model: FbToken}]
-        }
-    )
-        .then(result => {
-            let fb = result.dataValues.FbTokens[0];
-            let ga = result.dataValues.GaTokens[0];
-
-            if (fb == null && ga == null)
-                return res.status(HttpStatus.NO_CONTENT).send({});
-
-            let fb_token = (fb == null) ? null : fb.dataValues.api_key;      // FB Token
-            let ga_token = (ga == null) ? null : ga.dataValues.private_key;  // GA Token
-
-            return res.status(HttpStatus.OK).send({
-                user_id: req.user.id,
-                fb_token: fb_token,
-                ga_token: ga_token
-            });
-        })
-        .catch(err => {
-            console.error(err);
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                error: 'Cannot retrieve user tokens.'
-            })
-        });
-};
-
+/** VALIDITY AND PERMISSIONS **/
 const checkFbTokenValidity = async (req, res) => {
     let key, data;
 
@@ -89,7 +58,6 @@ const checkFbTokenValidity = async (req, res) => {
         })
     }
 };
-
 const checkExistence = async (req, res) => {
     let joinModel;
 
@@ -129,7 +97,6 @@ const checkExistence = async (req, res) => {
         })
     }
 };
-
 const permissionGranted = async (req, res) => {
     let scopes = [];
     let hasPermission, key;
@@ -163,7 +130,7 @@ const permissionGranted = async (req, res) => {
             case D_TYPE.GA: // Google Analytics
                 scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
                 hasPermission = checkGAContains(scopes);
-                scopes = scopes.filter(el => !el.includes('yt-analytics'));
+                scopes = scopes.filter(el => !el.includes('yt-analytics') && !el.includes('youtube'));
                 break;
             case D_TYPE.IG: // Instagram
                 scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
@@ -173,7 +140,7 @@ const permissionGranted = async (req, res) => {
             case D_TYPE.YT: // YouTube
                 scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
                 hasPermission = checkYTContains(scopes);
-                scopes = scopes.filter(el => el.includes('yt-analytics'));
+                scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
                 break;
             default:
                 return res.status(HttpStatus.BAD_REQUEST).send({
@@ -197,7 +164,80 @@ const permissionGranted = async (req, res) => {
         })
     }
 };
+const revokePermissions = async (req, res) => {
+    let type = parseInt(req.params.type);
+    let key;
 
+    if(req.params.type == '0' || req.params.type == '2') { // Facebook or Instagram
+        key = (await FbToken.findOne({where: {user_id: req.user.id}}))['api_key'];
+    } else {
+        key = (await GaToken.findOne({where: {user_id: req.user.id}}))['private_key'];
+    }
+
+    try {
+        switch (type) {
+            case D_TYPE.FB:
+                await revokeFbPermissions(key);
+                break;
+            case D_TYPE.GA:
+                await revokeGaPermissions(key);
+                break;
+            case D_TYPE.IG:
+                await revokeIgPermissions(key);
+                break;
+            case D_TYPE.YT:
+                await revokeYtPermissions(key);
+                break;
+        }
+
+        return res.status(HttpStatus.OK).send({
+            revoked: true,
+            service: DS_TYPE[type],
+            type: type
+        })
+
+    } catch (e) {
+        console.error(e);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Error on revoking permissions',
+            message: 'An error occurred while revoking the permissions to the service with id ' + req.params.type
+        })
+    }
+};
+
+/** TOKENS CRUD**/
+const readAllKeysById = (req, res) => {
+
+    Users.findOne({
+            where: {id: req.user.id},
+            include: [
+                {model: GaToken},
+                {model: FbToken}]
+        }
+    )
+        .then(result => {
+            let fb = result.dataValues.FbTokens[0];
+            let ga = result.dataValues.GaTokens[0];
+
+            if (fb == null && ga == null)
+                return res.status(HttpStatus.NO_CONTENT).send({});
+
+            let fb_token = (fb == null) ? null : fb.dataValues.api_key;      // FB Token
+            let ga_token = (ga == null) ? null : ga.dataValues.private_key;  // GA Token
+
+            return res.status(HttpStatus.OK).send({
+                user_id: req.user.id,
+                fb_token: fb_token,
+                ga_token: ga_token
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                error: 'Cannot retrieve user tokens.'
+            })
+        });
+};
 const insertKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
@@ -214,7 +254,6 @@ const insertKey = (req, res) => {
             });
     }
 };
-
 const update = (req, res) => {
     const service_id = parseInt(req.body.service_id);
     switch (service_id) {
@@ -230,7 +269,6 @@ const update = (req, res) => {
     }
 
 };
-
 const deleteKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
@@ -285,7 +323,6 @@ const insertFbKey = (req, res) => {
         }
     })
 };
-
 const insertGaData = (req, res) => {
     GaToken.findOne({
         where: {
@@ -343,7 +380,6 @@ const updateFbKey = (req, res) => {
         })
     })
 };
-
 const updateGaData = (req, res) => {
     GaToken.update({
         client_email: GaToken.client_email,
@@ -385,7 +421,6 @@ const deleteFbKey = (req, res) => {
         })
     })
 };
-
 const deleteGaData = (req, res) => {
     GaToken.destroy({
         where: {
@@ -424,7 +459,6 @@ const upsertFbKey = async (user_id, token) => {
         return false;
     }
 };
-
 const upsertGaKey = async (user_id, token) => {
     let userFind, result;
 
@@ -466,6 +500,7 @@ const getPageToken = async (token) => { // TODO edit
     }
 };
 
+/** CHECK PERMISSIONS **/
 const checkFBContains = (scopes) => {
     const hasManage  = scopes.includes('manage_pages');
     const hasInsight = scopes.includes('read_insights');
@@ -474,14 +509,12 @@ const checkFBContains = (scopes) => {
 
     return hasManage & hasInsight & hasAdsRead & hasAudNet;
 };
-
 const checkIGContains = (scopes) => {
     const hasBasic   = scopes.includes('instagram_basic');
     const hasInsight = scopes.includes('instagram_manage_insights');
 
     return hasBasic & hasInsight;
 };
-
 const checkGAContains = (scopes) => {
 
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
@@ -490,14 +523,50 @@ const checkGAContains = (scopes) => {
 
     return hasEmail & hasAnalytics & hasPlus;
 };
-
 const checkYTContains = (scopes) => {
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
     const hasPlus = !!scopes.find(el => el.includes('plus.me'));
+    const hasYoutube = !!scopes.find(el => el.includes('youtube.readonly'));
     const hasAnalytics = !!scopes.find(el => el.includes('yt-analytics.readonly'));
     const hasMonetary = !!scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
 
-    return hasEmail & hasPlus & hasMonetary & hasAnalytics;
+    return hasEmail & hasPlus & hasYoutube & hasMonetary & hasAnalytics;
 };
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted, checkFbTokenValidity};
+/** REVOKE PERMISSIONS **/
+const revokeFbPermissions = async (token) => {
+    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+
+    await scopes.forEach(async scope => {
+        try {
+            let result = await FbAPI.revokePermission(token, scope);
+        } catch (e) {
+            console.error(e);
+            throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
+        }
+    });
+
+    return true;
+};
+const revokeGaPermissions = async (token) => {
+    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+};
+const revokeIgPermissions = async (token) => {
+    const scopes = ['instagram_basic', 'instagram_manage_insights'];
+
+    await scopes.forEach(async scope => {
+        try {
+            let result = await IgAPI.revokePermission(token, scope);
+        } catch (e) {
+            console.error(e);
+            throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
+        }
+    });
+
+    return true;
+};
+const revokeYtPermissions = async (token) => {
+    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+};
+
+module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted, revokePermissions, checkFbTokenValidity};

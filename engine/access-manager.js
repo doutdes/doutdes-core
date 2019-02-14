@@ -211,7 +211,7 @@ exports.createUser = async function (req, res, next) {
  *      }
  */
 exports.getUserById = function (req, res, next) {
-    Model.Users.findById(req.user.id)
+    User.findById(req.user.id)
         .then(user => {
             return res.status(HttpStatus.OK).send(user);
         })

@@ -26,19 +26,37 @@ module.exports = function (app, passport) {
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
 
-    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'], state: req.query.user_id})(req, res, next)};
+    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['manage_pages', 'read_insights', 'ads_read'], state: req.query.user_id})(req, res, next)};
     const igReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['instagram_basic', 'instagram_manage_insights'], state: req.query.user_id})(req, res, next)};
     const fbAuth = passport.authenticate('facebook');
 
-    const gaAuth = passport.authenticate('google');
-    const gaReqAuth = (req,res,next) => {
+    const gaOnlyReqAuth = (req, res, next) => {
         passport.authenticate('google', {
-            scope: 'https://www.googleapis.com/auth/userinfo.email  https://www.googleapis.com/auth/analytics.readonly',
+            scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/analytics.readonly',
             accessType: 'offline',
             prompt: 'consent',
             state: req.query.user_id
         })(req, res, next)
     };
+    const ytOnlyReqAuth = (req, res, next) => {
+        passport.authenticate('google', {
+            scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics-monetary.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
+            accessType: 'offline',
+            prompt: 'consent',
+            state: req.query.user_id
+        })(req, res, next)
+    };
+
+    const bothGaYtReqAuth = (req, res, next) => {
+        passport.authenticate('google', {
+            scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics-monetary.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
+            accessType: 'offline',
+            prompt: 'consent',
+            state: req.query.user_id
+        })(req, res, next)
+    };
+
+    const gaAuth = passport.authenticate('google');
 
     const admin  = '0';
     const user   = '1';
@@ -63,7 +81,9 @@ module.exports = function (app, passport) {
     app.get(igPath + 'login', igReqAuth);
     app.get(fbPath + 'login/success', fbAuth, FbManager.fb_login_success);
 
-    app.get(gaPath + 'login', gaReqAuth);
+    app.get(gaPath + 'login', gaOnlyReqAuth);
+    app.get(ytPath + 'login', ytOnlyReqAuth);
+    app.get(gaPath + ytPath + 'login', bothGaYtReqAuth);
     app.get(gaPath + 'login/success', gaAuth, GaManager.ga_login_success);
 
     /****************** CRUD USERS ********************/
@@ -83,6 +103,9 @@ module.exports = function (app, passport) {
     app.get(keysPath + 'checkIfExists/:type', requireAuth, AccessManager.roleAuthorization(all), TokenManager.checkExistence);
     app.get(keysPath + 'isPermissionGranted/:type', requireAuth, AccessManager.roleAuthorization(all), TokenManager.permissionGranted);
     app.get(keysPath + 'isFbTokenValid', requireAuth, AccessManager.roleAuthorization(all), TokenManager.checkFbTokenValidity);
+    app.delete(keysPath + 'revokePermissions/:type', requireAuth, AccessManager.roleAuthorization(all), TokenManager.revokePermissions);
+    // Delete permissions
+    // app.delete();
 
     /****************** CRUD DASHBOARD ********************/
     app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);

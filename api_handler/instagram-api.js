@@ -81,6 +81,8 @@ async function getPageAccessToken(token, pageID) {
     }
 }
 
+const revokePermission = require('./facebook-api').revokePermission;
+
 /**GET pageID from instagram token**/
 async function getPagesID(token) {
     let result;
@@ -194,4 +196,4 @@ const getInstagramData = async (pageID, metric, period, since, until, token, med
     }
 };
 
-module.exports = {getInstagramData, getPagesID, getMedia, getStories, METRICS, PERIOD};
+module.exports = {getInstagramData, getPagesID, getMedia, getStories, revokePermission, METRICS, PERIOD};
