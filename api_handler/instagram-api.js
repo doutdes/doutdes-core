@@ -74,7 +74,6 @@ async function getPageAccessToken(token, pageID) {
                 return page.access_token;
             }
         }
-
         return null;
     } catch (e) {
         console.error(e);
@@ -185,6 +184,7 @@ const getInstagramData = async (pageID, metric, period, since, until, token, med
     let result, access_token;
     try {
         access_token = await getPageAccessToken(token, pageID);
+        console.log(since+' / '+until);
         if(mediaID)
             result = JSON.parse(await instagramQuery(GET, metric, null, null, null, pageID, access_token, null, mediaID));
         else

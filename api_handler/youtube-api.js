@@ -3,8 +3,6 @@ const {google} = require('googleapis');
 const scopes = 'https://www.googleapis.com/auth/yt-analytics.readonly';
 
 async function getViewID(client_email, private_key) {
-    // console.log('sono in getviewID');
-    // console.log(client_email);
     const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
     const response = await jwt.authorize();
     const result = await google.youtubeAnalytics('v2').management.profiles.list({
