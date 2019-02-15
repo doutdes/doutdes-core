@@ -125,7 +125,7 @@ module.exports = function (app, passport) {
     app.get(igPath + ':page_id/followercount', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.FOLLOWER_COUNT,IGP.DAY,29),  IgManager.ig_getData);
     app.get(igPath + ':page_id/getdirclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.GET_DIRECTIONS_CLICKS,IGP.DAY,29), IgManager.ig_getData);
     app.get(igPath + ':page_id/impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.IMPRESSIONS,IGP.D_28,28), IgManager.ig_getData);
-    app.get(igPath + ':page_id/onlinefollowers', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.ONLINE_FOLLOWERS,IGP.LIFETIME,), IgManager.ig_getData);
+    app.get(igPath + ':page_id/onlinefollowers', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.ONLINE_FOLLOWERS,IGP.LIFETIME,29), IgManager.ig_getData);
     app.get(igPath + ':page_id/phonecallclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.PHONE_CALL_CLICKS,IGP.DAY,29), IgManager.ig_getData);
     app.get(igPath + ':page_id/profileviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.PROFILE_VIEWS,IGP.DAY,29), IgManager.ig_getData);
     app.get(igPath + ':page_id/reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.REACH,IGP.D_28,28), IgManager.ig_getData);
