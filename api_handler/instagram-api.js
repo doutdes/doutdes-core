@@ -178,7 +178,7 @@ function instagramQuery(method, metric, period=null, since=null, until=null,page
     });
 }
 
-const getInstagramData = async (pageID, metric, period, since, until, token, mediaID=null) => {
+const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
     let result, access_token;
     try {
         access_token = await getPageAccessToken(token, pageID);

@@ -12,7 +12,6 @@ const FacebookApi = require('../../api_handler/facebook-api');
 
 // TODO change the response if there are no data
 const setMetric = (metric) => {
-    console.log('ANCHE FACEBOOK');
     return (req, res, next) => {
         req.metric = metric;
         next();
