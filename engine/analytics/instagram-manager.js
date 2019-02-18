@@ -24,8 +24,11 @@ const setMetric = (metric, period, interval=null) => {
     return (req, res, next) => {
         req.metric = metric;
         req.period = period;
-        req.since = since;
-        req.until = until;
+        if(interval)
+        {
+            req.since = since;
+            req.until = until;
+        }
         next();
     }
 };
@@ -137,7 +140,11 @@ const ig_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, new Date(req.since), new Date(req.until), key.api_key, media_id);
+        (req.since && req.until) ?
+            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, new Date(req.since), new Date(req.until), key.api_key, media_id)
+        :
+        data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, null, null, key.api_key, media_id)
+
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
