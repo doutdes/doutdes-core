@@ -17,8 +17,10 @@ const DIMENSIONS = {
     BROWSER: 'ga:browser',
     MEDIUM: 'ga:medium',
     PAGE_PATH: 'ga:pagePath',
-    MEDIUM_DATE: 'ga:medium, ga:date',
-    BROWSER_DATE: 'ga:browser, ga:date'
+    MEDIUM_DATE: 'ga:date, ga:medium',
+    BROWSER_DATE: 'ga:date, ga:browser',
+    PAGE_DATE: 'ga:date, ga:pagePath',
+    COUNTRY_DATE: 'ga:date, ga:country'
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'

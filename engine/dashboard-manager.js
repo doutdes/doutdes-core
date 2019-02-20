@@ -358,54 +358,48 @@ exports.readNotAddedByDashboardAndType = function (req, res, next) {
 };
 
 // It returns all the charts assigned to a chosen dashboard of the user who makes the call
-exports.getDashboardByID = function (req, res, next) {
-    UserDashboards.findAll({ // Fetches the chosen dashboard of the user
-        include: [
-            {
-                model: Dashboard,
-                required: true,
-                where: {id: req.params.id} // dashboard type (instagram, facebook, ecc)
-            }
-        ],
-        attributes: {exclude: ['DashboardId']},
-        where: {user_id: req.user.id}
-    })
-        .then(userDashboards => {
-            if (userDashboards.length === 0) { // dashboard does not exist
-                return res.status(HttpStatus.NO_CONTENT).send({});
-            }
+exports.getDashboardByID = async function (req, res, next) {
 
-            DashboardCharts.findAll({ // Retrieves all the charts of the dashboard
-                include: [
-                    {
-                        model: Charts,
-                        required: true,
-                    }
-                ],
-                where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
-            })
-                .then(finalResult => {
+    let userDashboards, finalResult;
+    let dataToReturn = [];
 
-                    // Also sends empty array if dashboard exists but is empty
-                    return res.status(HttpStatus.OK).send(finalResult); // returns chart list
-                })
-                .catch(err => {
-                    console.error(err);
+    try {
+        // Fetches the chosen dashboard of the user
+        userDashboards = await UserDashboards.findAll({
+            include: [
+                {
+                    model: Dashboard,
+                    required: true,
+                    where: {id: req.params.id} // dashboard type (instagram, facebook, ecc)
+                }
+            ],
+            attributes: {exclude: ['DashboardId']},
+            where: {user_id: req.user.id}
+        });
 
-                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                        error: true,
-                        message: 'Cannot get dashboard charts.'
-                    })
-                });
+        if(userDashboards.length === 0) {
+            return res.status(HttpStatus.NO_CONTENT).send({});
+        }
+
+        // Retrieves all the charts of the dashboard
+        finalResult = await DashboardCharts.findAll({include: [{model: Charts, required: true,}],
+            where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
+        });
+
+        for(const i in finalResult) {
+            dataToReturn.push(formatResult(finalResult[i]));
+        }
+
+        return res.status(HttpStatus.OK).send(dataToReturn); // returns chart list
+
+    } catch (err) {
+        console.error(err);
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'Cannot get dashboard charts.'
         })
-        .catch(err => {
-            console.error(err);
-
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                error: true,
-                message: 'Cannot get dashboard charts.'
-            })
-        })
+    }
 };
 
 // Given dashboard ID and chart ID, it returns the corresponding chart
@@ -770,4 +764,22 @@ exports.deleteDashboard = function (req, res, next) {
                 message: 'Cannot delete the dashboard'
             })
         })
+};
+
+const formatResult = (dashChart) => {
+
+    /**
+     * now   {dashboard_id: 4, chart_id: 6, title: "My Sources", Chart: {…}} Chart: {id: 6, type: 2, title: "Sources", format: "pie"} chart_id: 6 dashboard_id: 4 title: "My Sources" }
+     * after {chart_id: 6 dashboard_id: 4 format: "pie" originalTitle: "Sources" title: "My Sources" type: 2 }
+     * **/
+
+    // console.log(dashChart['dataValues']['Chart']);
+    return {
+        chart_id: dashChart['dataValues']['chart_id'],
+        dashboard_id: dashChart['dataValues']['dashboard_id'],
+        format: dashChart['dataValues']['Chart']['dataValues']['format'],
+        originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
+        title: dashChart['dataValues']['title'],
+        type:  dashChart['dataValues']['Chart']['dataValues']['type']
+    };
 };
