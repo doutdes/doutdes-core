@@ -467,8 +467,6 @@ exports.readChart = function (req, res, next) {
 exports.addChartToDashboard = function (req, res, next) {
     const chart = req.body.chart;
 
-    console.log(chart);
-
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
@@ -773,7 +771,6 @@ const formatResult = (dashChart) => {
      * after {chart_id: 6 dashboard_id: 4 format: "pie" originalTitle: "Sources" title: "My Sources" type: 2 }
      * **/
 
-    // console.log(dashChart['dataValues']['Chart']);
     return {
         chart_id: dashChart['dataValues']['chart_id'],
         dashboard_id: dashChart['dataValues']['dashboard_id'],
