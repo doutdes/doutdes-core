@@ -370,7 +370,7 @@ exports.getDashboardByID = async function (req, res, next) {
                 {
                     model: Dashboard,
                     required: true,
-                    where: {id: req.params.id} // dashboard type (instagram, facebook, ecc)
+                    where: {id: req.params.id} // dashboard type (instagram, facebook, yt, ga)
                 }
             ],
             attributes: {exclude: ['DashboardId']},
