@@ -76,7 +76,6 @@ exports.createUser = async function (req, res, next) {
         .then(userbn => {
             // user !== null then a username or an email already exists in the sistem
             // the registration has to be rejected
-            console.log(req.body);
             if(userbn.length !== 0) {
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     created: false,
@@ -211,7 +210,7 @@ exports.createUser = async function (req, res, next) {
  *      }
  */
 exports.getUserById = function (req, res, next) {
-    Model.Users.findById(req.user.id)
+    User.findById(req.user.id)
         .then(user => {
             return res.status(HttpStatus.OK).send(user);
         })

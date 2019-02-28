@@ -30,10 +30,6 @@ const METRICS = {
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
-global.DAYS_28 = 'days_28';
-global.WEEK = 'week';
-global.DAY = 'day';
-global.LIFETIME = 'lifetime';
 
 /** GET pageID from facebook token **/
 const getPageAccessToken = async (token, pageID) => {
@@ -43,15 +39,16 @@ const getPageAccessToken = async (token, pageID) => {
         uri: 'https://graph.facebook.com/' + pageID + '/?fields=access_token',
         qs: {
             access_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result['access_token'];
-    } catch (e) {
-        console.error(e);
-        throw new Error('getPageAccessToken -> Error getting the page access token');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getPageAccessToken -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -69,15 +66,37 @@ const getLongLiveAccessToken = async (token) => {
             client_id: FB_CLIENT_ID,
             client_secret: FB_CLIENT_SECRET,
             fb_exchange_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result['access_token'];
-    } catch (e) {
-        console.error(e);
-        throw new Error('getLongLiveAccessToken -> Error getting the long live access token');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getLongLiveAccessToken -> Error during the Facebook query -> ' + err['message']);
+    }
+};
+
+/** DELETE the permissions from the token **/
+const revokePermission = async (token, permission) => {
+    let result;
+    const options = {
+        method: 'DELETE',
+        uri: fbInsightURI + 'me/permissions/' + permission,
+        qs: {
+            access_token: token,
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('deletePermissions -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -89,15 +108,16 @@ const getPagesID = async (token) =>  {
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result;
-    } catch (e) {
-        console.error(e);
-        throw new Error('getPagesID -> Error getting the pages ID');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getPagesID -> Error during the Facebook query -> ' + err['message']);
     }
 };
 
@@ -112,18 +132,18 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
             metric: metric,
             period: period,
             date_preset: date_preset
-        }
+        },
+        json: true
     };
 
     try {
-        result = JSON.parse(await Request(options));
+        result = await Request(options);
         return result;
-    } catch (e) {
-        console.error(e);
-        throw new Error('facebookQuery -> Error during the Facebook query');
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
 const getFacebookData = async (pageID, metric, period, token) => {
     let access_token, this_year, last_year;
 
@@ -139,5 +159,29 @@ const getFacebookData = async (pageID, metric, period, token) => {
     }
 };
 
+/** GET informations about the token - It is useful either to know if the token is valid or the scopes authorized **/
+const getTokenInfo = async (token) => {
+    let result;
+    const options = {
+        method: GET,
+        uri: fbInsightURI + 'debug_token',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        qs: {
+            input_token: token
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
+    }
+};
+
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken ,METRICS};
+module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};

@@ -18,6 +18,25 @@ const setMetric = (metric) => {
     }
 };
 
+const fb_getScopes = async (req, res) => {
+    let key, data;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = await FacebookApi.getTokenInfo(key.api_key);
+
+
+
+        return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+};
+
 const fb_getPages = async (req, res) => {
     let data, key;
     let pages = [];
@@ -76,9 +95,6 @@ const fb_login_success = async (req, res) => {
 
     try {
         // Before to upsert the token to the database, the token has to be exchanged with a long-live token
-        // const longToken = await FacebookApi.getLongLiveAccessToken(token);
-        // const upserting = await TokenManager.upsertFbKey(user_id, longToken);
-        // Before to upsert the token to the database, the token has to be exchanged with a long-live token
         const longToken = await FacebookApi.getLongLiveAccessToken(token);
         const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
@@ -89,4 +105,4 @@ const fb_login_success = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success};
+module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success, fb_getScopes};

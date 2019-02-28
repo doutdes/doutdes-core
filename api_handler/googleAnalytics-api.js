@@ -17,9 +17,10 @@ const DIMENSIONS = {
     BROWSER: 'ga:browser',
     MEDIUM: 'ga:medium',
     PAGE_PATH: 'ga:pagePath',
-    MEDIUM_DATE: 'ga:medium, ga:date',
-    BROWSER_DATE: 'ga:browser, ga:date',
-    PAGE_DATE: 'ga:pagePath, ga:date'
+    MEDIUM_DATE: 'ga:date, ga:medium',
+    BROWSER_DATE: 'ga:date, ga:browser',
+    PAGE_DATE: 'ga:date, ga:pagePath',
+    COUNTRY_DATE: 'ga:date, ga:country'
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
@@ -47,6 +48,28 @@ const getAccessToken = async (refresh_token) => {
     } catch (e) {
         console.error(e);
     }
+};
+const getTokenInfo = async (private_key) => {
+    let result = null;
+    let access_token;
+    const options = {
+        method: 'GET',
+        uri: 'https://www.googleapis.com/oauth2/v3/tokeninfo',
+        qs: {
+            access_token: null
+        },
+        json: true
+    };
+
+    try {
+        options.qs.access_token = await getAccessToken(private_key);
+        result = await Request(options);
+    } catch (e) {
+        console.error(e);
+        throw new Error('getTokenInfo -> Error getting scopes in Google');
+    }
+
+    return result;//['scope'].split(' ');
 };
 const getViewID = async (private_key) => {
     const access_token = await getAccessToken(private_key);
@@ -82,4 +105,4 @@ const getData = async(private_key, start_date, end_date, metrics, dimensions, so
 };
 
 /** EXPORTS **/
-module.exports = {getData, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getData, getTokenInfo, METRICS, DIMENSIONS, SORT, FILTER};
