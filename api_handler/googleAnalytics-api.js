@@ -9,7 +9,8 @@ const METRICS = {
     PAGE_VIEWS: 'ga:pageviews',
     BOUNCE_RATE: 'ga:bounceRate',
     AVG_SESSION_DURATION: 'ga:avgSessionDuration',
-    NEW_USER: 'ga:newUsers'
+    USERS: 'ga:users',
+    NEW_USERS: 'ga:newUsers'
 };
 const DIMENSIONS = {
     DATE: 'ga:date',
