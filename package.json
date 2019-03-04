@@ -30,6 +30,7 @@
     "passport-jwt": "^4.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
-    "sequelize": "^4.37.10"
+    "sequelize": "^4.37.10",
+    "mongoose": "^5.4.16"
   }
 }

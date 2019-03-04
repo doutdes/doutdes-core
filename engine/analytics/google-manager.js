@@ -8,6 +8,8 @@ const HttpStatus = require('http-status-codes');
 
 const host = require('../../app').config['site_URL'];
 
+const gaMongo = require('../../models/mongo/mongo-ga-model');
+
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
 
@@ -41,7 +43,7 @@ const ga_getData = async (req, res) => {
     try {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
         data = await GoogleApi.getData(key.private_key, req.params.start_date, req.params.end_date, req.metrics, req.dimensions, req.sort, req.filters);
-
+        storeMongoData(req.user.id, req.metrics, req.dimensions, req.params.start_date, req.params.end_date, data);
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -66,7 +68,7 @@ const ga_getScopes = async (req, res) => {
     try {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
 
-        if(!key) {
+        if (!key) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 name: 'Token not available',
                 message: 'Before get the scopes of the Google token, you should provide an access token instead.'
@@ -93,6 +95,12 @@ const ga_getScopes = async (req, res) => {
         });
     }
 };
+
+function storeMongoData (userid, metric, dimensions, start_date, end_date, file) {
+    let data =  new gaMongo({userid: userid, metric: metric, dimensions: dimensions,
+        start_date: start_date, end_date: end_date, data: file});
+    data.save().then(()=> console.log("saved successfully"));
+}
 
 /** EXPORTS **/
 module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes};
