@@ -146,6 +146,7 @@ module.exports = function (app, passport) {
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getPages);
+    app.get(igPath + ':page_id/businessInfo', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getBusinessInfo);
 
     app.get(igPath + ':page_id/audcity', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.AUDIENCE_CITY,IGP.LIFETIME,), IgManager.ig_getData);
     app.get(igPath + ':page_id/audcountry', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.AUDIENCE_COUNTRY,IGP.LIFETIME,), IgManager.ig_getData);
