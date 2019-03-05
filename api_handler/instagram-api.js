@@ -38,6 +38,12 @@ const PERIOD = {
     D_28: 'days_28',
 };
 
+const INTERVAL = {
+    MONTH: 29,
+    FOUR_WEEKS: 28
+};
+
+
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
@@ -189,7 +195,7 @@ async function getBusinessDiscoveryInfo(pageID, token) {
 function instagramQuery(method, metric, period=null, since=null, until=null,pageID, token, date_preset=null, mediaID=null) {
 
     if(since){
-        since.setDate(since.getDate()-1);
+        since.setDate(since.getDate());
     }
     const options = {
         method: method,
@@ -220,19 +226,29 @@ function instagramQuery(method, metric, period=null, since=null, until=null,page
     });
 }
 const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
-    let result, access_token;
+    let result = {}, access_token;
     try {
         access_token = await getPageAccessToken(token, pageID);
-        console.log(since+' / '+until);
-        if(mediaID)
-            result = JSON.parse(await instagramQuery(GET, metric, null, null, null, pageID, access_token, null, mediaID));
-        else
-            result = JSON.parse(await instagramQuery(GET, metric, period, since, until, pageID, access_token));
-        return result['data'][0]['values'];
+        let final = [];
+        let temp = [];
+        for(let index in metric) {
+            temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
+            //every data carries on its metric
+            for(let i in temp[temp.length-1]) {
+                temp[temp.length-1][i].metric = metric[index];
+            }
+        }
+        for(let index in temp) {
+            final = final.concat(temp[index]);
+            //final = final.concat('-');
+        }
+        result = final;
+        console.log(result);
+        return result;//['data'][0]['values'];
     } catch (e) {
         console.error(e);
         throw new Error("Bad Instagram Request");
     }
 };
 
-module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission, METRICS, PERIOD};
+module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission, METRICS, PERIOD, INTERVAL};
