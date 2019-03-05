@@ -90,7 +90,7 @@ async function getPagesID(token) {
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token,
-            fields: 'name,id,access_token,instagram_business_account'
+            fields: 'name,id,access_token,instagram_business_account{id,username,name}'
         }
     };
 

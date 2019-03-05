@@ -45,8 +45,9 @@ const ig_getPages = async (req, res) => {
             if (data[index]['instagram_business_account']) {
 
                 const page = {
-                    name: data[index]['name'],
-                    id: data[index]['instagram_business_account']['id']
+                    id: data[index]['instagram_business_account']['id'],
+                    username: data[index]['instagram_business_account']['username'],
+                    name: data[index]['instagram_business_account']['name'],
                 };
 
                 pages.push(page);
