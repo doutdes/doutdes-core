@@ -32,7 +32,9 @@ const checkFbTokenValidity = async (req, res) => {
             })
         }
 
-        data = await FbAPI.getTokenInfo(key.api_key);
+        console.log(key);
+
+        data = await FbAPI.getTokenInfo(key['api_key']);
 
         if (!data['is_valid']) throw new Error(HttpStatus.UNAUTHORIZED.toString());
 
@@ -101,7 +103,7 @@ const permissionGranted = async (req, res) => {
     let scopes = [];
     let hasPermission, key;
 
-    if(req.params.type == '0' || req.params.type == '2') { // Facebook or Instagram
+    if(req.params.type == D_TYPE.FB || req.params.type == D_TYPE.IG) { // Facebook or Instagram
         key = await FbToken.findOne({where: {user_id: req.user.id}});
     } else {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
@@ -168,7 +170,7 @@ const revokePermissions = async (req, res) => {
     let type = parseInt(req.params.type);
     let key;
 
-    if(req.params.type == '0' || req.params.type == '2') { // Facebook or Instagram
+    if(req.params.type == D_TYPE.FB || req.params.type == D_TYPE.IG) { // Facebook or Instagram
         key = (await FbToken.findOne({where: {user_id: req.user.id}}))['api_key'];
     } else {
         key = (await GaToken.findOne({where: {user_id: req.user.id}}))['private_key'];
@@ -517,20 +519,22 @@ const checkIGContains = (scopes) => {
 };
 const checkGAContains = (scopes) => {
 
+    console.log(scopes);
+
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasPlus = !!scopes.find(el => el.includes('plus.me'));
     const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly'));
 
-    return hasEmail & hasAnalytics & hasPlus;
+    console.log(hasEmail & hasAnalytics);
+
+    return hasEmail & hasAnalytics;
 };
 const checkYTContains = (scopes) => {
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasPlus = !!scopes.find(el => el.includes('plus.me'));
     const hasYoutube = !!scopes.find(el => el.includes('youtube.readonly'));
     const hasAnalytics = !!scopes.find(el => el.includes('yt-analytics.readonly'));
     const hasMonetary = !!scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
 
-    return hasEmail & hasPlus & hasYoutube & hasMonetary & hasAnalytics;
+    return hasEmail & hasYoutube & hasMonetary & hasAnalytics;
 };
 
 /** REVOKE PERMISSIONS **/

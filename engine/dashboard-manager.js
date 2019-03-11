@@ -10,17 +10,17 @@ const Op = Model.Sequelize.Op;
 const HttpStatus = require('http-status-codes');
 
 const D_TYPE = {
-    FB: 0,
-    GA: 1,
-    IG: 2,
-    YT: 3
+    FB: 1,
+    GA: 2,
+    IG: 3,
+    YT: 4
 };
 
 const DS_TYPE = {
-    0: 'Facebook',
-    1: 'Google Analytics',
-    2: 'Instagram',
-    3: 'YouTube'
+    1: 'Facebook',
+    2: 'Google Analytics',
+    3: 'Instagram',
+    4: 'YouTube'
 };
 
 exports.D_TYPE = D_TYPE;
