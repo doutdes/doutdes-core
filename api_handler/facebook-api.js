@@ -158,6 +158,27 @@ const getFacebookData = async (pageID, metric, period, token) => {
         throw new Error('getFacebookData -> Error getting the Facebook Data');
     }
 };
+const getFacebookPost = async(pageID, token) => {
+    let result;
+    const options = {
+        method: 'GET',
+        uri: fbInsightURI + pageID + '/posts',
+        qs: {
+            access_token: token,
+            limit: 100,
+            fields: 'id,name,created_time'
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getFacebookPost -> Error during the Facebook query -> ' + err['message']);
+    }
+};
 
 /** GET informations about the token - It is useful either to know if the token is valid or the scopes authorized **/
 const getTokenInfo = async (token) => {
@@ -184,4 +205,4 @@ const getTokenInfo = async (token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};
+module.exports = {getFacebookData, getFacebookPost, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};

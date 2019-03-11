@@ -89,6 +89,31 @@ const fb_getData = async (req, res) => {
     }
 };
 
+const fb_getPost = async (req, res) => {
+    let key;
+    let data;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+        data = await FacebookApi.getFacebookPost(req.params.page_id, key.api_key);
+
+        return res.status(HttpStatus.OK).send(data);
+    } catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Facebook Bad Request',
+                message: 'Invalid OAuth access token.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        });
+    }
+};
+
 const fb_login_success = async (req, res) => {
     const user_id = req.query.state;
     const token = req.user;
@@ -105,4 +130,4 @@ const fb_login_success = async (req, res) => {
 };
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPages, fb_login_success, fb_getScopes};
+module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes};
