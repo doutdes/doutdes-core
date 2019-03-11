@@ -243,7 +243,6 @@ const getInstagramData = async (pageID, metric, period, since=null, until=null, 
             //final = final.concat('-');
         }
         result = final;
-        console.log(result);
         return result;//['data'][0]['values'];
     } catch (e) {
         console.error(e);
