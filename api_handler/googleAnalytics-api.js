@@ -104,6 +104,27 @@ const getData = async(private_key, start_date, end_date, metrics, dimensions, so
 
     return result.data.rows;
 };
+const revokePermissions = async(private_key) => {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://accounts.google.com/o/oauth2/revoke',
+        qs: {
+            token: private_key
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        console.log(result);
+
+        return result;
+    } catch (e) {
+        console.error(e);
+        throw new Error('googleAnalytics.revokePermissions -> error revoking permissions');
+    }
+};
 
 /** EXPORTS **/
-module.exports = {getData, getTokenInfo, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getData, getTokenInfo, revokePermissions, METRICS, DIMENSIONS, SORT, FILTER};
