@@ -163,7 +163,7 @@ module.exports = function (app, passport) {
     app.get(igPath + ':page_id/reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.REACH],IGP.D_28,IGI.MONTH), IgManager.ig_getData);
     app.get(igPath + ':page_id/textmessageclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.TEXT_MESSAGE_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
     app.get(igPath + ':page_id/websiteclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/composedclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS,IGM.TEXT_MESSAGE_CLICKS,IGM.PHONE_CALL_CLICKS,IGM.GET_DIRECTIONS_CLICKS],IGP.DAY,IGI.MONTH),IgManager.ig_getData);
+    app.get(igPath + ':page_id/actionsperformed', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS,IGM.TEXT_MESSAGE_CLICKS,IGM.PHONE_CALL_CLICKS,IGM.GET_DIRECTIONS_CLICKS],IGP.DAY,IGI.MONTH),IgManager.ig_getData);
 
     /****************** INSTAGRAM MEDIA MANAGER ********************/
     app.get(igPath + ':page_id/media/:n*?', requireAuth, AccessManager.roleAuthorization(all),IgManager.ig_getMedia);
