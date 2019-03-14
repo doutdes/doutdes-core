@@ -170,11 +170,13 @@ const revokePermissions = async (req, res) => {
     let type = parseInt(req.params.type);
     let key;
 
-    if(req.params.type == D_TYPE.FB || req.params.type == D_TYPE.IG) { // Facebook or Instagram
+    if(type === D_TYPE.FB || type === D_TYPE.IG) { // Facebook or Instagram
         key = (await FbToken.findOne({where: {user_id: req.user.id}}))['api_key'];
     } else {
         key = (await GaToken.findOne({where: {user_id: req.user.id}}))['private_key'];
     }
+
+    console.log(type);
 
     try {
         switch (type) {
@@ -274,9 +276,11 @@ const deleteKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
-        case 0: //fb
+        case D_TYPE.FB:
+        case D_TYPE.IG:
             return deleteFbKey(req, res);
-        case 1: //google
+        case D_TYPE.GA:
+        case D_TYPE.YT:
             return deleteGaData(req, res);
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
