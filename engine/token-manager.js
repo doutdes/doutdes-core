@@ -32,8 +32,6 @@ const checkFbTokenValidity = async (req, res) => {
             })
         }
 
-        console.log(key);
-
         data = await FbAPI.getTokenInfo(key['api_key']);
 
         if (!data['is_valid']) throw new Error(HttpStatus.UNAUTHORIZED.toString());
@@ -63,10 +61,12 @@ const checkFbTokenValidity = async (req, res) => {
 const checkExistence = async (req, res) => {
     let joinModel;
 
-    switch(req.params.type){
-        case '0': joinModel = FbToken;
+    switch(parseInt(req.params.type)){
+        case D_TYPE.FB:
+        case D_TYPE.IG:
+            joinModel = FbToken;
             break;
-        case '1': joinModel = GaToken;
+        case D_TYPE.GA: joinModel = GaToken;
             break;
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -102,24 +102,22 @@ const checkExistence = async (req, res) => {
 const permissionGranted = async (req, res) => {
     let scopes = [];
     let hasPermission, key;
+    let type = parseInt(req.params.type);
 
-    if(req.params.type == D_TYPE.FB || req.params.type == D_TYPE.IG) { // Facebook or Instagram
+    if(type === D_TYPE.FB || type === D_TYPE.IG) { // Facebook or Instagram
         key = await FbToken.findOne({where: {user_id: req.user.id}});
     } else {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
     }
 
     if(!key){ // If a key is not set, return error
+        console.log('KEY IS NOT SET UP');
         return res.status(HttpStatus.OK).send({
             name: DS_TYPE[parseInt(req.params.type)],
             type: parseInt(req.params.type),
             granted: false,
             scopes: null
         });
-        /*        return res.status(HttpStatus.BAD_REQUEST).send({
-            name: 'Permissions granted error - Key not available',
-            message: 'You can\'t check the permissions granted without providing a token'
-        });*/
     }
 
     try {
@@ -151,6 +149,8 @@ const permissionGranted = async (req, res) => {
                 });
         }
 
+        console.log(hasPermission);
+
         return res.status(HttpStatus.OK).send({
             name: DS_TYPE[parseInt(req.params.type)],
             type: parseInt(req.params.type),
@@ -181,14 +181,13 @@ const revokePermissions = async (req, res) => {
             case D_TYPE.FB:
                 await revokeFbPermissions(key);
                 break;
-            case D_TYPE.GA:
-                await revokeGaPermissions(key);
-                break;
             case D_TYPE.IG:
                 await revokeIgPermissions(key);
                 break;
+            case D_TYPE.GA:
             case D_TYPE.YT:
-                await revokeYtPermissions(key);
+                await revokeGaPermissions(key);
+                await GaToken.destroy({where: {user_id: req.user.id}});
                 break;
         }
 
@@ -467,9 +466,6 @@ const upsertGaKey = async (user_id, token) => {
     try {
         userFind = await GaToken.findOne({where: {user_id: user_id}});
 
-        console.log('user_id: ' + token);
-        console.log('tokToAdd: ' + token);
-
         // If an occurrence alread exists, then update it, else insert a new row
         if(userFind) {
             result = await GaToken.update({private_key: token}, {where: {user_id: user_id}});
@@ -507,9 +503,8 @@ const checkFBContains = (scopes) => {
     const hasManage  = scopes.includes('manage_pages');
     const hasInsight = scopes.includes('read_insights');
     const hasAdsRead = scopes.includes('ads_read');
-    const hasAudNet  = scopes.includes('read_audience_network_insights');
 
-    return hasManage & hasInsight & hasAdsRead & hasAudNet;
+    return hasManage & hasInsight & hasAdsRead;
 };
 const checkIGContains = (scopes) => {
     const hasBasic   = scopes.includes('instagram_basic');
@@ -519,12 +514,8 @@ const checkIGContains = (scopes) => {
 };
 const checkGAContains = (scopes) => {
 
-    console.log(scopes);
-
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
     const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly'));
-
-    console.log(hasEmail & hasAnalytics);
 
     return hasEmail & hasAnalytics;
 };
@@ -540,37 +531,50 @@ const checkYTContains = (scopes) => {
 /** REVOKE PERMISSIONS **/
 const revokeFbPermissions = async (token) => {
     const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+    let scope, result;
 
-    await scopes.forEach(async scope => {
+    for(const i in scopes) {
         try {
-            let result = await FbAPI.revokePermission(token, scope);
+            scope = scopes[i];
+            result = await FbAPI.revokePermission(token, scope);
         } catch (e) {
             console.error(e);
             throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
         }
-    });
+    }
 
     return true;
 };
-const revokeGaPermissions = async (token) => {
-    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+const revokeGaPermissions = async (token) => { // Token has been expired or revoked.
+    // const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+
+    let result;
+
+    try {
+      result = await GaAPI.revokePermissions(token);
+    } catch (e) {
+        throw new Error('tokenManager.revokeGaPermissions -> Error on revoking permissions');
+    }
+
+    return result;
+
 };
 const revokeIgPermissions = async (token) => {
     const scopes = ['instagram_basic', 'instagram_manage_insights'];
 
-    await scopes.forEach(async scope => {
+    let scope, result;
+
+    for(const i in scopes) {
         try {
-            let result = await IgAPI.revokePermission(token, scope);
+            scope = scopes[i];
+            result = await IgAPI.revokePermission(token, scope);
         } catch (e) {
             console.error(e);
             throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
         }
-    });
+    }
 
     return true;
-};
-const revokeYtPermissions = async (token) => {
-    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
 };
 
 module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted, revokePermissions, checkFbTokenValidity};
