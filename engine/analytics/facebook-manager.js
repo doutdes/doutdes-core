@@ -2,6 +2,7 @@
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
+const site_URL = require('../../app').config['site_URL'];
 
 const TokenManager = require('../token-manager');
 
@@ -123,7 +124,7 @@ const fb_login_success = async (req, res) => {
         const longToken = await FacebookApi.getLongLiveAccessToken(token);
         const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
-        res.redirect('http://localhost:4200/#/preferences/api-keys/'); // TODO to choose a url to send an error
+        res.redirect(site_URL + '#/preferences/api-keys/'); // TODO to choose a url to send an error
     } catch (err) {
         console.error(err);
     }
