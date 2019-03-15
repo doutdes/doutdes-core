@@ -6,7 +6,7 @@ const GaToken = Model.GaToken;
 const TokenManager = require('../token-manager');
 const HttpStatus = require('http-status-codes');
 
-const host = require('../../app').config['site_URL'];
+const site_URL = require('../../app').config['site_URL'];
 
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
@@ -28,7 +28,7 @@ const ga_login_success = async (req, res) => {
     try {
         const upserting = await TokenManager.upsertGaKey(user_id, token);
 
-        res.redirect(host + '/#/preferences/api-keys/');
+        res.redirect(site_URL + '#/preferences/api-keys/');
     } catch (err) {
         console.error(err);
     }
