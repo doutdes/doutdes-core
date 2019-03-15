@@ -227,10 +227,10 @@ function instagramQuery(method, metric, period=null, since=null, until=null,page
 }
 const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
     let result = {}, access_token;
+    let final = [], temp = [];
     try {
         access_token = await getPageAccessToken(token, pageID);
-        let final = [];
-        let temp = [];
+
         for(let index in metric) {
             temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
             //every data carries on its metric

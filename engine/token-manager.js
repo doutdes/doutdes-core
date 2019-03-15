@@ -176,12 +176,12 @@ const revokePermissions = async (req, res) => {
         key = (await GaToken.findOne({where: {user_id: req.user.id}}))['private_key'];
     }
 
-    console.log(type);
-
     try {
         switch (type) {
             case D_TYPE.FB:
                 await revokeFbPermissions(key);
+                await revokeIgPermissions(key);
+                await FbToken.destroy({where: {user_id: req.user.id}});
                 break;
             case D_TYPE.IG:
                 await revokeIgPermissions(key);
@@ -534,7 +534,7 @@ const checkYTContains = (scopes) => {
 
 /** REVOKE PERMISSIONS **/
 const revokeFbPermissions = async (token) => {
-    const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
+    const scopes = ['manage_pages', 'read_insights', 'ads_read'];
     let scope, result;
 
     for(const i in scopes) {
