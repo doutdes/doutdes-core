@@ -15,7 +15,7 @@ module.exports = { app, passport, config };
 /** Configuration of express, routes and passport **/
 require('./config/passport')(passport);
 require('./config/express')(app, passport);
-require('./config/routes')(app, passport);
+require('./config/routes')(app, passport, config);
 
 /* Connection to Mongo */
 mongoose.Promise = require('bluebird');

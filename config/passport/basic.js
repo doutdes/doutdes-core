@@ -1,4 +1,3 @@
-const AccessManager = require('../../engine/access-manager');
 const BasicStrategy = require('passport-http').BasicStrategy;
 const User = require('../../models/index').Users;
 
