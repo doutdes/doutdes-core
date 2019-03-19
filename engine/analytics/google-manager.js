@@ -16,8 +16,6 @@ const DAYS = {
     min_date: 30
 };
 
-const start_date = new Date('2019-01-01');
-const end_date = DateFns.subDays(new Date(), DAYS.yesterday); // yesterday
 
 /***************** GOOGLE ANALYTICS *****************/
 const GoogleApi = require('../../api_handler/googleAnalytics-api');
@@ -51,6 +49,8 @@ const ga_getData = async (req, res) => {
         let old_startDate;
         let old_endDate;
         let old_date;
+        let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0));
+        let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
         try {
             //get the start date of the mongo document if exists
@@ -64,36 +64,30 @@ const ga_getData = async (req, res) => {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
                 await storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
-                //return res.status(HttpStatus.OK).send(data);
-            }
 
+                return res.status(HttpStatus.OK).send(data);
+            }
             //check if the start date is below our start date. If yes, delete the previous document and create a new one.
-            if (old_startDate > start_date) {
+            else if (old_startDate > start_date) {
                 //chiedere dati a Google e accertarmi che risponda
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
                 await removeMongoData(req.user.id, req.metrics, req.dimensions);
                 await storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
-                //return res.status(HttpStatus.OK).send(data);
-            }
 
-            if (old_endDate > end_date) {
+                return res.status(HttpStatus.OK).send(data);
+            }
+            else if (old_endDate < end_date) {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, old_endDate, end_date, req.sort, req.filters);
                 await updateMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
-                //return res.status(HttpStatus.OK).send(data);
-            }
-            else {
-                // dati presenti all'interno del db mongo
-                console.log("DATI PRESENTI ALL'INTERNO DEL DB MONGO")
             }
 
-            //TODO da eliminare
-            key = await GaToken.findOne({where: {user_id: req.user.id}});
-            data = await GoogleApi.getData(key.private_key, req.params.start_date, req.params.end_date,
-                req.metrics, req.dimensions, req.sort, req.filters);
+            let response = await getMongoData(req.user.id, req.metrics, req.dimensions);
 
-            return res.status(HttpStatus.OK).send(data);
+            console.log("RESPONSE ",response);
+
+            return res.status(HttpStatus.OK).send(response);
         }
         catch (err) {
             console.error(err);
@@ -235,6 +229,23 @@ async function updateMongoData(userid, metric, dimensions, start_date, end_date,
         console.error(e);
         throw new Error("updateMongoData - error updating data");
     }
+}
+
+async function getMongoData(userid, metric, dimensions) {
+    let result;
+    try {
+        result = await gaMongo.findOne({
+            'userid': userid,
+            'metric': metric,
+            'dimensions': dimensions
+        });
+        console.log("STO LEGGENDO DA MONGO successfully")
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getMongodata - error retrieving data");
+    }
+    return result.data;
 }
 
 /** EXPORTS **/
