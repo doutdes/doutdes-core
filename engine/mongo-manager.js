@@ -1,6 +1,7 @@
 const gaMongo = require('../models/mongo/mongo-ga-model');
+const fbMongo = require('../models/mongo/mongo-fb-model');
 
-//store data in mongo db
+//store GA data in mongo db
 async function storeGaMongoData(userid, metric, dimensions, start_date, end_date, file) {
     let data;
     try {
@@ -16,7 +17,7 @@ async function storeGaMongoData(userid, metric, dimensions, start_date, end_date
     }
 }
 
-//return the start date of a document in mongo
+//return the GA start date of a document in mongo
 async function getGaMongoItemDate(userid, metric, dimensions) {
     let result;
     try {
@@ -36,7 +37,7 @@ async function getGaMongoItemDate(userid, metric, dimensions) {
     } : {start_date: null, end_date: null};
 }
 
-//remove a mongo document
+//remove a GA mongo document
 async function removeGaMongoData(userid, metric, dimensions) {
     try {
         await gaMongo.findOneAndDelete({
@@ -51,7 +52,7 @@ async function removeGaMongoData(userid, metric, dimensions) {
     }
 }
 
-//update a mongo document
+//update a GA mongo document
 async function updateGaMongoData(userid, metric, dimensions, start_date, end_date, data) {
 
     try {
@@ -72,7 +73,7 @@ async function updateGaMongoData(userid, metric, dimensions, start_date, end_dat
     }
 }
 
-//get data from mongodb
+//get GA data from mongodb
 async function getGaMongoData(userid, metric, dimensions) {
     let result;
     try {
@@ -89,4 +90,19 @@ async function getGaMongoData(userid, metric, dimensions) {
     return result.data;
 }
 
-module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData};
+async function storeFbMongoData(userid, metric, start_date, end_date, file) {
+    let data;
+    try {
+        data = await new fbMongo({
+            userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
+        });
+        data.save().then(() => {});
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("storeFbMongoData - error doing the insert");
+    }
+}
+
+
+module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData, storeFbMongoData};

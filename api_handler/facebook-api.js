@@ -4,6 +4,8 @@
  * API calls from Page Insights Facebook
 **/
 
+const DateFns = require('date-fns');
+
 /** IMPORTS **/
 const Request = require('request-promise');
 
@@ -122,7 +124,8 @@ const getPagesID = async (token) =>  {
 };
 
 /** Facebook Page/Insight query **/
-const facebookQuery = async (method, metric, period, pageID, token, date_preset) => {
+//TODO check why it is necessary adds and subs in dates
+const facebookQuery = async (method, metric, period, pageID, token, start_date, end_date) => {
     let result;
     const options = {
         method: method,
@@ -131,7 +134,8 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
             access_token: token,
             metric: metric,
             period: period,
-            date_preset: date_preset
+            since: DateFns.subDays(start_date,1),
+            until: DateFns.addDays(end_date,1)
         },
         json: true
     };
@@ -144,15 +148,16 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-const getFacebookData = async (pageID, metric, period, token) => {
-    let access_token, this_year, last_year;
+const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
+    let access_token, data, this_year, last_year;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        this_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'this_year'))['data'][0]['values'];
-        last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
+        data = (await facebookQuery(GET, metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
+        //last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
 
-        return last_year.concat(this_year);
+        //return last_year.concat(this_year);
+        return data;
     } catch (e) {
         console.error(e);
         throw new Error('getFacebookData -> Error getting the Facebook Data');

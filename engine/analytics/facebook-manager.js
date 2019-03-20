@@ -1,4 +1,5 @@
 'use strict';
+const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
@@ -8,6 +9,12 @@ const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
 
+const MongoManager = require ('../mongo-manager');
+
+const DAYS = {
+    yesterday: 1,
+    min_date: 30
+};
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
 
@@ -68,11 +75,18 @@ const fb_getPages = async (req, res) => {
 const fb_getData = async (req, res) => {
     let key;
     let data;
+    let old_startDate;
+    let old_endDate;
+    let old_date;
+
+    let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0));
+    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
     try {
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookData(req.params.page_id, req.metric, DAY, key.api_key);
-
+        // key = await FbToken.findOne({where: {user_id: req.user.id}});
+        // data = await FacebookApi.getFacebookData(req.params.page_id, req.metric, DAY, key.api_key);
+        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
+        await MongoManager.storeFbMongoData(req.user_id, req.metric, start_date.toISOString().slice(0,10), end_date.toISOString().slice(0,10), data);
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -129,6 +143,19 @@ const fb_login_success = async (req, res) => {
         console.error(err);
     }
 };
+
+async function getAPIdata (user_id, page_id, metric, start_date, end_date){
+    let key;
+    let data;
+    try {
+        key = await FbToken.findOne({where: {user_id: user_id}});
+        data = await FacebookApi.getFacebookData(page_id, metric, DAY, key.api_key, start_date, end_date);
+        return data;
+    }
+    catch (e) {
+        console.error("error retrieving data from facebook insights")
+    }
+}
 
 /** EXPORTS **/
 module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes};
