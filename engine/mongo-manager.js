@@ -1,7 +1,7 @@
 const gaMongo = require('../models/mongo/mongo-ga-model');
 
 //store data in mongo db
-async function storeMongoData(userid, metric, dimensions, start_date, end_date, file) {
+async function storeGaMongoData(userid, metric, dimensions, start_date, end_date, file) {
     let data;
     try {
         data = await new gaMongo({
@@ -17,7 +17,7 @@ async function storeMongoData(userid, metric, dimensions, start_date, end_date, 
 }
 
 //return the start date of a document in mongo
-async function getMongoItemDate(userid, metric, dimensions) {
+async function getGaMongoItemDate(userid, metric, dimensions) {
     let result;
     try {
         result = await gaMongo.find({
@@ -37,7 +37,7 @@ async function getMongoItemDate(userid, metric, dimensions) {
 }
 
 //remove a mongo document
-async function removeMongoData(userid, metric, dimensions) {
+async function removeGaMongoData(userid, metric, dimensions) {
     try {
         await gaMongo.findOneAndDelete({
             'userid': userid,
@@ -52,7 +52,7 @@ async function removeMongoData(userid, metric, dimensions) {
 }
 
 //update a mongo document
-async function updateMongoData(userid, metric, dimensions, start_date, end_date, data) {
+async function updateGaMongoData(userid, metric, dimensions, start_date, end_date, data) {
 
     try {
         await gaMongo.findOneAndUpdate({
@@ -73,7 +73,7 @@ async function updateMongoData(userid, metric, dimensions, start_date, end_date,
 }
 
 //get data from mongodb
-async function getMongoData(userid, metric, dimensions) {
+async function getGaMongoData(userid, metric, dimensions) {
     let result;
     try {
         result = await gaMongo.findOne({
@@ -89,4 +89,4 @@ async function getMongoData(userid, metric, dimensions) {
     return result.data;
 }
 
-module.exports = {storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData};
+module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData};
