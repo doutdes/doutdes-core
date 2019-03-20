@@ -9,7 +9,7 @@ const HttpStatus = require('http-status-codes');
 
 const site_URL = require('../../app').config['site_URL'];
 
-const gaMongo = require('../../models/mongo/mongo-ga-model');
+const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -54,7 +54,7 @@ const ga_getData = async (req, res) => {
 
         try {
             //get the start date of the mongo document if exists
-            old_date = await getMongoItemDate(req.user.id, req.metrics, req.dimensions);
+            old_date = await MongoManager.getMongoItemDate(req.user.id, req.metrics, req.dimensions);
 
             old_startDate = old_date.start_date;
             old_endDate = old_date.end_date;
@@ -62,7 +62,7 @@ const ga_getData = async (req, res) => {
             //check if the previous document exist and create a new one
             if (old_startDate == null) {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
-                await storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
 
                 return res.status(HttpStatus.OK).send(data);
@@ -71,21 +71,19 @@ const ga_getData = async (req, res) => {
             else if (old_startDate > start_date) {
                 //chiedere dati a Google e accertarmi che risponda
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
-                await removeMongoData(req.user.id, req.metrics, req.dimensions);
-                await storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.removeMongoData(req.user.id, req.metrics, req.dimensions);
+                await MongoManager.storeMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
 
                 return res.status(HttpStatus.OK).send(data);
             }
             else if (old_endDate < end_date) {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, old_endDate, end_date, req.sort, req.filters);
-                await updateMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.updateMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
             }
 
-            let response = await getMongoData(req.user.id, req.metrics, req.dimensions);
-
-            console.log("RESPONSE ",response);
+            let response = await MongoManager.getMongoData(req.user.id, req.metrics, req.dimensions);
 
             return res.status(HttpStatus.OK).send(response);
         }
@@ -156,97 +154,5 @@ async function getAPIData(userid, metric, dimensions, start_date, end_date, sort
     }
     return data;
 }
-
-//store data in mongo db
-async function storeMongoData(userid, metric, dimensions, start_date, end_date, file) {
-    let data;
-    try {
-        data = await new gaMongo({
-            userid: userid, metric: metric, dimensions: dimensions,
-            start_date: start_date, end_date: end_date, data: file
-        });
-        data.save().then(() => console.log("saved successfully"));
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("storeMongoData - error doing the insert");
-    }
-}
-
-//return the start date of a document in mongo
-async function getMongoItemDate(userid, metric, dimensions) {
-    let result;
-    try {
-        result = await gaMongo.find({
-            'userid': userid,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongoItemDate - error doing the query");
-    }
-    return result[0] ? {
-        start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date)
-    } : {start_date: null, end_date: null};
-}
-
-//remove a mongo document
-async function removeMongoData(userid, metric, dimensions) {
-    try {
-        await gaMongo.findOneAndDelete({
-            'userid': userid,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-        console.log("removed successfully")
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("removeMongoData - error removing data");
-    }
-}
-
-//update a mongo document
-async function updateMongoData(userid, metric, dimensions, start_date, end_date, data) {
-
-    try {
-        await gaMongo.findOneAndUpdate({
-            'userid': userid,
-            'metric': metric,
-            'dimensions': dimensions
-        }, {
-            'start_date': start_date,
-            'end_date': end_date,
-            $push: {
-                'data': {$each: data}
-            }
-        });
-        console.log("updated successfully")
-    } catch (e) {
-        console.error(e);
-        throw new Error("updateMongoData - error updating data");
-    }
-}
-
-async function getMongoData(userid, metric, dimensions) {
-    let result;
-    try {
-        result = await gaMongo.findOne({
-            'userid': userid,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-        console.log("STO LEGGENDO DA MONGO successfully")
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongodata - error retrieving data");
-    }
-    return result.data;
-}
-
 /** EXPORTS **/
 module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes};
