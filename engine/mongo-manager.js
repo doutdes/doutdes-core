@@ -161,7 +161,7 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
 async function getFbMongoData(userid, metric) {
     let result;
     try {
-        result = await gaMongo.findOne({
+        result = await fbMongo.findOne({
             'userid': userid,
             'metric': metric,
         });
@@ -174,4 +174,4 @@ async function getFbMongoData(userid, metric) {
 }
 
 module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
-    storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData};
+                  storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData};
