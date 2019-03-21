@@ -4,26 +4,31 @@
  * Module dependencies.
  */
 
-var app = require('../app').app;
-var debug = require('debug')('doutdes-core:server');
-var http = require('http');
+let app = require('../app').app;
+let debug = require('debug')('doutdes-core:server');
+let https = require('https');
+let http = require('http');
+let fs = require('fs');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '443');
-app.set('port', port);
+let options;
+let server;
+let port = 8080;
 
-/**
- * Create HTTP server.
- */
+if(process.env.PEM_PATH) { // If using certificates, enable SSL
+    options = {
+        key: fs.readFileSync(process.env.PEM_PATH + 'privkey.pem').toString(),
+        cert: fs.readFileSync(process.env.PEM_PATH + 'cert.pem').toString()
+    };
 
-var server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
+    server = https.createServer(options, app);
+}
+else {
+    server = http.createServer(app);
+}
 
 server.listen(port);
 server.on('error', onError);
