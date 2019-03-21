@@ -148,15 +148,13 @@ const facebookQuery = async (method, metric, period, pageID, token, start_date, 
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
+
 const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
-    let access_token, data, this_year, last_year;
+    let access_token, data;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
         data = (await facebookQuery(GET, metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
-        //last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
-
-        //return last_year.concat(this_year);
         return data;
     } catch (e) {
         console.error(e);

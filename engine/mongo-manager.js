@@ -29,7 +29,7 @@ async function getGaMongoItemDate(userid, metric, dimensions) {
     }
     catch (e) {
         console.error(e);
-        throw new Error("getMongoItemDate - error doing the query");
+        throw new Error("getMongoGaItemDate - error doing the query");
     }
     return result[0] ? {
         start_date: new Date(result[0].start_date),
@@ -104,5 +104,74 @@ async function storeFbMongoData(userid, metric, start_date, end_date, file) {
     }
 }
 
+//return the Fb start date of a document in mongo
+async function getFbMongoItemDate(userid, metric) {
+    let result;
+    try {
+        result = await fbMongo.find({
+            'userid': userid,
+            'metric': metric
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getMongofbItemDate - error doing the query");
+    }
+    return result[0] ? {
+        start_date: new Date(result[0].start_date),
+        end_date: new Date(result[0].end_date)
+    } : {start_date: null, end_date: null};
+}
 
-module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData, storeFbMongoData};
+//remove a Fb mongo document
+async function removeFbMongoData(userid, metric) {
+    try {
+        await fbMongo.findOneAndDelete({
+            'userid': userid,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("removefbMongoData - error removing data");
+    }
+}
+
+//update a FB mongo document
+async function updateFbMongoData(userid, metric, start_date, end_date, data) {
+    console.log("entro qui");
+    try {
+        await fbMongo.findOneAndUpdate({
+            'userid': userid,
+            'metric': metric,
+        }, {
+            'start_date': start_date,
+            'end_date': end_date,
+            $push: {
+                'data': {$each: data}
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        throw new Error("updatefbMongoData - error updating data");
+    }
+}
+
+//get Fb data from mongodb
+async function getFbMongoData(userid, metric) {
+    let result;
+    try {
+        result = await gaMongo.findOne({
+            'userid': userid,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getfbMongodata - error retrieving data");
+    }
+    return result.data;
+}
+
+module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
+    storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData};

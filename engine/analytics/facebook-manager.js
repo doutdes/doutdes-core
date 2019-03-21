@@ -79,15 +79,48 @@ const fb_getData = async (req, res) => {
     let old_endDate;
     let old_date;
 
-    let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0));
+    let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0, 0));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
     try {
-        // key = await FbToken.findOne({where: {user_id: req.user.id}});
-        // data = await FacebookApi.getFacebookData(req.params.page_id, req.metric, DAY, key.api_key);
-        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
-        await MongoManager.storeFbMongoData(req.user_id, req.metric, start_date.toISOString().slice(0,10), end_date.toISOString().slice(0,10), data);
-        return res.status(HttpStatus.OK).send(data);
+
+        old_date = await MongoManager.getFbMongoItemDate(req.user.id, req.metric);
+
+        old_startDate = old_date.start_date;
+        old_endDate = old_date.end_date;
+
+        // data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
+        // await MongoManager.storeFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0,10), end_date.toISOString().slice(0,10), data);
+        // return res.status(HttpStatus.OK).send(data);
+
+        //check if the previous document exist and create a new one
+        if (old_startDate == null) {
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
+            await MongoManager.storeFbMongoData(req.user.id, req.metrics, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+
+            return res.status(HttpStatus.OK).send(data);
+        }
+        //check if the start date is below our start date. If yes, delete the previous document and create a new one.
+        else if (old_startDate > start_date) {
+            //chiedere dati a Facebook e accertarmi che risponda
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
+            await MongoManager.removeFbMongoData(req.user.id, req.metrics);
+            await MongoManager.storeFbMongoData(req.user.id, req.metrics, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+
+            return res.status(HttpStatus.OK).send(data);
+        }
+        else if (old_endDate < end_date) {
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, old_endDate, end_date);
+            await MongoManager.updateFbMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+        }
+
+        let response = await MongoManager.getFbMongoData(req.user.id, req.metrics);
+
+        return res.status(HttpStatus.OK).send(response);
+
     } catch (err) {
         console.error(err);
         if (err.statusCode === 400) {
