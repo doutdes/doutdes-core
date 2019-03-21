@@ -89,12 +89,6 @@ const fb_getData = async (req, res) => {
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
 
-        // data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
-        // await MongoManager.storeFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0,10), end_date.toISOString().slice(0,10), data);
-        // return res.status(HttpStatus.OK).send(data);
-
-        console.log("OLD DATE",old_date);
-
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);

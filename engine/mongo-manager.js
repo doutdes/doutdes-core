@@ -139,7 +139,6 @@ async function removeFbMongoData(userid, metric) {
 
 //update a FB mongo document
 async function updateFbMongoData(userid, metric, start_date, end_date, data) {
-    console.log("entro qui");
     try {
         await fbMongo.findOneAndUpdate({
             'userid': userid,
