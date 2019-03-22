@@ -167,7 +167,7 @@ const fb_login_success = async (req, res) => {
         const longToken = await FacebookApi.getLongLiveAccessToken(token);
         const upserting = await TokenManager.upsertFbKey(user_id, longToken);
 
-        res.redirect(site_URL + (site_URL.includes('localhost') ? ':4200' : '/prealpha') + '/#/preferences/api-keys/');
+        res.redirect((site_URL.includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/prealpha') + '/#/preferences/api-keys/');
     } catch (err) {
         console.error(err);
     }

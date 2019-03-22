@@ -37,7 +37,7 @@ const ga_login_success = async (req, res) => {
     try {
         const upserting = await TokenManager.upsertGaKey(user_id, token);
 
-        res.redirect(site_URL + (site_URL.includes('localhost') ? ':4200' : '/prealpha') + '/#/preferences/api-keys/');
+        res.redirect((site_URL.includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/prealpha') + '/#/preferences/api-keys/');
     } catch (err) {
         console.error(err);
     }
