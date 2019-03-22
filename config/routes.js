@@ -1,7 +1,7 @@
-const AccessManager     = require('../engine/access-manager');
-const TokenManager      = require('../engine/token-manager');
+const AccessManager = require('../engine/access-manager');
+const TokenManager = require('../engine/token-manager');
 const DashboardsManager = require('../engine/dashboard-manager');
-const CalendarManager   = require('../engine/calendar-manager');
+const CalendarManager = require('../engine/calendar-manager');
 
 const FbManager = require('../engine/analytics/facebook-manager');
 const IgManager = require('../engine/analytics/instagram-manager');
@@ -10,32 +10,44 @@ const YtManager = require('../engine/analytics/youtube-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
-module.exports = function (app, passport) {
+module.exports = function (app, passport, config) {
+    const site_URL = config['site_URL'] + (config['site_URL'].includes('localhost') ? ':4200' : '/prealpha') + '/#/preferences/api-keys?err=true';
+
     /* PATHs */
-    let indexPath  = "/";
-    let amPath     = indexPath + 'users/';
-    let keysPath   = indexPath + 'keys/';
-    let dashPath   = indexPath + 'dashboards/';
+    let indexPath = "/";
+    let amPath = indexPath + 'users/';
+    let keysPath = indexPath + 'keys/';
+    let dashPath = indexPath + 'dashboards/';
     let calendPath = indexPath + 'calendar/';
 
-    let gaPath    = indexPath + 'ga/';
-    let fbPath  = indexPath + 'fb/';
+    let gaPath = indexPath + 'ga/';
+    let fbPath = indexPath + 'fb/';
     let igPath = indexPath + 'ig/';
-    let ytPath   = indexPath + 'yt/';
+    let ytPath = indexPath + 'yt/';
 
     /* AUTH */
     const requireAuth = passport.authenticate('jwt', {session: false});
 
-    const fbReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['manage_pages', 'read_insights', 'ads_read'], state: req.query.user_id})(req, res, next)};
-    const igReqAuth = (req,res,next) => {passport.authenticate('facebook', {scope: ['instagram_basic', 'instagram_manage_insights'], state: req.query.user_id})(req, res, next)};
-    const fbAuth = passport.authenticate('facebook');
+    const fbReqAuth = (req, res, next) => {
+        passport.authenticate('facebook', {
+            scope: ['manage_pages', 'read_insights', 'ads_read'],
+            state: req.query.user_id,
+        })(req, res, next)
+    };
+    const igReqAuth = (req, res, next) => {
+        passport.authenticate('facebook', {
+            scope: ['manage_pages', 'read_insights', 'ads_read', 'instagram_basic', 'instagram_manage_insights'],
+            state: req.query.user_id,
+        })(req, res, next)
+    };
+    const fbAuth = passport.authenticate('facebook', { failureRedirect: site_URL});
 
     const gaOnlyReqAuth = (req, res, next) => {
         passport.authenticate('google', {
             scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/analytics.readonly',
             accessType: 'offline',
             prompt: 'consent',
-            state: req.query.user_id
+            state: req.query.user_id,
         })(req, res, next)
     };
     const ytOnlyReqAuth = (req, res, next) => {
@@ -46,7 +58,7 @@ module.exports = function (app, passport) {
                 'https://www.googleapis.com/auth/yt-analytics.readonly',
             accessType: 'offline',
             prompt: 'consent',
-            state: req.query.user_id
+            state: req.query.user_id,
         })(req, res, next)
     };
     const bothGaYtReqAuth = (req, res, next) => {
@@ -58,14 +70,14 @@ module.exports = function (app, passport) {
                 'https://www.googleapis.com/auth/yt-analytics.readonly',
             accessType: 'offline',
             prompt: 'consent',
-            state: req.query.user_id
+            state: req.query.user_id,
         })(req, res, next)
     };
 
-    const gaAuth = passport.authenticate('google');
+    const gaAuth = passport.authenticate('google', { failureRedirect: site_URL});
 
-    const admin  = '0';
-    const user   = '1';
+    const admin = '0';
+    const user = '1';
     const editor = '2';
     const all = [admin, user, editor];
 
@@ -94,16 +106,16 @@ module.exports = function (app, passport) {
     app.get(gaPath + 'login/success', gaAuth, GaManager.ga_login_success);
 
     /****************** CRUD USERS ********************/
-    app.post(amPath     + 'create/', AccessManager.createUser);
-    app.get(amPath      + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById);
-    app.put(amPath      + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
-    app.delete(amPath   + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
+    app.post(amPath + 'create/', AccessManager.createUser);
+    app.get(amPath + 'getFromId/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.getUserById);
+    app.put(amPath + 'update/', requireAuth, AccessManager.roleAuthorization(all), AccessManager.updateUser);
+    app.delete(amPath + 'delete/', requireAuth, AccessManager.roleAuthorization([admin]), AccessManager.deleteUser);
 
     /****************** TOKENS ********************/
     // CRUD
-    app.post(keysPath   + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
-    app.get(keysPath    + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
-    app.put(keysPath    + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
+    app.post(keysPath + 'insert/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.insertKey);
+    app.get(keysPath + 'getAll/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.readAllKeysById);
+    app.put(keysPath + 'update/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.update);
     app.delete(keysPath + 'delete/', requireAuth, AccessManager.roleAuthorization(all), TokenManager.deleteKey);
 
     // Validity
@@ -115,18 +127,18 @@ module.exports = function (app, passport) {
     // app.delete();
 
     /****************** CRUD DASHBOARD ********************/
-    app.get(dashPath    + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
-    app.get(dashPath    + 'getDashboardByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.getDashboardByType);
-    app.get(dashPath    + 'getDashboardByID/:id', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.getDashboardByID);
-    app.get(dashPath    + 'getChart/:dashboard_id/:chart_id', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readChart);
-    app.get(dashPath    + 'getChartsNotAddedByDashboard/:dashboard_id/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readNotAddedByDashboard);
-    app.get(dashPath    + 'getChartsNotAddedByDashboardAndType/:dashboard_id/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readNotAddedByDashboardAndType);
-    app.post(dashPath   + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
+    app.get(dashPath + 'getAllUserDashboards/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readUserDashboards);
+    app.get(dashPath + 'getDashboardByType/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.getDashboardByType);
+    app.get(dashPath + 'getDashboardByID/:id', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.getDashboardByID);
+    app.get(dashPath + 'getChart/:dashboard_id/:chart_id', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readChart);
+    app.get(dashPath + 'getChartsNotAddedByDashboard/:dashboard_id/', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readNotAddedByDashboard);
+    app.get(dashPath + 'getChartsNotAddedByDashboardAndType/:dashboard_id/:type', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.readNotAddedByDashboardAndType);
+    app.post(dashPath + 'addChartToDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.removeChartFromDashboard);
-    app.put(dashPath    + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
+    app.put(dashPath + 'updateChartInDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.updateChartInDashboard);
     // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuthorization(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.deleteUserDashboard);
-    app.post(dashPath   + 'createDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.createDashboard);
+    app.post(dashPath + 'createDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.createDashboard);
     app.delete(dashPath + 'deleteDashboard', requireAuth, AccessManager.roleAuthorization(all), DashboardsManager.deleteDashboard);
 
     /****************** FACEBOOK MANAGER ********************/
@@ -136,10 +148,10 @@ module.exports = function (app, passport) {
 
     app.get(fbPath + ':page_id/fancount', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS), FbManager.fb_getData);
     app.get(fbPath + ':page_id/fancity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_CITY), FbManager.fb_getData);
-    app.get(fbPath + ':page_id/fancountry', requireAuth, AccessManager.roleAuthorization(all),  FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
+    app.get(fbPath + ':page_id/fancountry', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_FANS_COUNTRY), FbManager.fb_getData);
     app.get(fbPath + ':page_id/engageduser', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ENGAGED_USERS), FbManager.fb_getData);
     app.get(fbPath + ':page_id/pageimpressions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbManager.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE),  FbManager.fb_getData);
+    app.get(fbPath + ':page_id/pageimpressionscity', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbManager.fb_getData);
     app.get(fbPath + ':page_id/pageimpressionscountry', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbManager.fb_getData);
     app.get(fbPath + ':page_id/pagereactions', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbManager.fb_getData);
     app.get(fbPath + ':page_id/pageviewsexternals', requireAuth, AccessManager.roleAuthorization(all), FbManager.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbManager.fb_getData);
@@ -149,32 +161,32 @@ module.exports = function (app, passport) {
     app.get(igPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getPages);
     app.get(igPath + ':page_id/businessInfo', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getBusinessInfo);
 
-    app.get(igPath + ':page_id/audcity', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_CITY],IGP.LIFETIME), IgManager.ig_getData);
-    app.get(igPath + ':page_id/audcountry', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_COUNTRY],IGP.LIFETIME), IgManager.ig_getData);
-    app.get(igPath + ':page_id/audgenderage', requireAuth, AccessManager.roleAuthorization(all),  IgManager.setMetric([IGM.AUDIENCE_GENDER_AGE],IGP.LIFETIME), IgManager.ig_getData);
-    app.get(igPath + ':page_id/audlocale', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_LOCALE],IGP.LIFETIME), IgManager.ig_getData);
-    app.get(igPath + ':page_id/emailcontacts', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.EMAIL_CONTACTS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/followercount', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.FOLLOWER_COUNT],IGP.DAY,IGI.MONTH),  IgManager.ig_getData);
-    app.get(igPath + ':page_id/getdirclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.GET_DIRECTIONS_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.IMPRESSIONS],IGP.D_28,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/onlinefollowers', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.ONLINE_FOLLOWERS],IGP.LIFETIME,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/phonecallclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.PHONE_CALL_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/profileviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.PROFILE_VIEWS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.REACH],IGP.D_28,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/textmessageclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.TEXT_MESSAGE_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/websiteclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS],IGP.DAY,IGI.MONTH), IgManager.ig_getData);
-    app.get(igPath + ':page_id/actionsperformed', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS,IGM.TEXT_MESSAGE_CLICKS,IGM.PHONE_CALL_CLICKS,IGM.GET_DIRECTIONS_CLICKS],IGP.DAY,IGI.MONTH),IgManager.ig_getData);
+    app.get(igPath + ':page_id/audcity', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_CITY], IGP.LIFETIME), IgManager.ig_getData);
+    app.get(igPath + ':page_id/audcountry', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_COUNTRY], IGP.LIFETIME), IgManager.ig_getData);
+    app.get(igPath + ':page_id/audgenderage', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME), IgManager.ig_getData);
+    app.get(igPath + ':page_id/audlocale', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.AUDIENCE_LOCALE], IGP.LIFETIME), IgManager.ig_getData);
+    app.get(igPath + ':page_id/emailcontacts', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/followercount', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/getdirclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/impressions', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.IMPRESSIONS], IGP.D_28, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/onlinefollowers', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/phonecallclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/profileviews', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/reach', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.REACH], IGP.D_28, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/textmessageclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/websiteclicks', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
+    app.get(igPath + ':page_id/actionsperformed', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric([IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgManager.ig_getData);
 
     /****************** INSTAGRAM MEDIA MANAGER ********************/
-    app.get(igPath + ':page_id/media/:n*?', requireAuth, AccessManager.roleAuthorization(all),IgManager.ig_getMedia);
-    app.get(igPath + ':page_id/videos/:n*?', requireAuth, AccessManager.roleAuthorization(all),IgManager.ig_getVideos);
-    app.get(igPath + ':page_id/images/:n*?', requireAuth, AccessManager.roleAuthorization(all),IgManager.ig_getImages);
-    app.get(igPath + ':page_id/stories/:n*?', requireAuth, AccessManager.roleAuthorization(all),IgManager.ig_getStories);
+    app.get(igPath + ':page_id/media/:n*?', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getMedia);
+    app.get(igPath + ':page_id/videos/:n*?', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getVideos);
+    app.get(igPath + ':page_id/images/:n*?', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getImages);
+    app.get(igPath + ':page_id/stories/:n*?', requireAuth, AccessManager.roleAuthorization(all), IgManager.ig_getStories);
 
     //media insights
-    app.get(igPath + ':page_id/engagement/:media_id',requireAuth,AccessManager.roleAuthorization(all),IgManager.setMetric(IGM.ENGAGEMENT),IgManager.ig_getData);
-    app.get(igPath + ':page_id/saved/:media_id',requireAuth,AccessManager.roleAuthorization(all),IgManager.setMetric(IGM.SAVED),IgManager.ig_getData);
-    app.get(igPath + ':page_id/vid_views/:media_id',requireAuth,AccessManager.roleAuthorization(all),IgManager.setMetric(IGM.VIDEO_VIEWS),IgManager.ig_getData);
+    app.get(igPath + ':page_id/engagement/:media_id', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.ENGAGEMENT), IgManager.ig_getData);
+    app.get(igPath + ':page_id/saved/:media_id', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.SAVED), IgManager.ig_getData);
+    app.get(igPath + ':page_id/vid_views/:media_id', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.VIDEO_VIEWS), IgManager.ig_getData);
 
     //stories insights
     app.get(igPath + ':page_id/exits/:media_id', requireAuth, AccessManager.roleAuthorization(all), IgManager.setMetric(IGM.EXITS), IgManager.ig_getData);
@@ -186,7 +198,7 @@ module.exports = function (app, passport) {
     /** Data response is always an array of arrays as follows:
      * 0 - data
      * i - other values
-    **/
+     **/
     app.get(gaPath + 'getScopes/', requireAuth, AccessManager.roleAuthorization(all), GaManager.ga_getScopes);
 
     app.get(gaPath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.SESSIONS, GAD.DATE), GaManager.ga_getData);
@@ -204,9 +216,9 @@ module.exports = function (app, passport) {
     app.get(ytPath + 'proof/', YtManager.proof);
 
     /****************** CALENDAR MANAGER ******************/
-    app.get(calendPath    + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
-    app.post(calendPath   + 'addEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.addEvent);
-    app.put(calendPath    + 'updateEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.updateEvent);
+    app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);
+    app.post(calendPath + 'addEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.addEvent);
+    app.put(calendPath + 'updateEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.updateEvent);
     app.delete(calendPath + 'deleteEvent', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.deleteEvent);
 
     /****************** ERROR HANDLER ********************/
