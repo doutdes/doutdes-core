@@ -192,7 +192,7 @@ async function getBusinessDiscoveryInfo(pageID, token) {
 }
 
 /** Facebook Page/Insight query **/
-function instagramQuery(method, metric, period=null, since=null, until=null,pageID, token, date_preset=null, mediaID=null) {
+function instagramQuery(method, metric,pageID, token, period=null, since=null, until=null, date_preset=null, mediaID=null) {
 
     if(since){
         since.setDate(since.getDate());
@@ -225,14 +225,14 @@ function instagramQuery(method, metric, period=null, since=null, until=null,page
             })
     });
 }
-const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
+const getInstagramData = async (pageID, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
     let final = [], temp = [];
     try {
         access_token = await getPageAccessToken(token, pageID);
 
         for(let index in metric) {
-            temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
+            temp.push(JSON.parse(await instagramQuery(GET, metric[index], pageID, access_token, period, since, until, null, mediaID))['data'][0]['values']);
             //every data carries on its metric
             for(let i in temp[temp.length-1]) {
                 temp[temp.length-1][i].metric = metric[index];
