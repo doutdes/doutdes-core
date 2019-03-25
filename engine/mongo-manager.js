@@ -90,6 +90,7 @@ async function getGaMongoData(userid, metric, dimensions) {
     return result.data;
 }
 
+//store FB data in mongo db
 async function storeFbMongoData(userid, metric, start_date, end_date, file) {
     let data;
     try {
@@ -104,7 +105,7 @@ async function storeFbMongoData(userid, metric, start_date, end_date, file) {
     }
 }
 
-//return the Fb start date of a document in mongo
+//return the FB start date of a document in mongo
 async function getFbMongoItemDate(userid, metric) {
     let result;
     try {
@@ -123,7 +124,7 @@ async function getFbMongoItemDate(userid, metric) {
     } : {start_date: null, end_date: null};
 }
 
-//remove a Fb mongo document
+//remove a FB mongo document
 async function removeFbMongoData(userid, metric) {
     try {
         await fbMongo.findOneAndDelete({
@@ -156,7 +157,7 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
     }
 }
 
-//get Fb data from mongodb
+//get FB data from mongodb
 async function getFbMongoData(userid, metric) {
     let result;
     try {
@@ -171,6 +172,8 @@ async function getFbMongoData(userid, metric) {
     }
     return result.data;
 }
+
+
 
 module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
                   storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData};
