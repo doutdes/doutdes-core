@@ -151,9 +151,6 @@ function preProcessIGData(data, metric) {
        case 'audience_gender_age': // This metric has dots in keys, which are not allowed
             stringified = JSON.stringify(data);
             stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
-
-            console.log("STRINGIFIED", stringified);
-
             data = JSON.parse(stringified);
            break;
     }
@@ -162,20 +159,15 @@ function preProcessIGData(data, metric) {
 }
 
 const ig_getData = async (req, res) => {
-    let key, data;
+    let data;
     let media_id = req.params.media_id | null;
 
     try {
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
 
-        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until);
-
+        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until, media_id);
         data = preProcessIGData(data, req.metric);
 
-        console.log(data);
-
         await MongoManager.storeIgMongoData(req.user.id, req.metric, " ", " ", data);
-
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
