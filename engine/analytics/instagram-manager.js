@@ -1,6 +1,7 @@
 /** INSTAGRAM MANAGER **/
 
 'use strict';
+const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
@@ -8,6 +9,13 @@ const FbToken = Model.FbToken;
 const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
+
+const MongoManager = require ('../mongo-manager');
+
+const DAYS = {
+    yesterday: 1,
+    min_date: 30
+};
 
 /***************** INSTAGRAM *****************/
 const InstagramApi = require('../../api_handler/instagram-api');
@@ -134,16 +142,39 @@ const ig_getVideos = async (req, res) => {
     }
 };
 
+// Replace some special chars in API JSONs, which are not allowed by Mongoose
+function preProcessIGData(data, metric) {
+
+    let stringified;
+
+    switch (metric) {
+       case 'audience_gender_age': // This metric has dots in keys, which are not allowed
+            stringified = JSON.stringify(data);
+            stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
+
+            console.log("STRINGIFIED", stringified);
+
+            data = JSON.parse(stringified);
+           break;
+    }
+
+    return data;
+}
+
 const ig_getData = async (req, res) => {
     let key, data;
     let media_id = req.params.media_id | null;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        (req.since && req.until) ?
-            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period,  key.api_key, new Date(req.since), new Date(req.until), media_id)
-            :
-            data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, key.api_key)
+
+        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until);
+
+        data = preProcessIGData(data, req.metric);
+
+        console.log(data);
+
+        await MongoManager.storeIgMongoData(req.user.id, req.metric, " ", " ", data);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
@@ -197,6 +228,21 @@ const ig_getBusinessInfo = async (req, res) => {
         })
     }
 };
+
+//get data from Instagram insights
+async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null){
+    let data, key;
+    key = await FbToken.findOne({where: {user_id: user_id}});
+
+    try {
+        (start_date && end_date) ? data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
+                                   data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key);
+    } catch (e) {
+        console.error("Error retrieving Instagram data");
+    }
+
+    return data;
+}
 
 /** EXPORTS **/
 module.exports = {

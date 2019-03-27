@@ -1,5 +1,6 @@
 const gaMongo = require('../models/mongo/mongo-ga-model');
 const fbMongo = require('../models/mongo/mongo-fb-model');
+const igMongo = require('../models/mongo/mongo-ig-model');
 
 //store GA data in mongo db
 async function storeGaMongoData(userid, metric, dimensions, start_date, end_date, file) {
@@ -173,7 +174,23 @@ async function getFbMongoData(userid, metric) {
     return result.data;
 }
 
+async function storeIgMongoData(userid, metric, start_date, end_date, file) {
+    let data;
 
+    console.log ("FILE ", file);
+
+    try {
+        data = await new igMongo({
+            userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
+        });
+        data.save().then(() => {});
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("storeIgMongoData - error doing the insert");
+    }
+}
 
 module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
-                  storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData};
+                  storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
+                  storeIgMongoData  };
