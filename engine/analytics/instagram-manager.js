@@ -10,7 +10,7 @@ const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
 
-const MongoManager = require ('../mongo-manager');
+const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -147,27 +147,48 @@ function preProcessIGData(data, metric) {
 
     let stringified;
 
-    switch (metric) {
-       case 'audience_gender_age': // This metric has dots in keys, which are not allowed
-            stringified = JSON.stringify(data);
-            stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
-            data = JSON.parse(stringified);
-           break;
+    if (metric.toString() === "audience_gender_age") {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
+        data = JSON.parse(stringified);
     }
 
     return data;
+}
+
+function getIntervalDate(data) {
+    return {
+        start_date: data[0].end_time,
+        end_date: data[data.length - 1].end_time
+    }
 }
 
 const ig_getData = async (req, res) => {
     let data;
     let media_id = req.params.media_id | null;
 
+    let old_date, old_startDate, old_endDate;
+    let date;
     try {
+        old_date = await MongoManager.getIgMongoItemDate(req.user.id, req.metric);
+
+        old_startDate = old_date.start_date;
+        old_endDate = old_date.end_date;
+
+        if (old_startDate == null) {
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until,
+                media_id);
+            data = preProcessIGData(data, req.metric);
+            date = getIntervalDate(data);
+            await MongoManager.storeIgMongoData(req.user.id, req.metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
+
+            return res.status(HttpStatus.OK).send(data);
+        }
 
         data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until, media_id);
         data = preProcessIGData(data, req.metric);
-
         await MongoManager.storeIgMongoData(req.user.id, req.metric, " ", " ", data);
+
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -222,13 +243,13 @@ const ig_getBusinessInfo = async (req, res) => {
 };
 
 //get data from Instagram insights
-async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null){
+async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
     let data, key;
     key = await FbToken.findOne({where: {user_id: user_id}});
 
     try {
         (start_date && end_date) ? data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
-                                   data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key);
+            data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key);
     } catch (e) {
         console.error("Error retrieving Instagram data");
     }

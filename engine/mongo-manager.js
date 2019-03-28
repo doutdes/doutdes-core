@@ -176,9 +176,6 @@ async function getFbMongoData(userid, metric) {
 
 async function storeIgMongoData(userid, metric, start_date, end_date, file) {
     let data;
-
-    console.log ("FILE ", file);
-
     try {
         data = await new igMongo({
             userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
@@ -191,6 +188,74 @@ async function storeIgMongoData(userid, metric, start_date, end_date, file) {
     }
 }
 
+//return the IG start date of a document in mongo
+async function getIgMongoItemDate(userid, metric) {
+    let result;
+    try {
+        result = await igMongo.find({
+            'userid': userid,
+            'metric': metric
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getIgMongoItemDate - error doing the query");
+    }
+    return result[0] ? {
+        start_date: new Date(result[0].start_date),
+        end_date: new Date(result[0].end_date)
+    } : {start_date: null, end_date: null};
+}
+
+//remove a IG mongo document
+async function removeIgMongoData(userid, metric) {
+    try {
+        await igMongo.findOneAndDelete({
+            'userid': userid,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("removeigMongoData - error removing data");
+    }
+}
+
+//update a IG mongo document
+async function updateIgMongoData(userid, metric, start_date, end_date, data) {
+    try {
+        await igMongo.findOneAndUpdate({
+            'userid': userid,
+            'metric': metric,
+        }, {
+            'start_date': start_date,
+            'end_date': end_date,
+            $push: {
+                'data': {$each: data}
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        throw new Error("updateigMongoData - error updating data");
+    }
+}
+
+//get IG data from mongodb
+async function getIgMongoData(userid, metric) {
+    let result;
+    try {
+        result = await igMongo.findOne({
+            'userid': userid,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getigMongodata - error retrieving data");
+    }
+    return result.data;
+}
+
 module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
                   storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
-                  storeIgMongoData  };
+                  storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData};
