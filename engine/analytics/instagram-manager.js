@@ -168,12 +168,13 @@ const ig_getData = async (req, res) => {
     let media_id = req.params.media_id | null;
 
     let old_date, old_startDate, old_endDate;
-    let date;
+    let date, today;
     try {
         old_date = await MongoManager.getIgMongoItemDate(req.user.id, req.metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
+        today = new Date();
 
         if (old_startDate == null) {
             data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until,
@@ -181,14 +182,17 @@ const ig_getData = async (req, res) => {
             data = preProcessIGData(data, req.metric);
             date = getIntervalDate(data);
             await MongoManager.storeIgMongoData(req.user.id, req.metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
-
             return res.status(HttpStatus.OK).send(data);
+        }  else if (old_endDate < today) {
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until,
+                media_id);
+            date = getIntervalDate(data);
+            data = preProcessIGData(data, req.metric);
+            await MongoManager.updateIgMongoData(req.user.id, req.metric, date.end_date.slice(0,10), data);
         }
 
-        data = await getAPIdata(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until, media_id);
-        data = preProcessIGData(data, req.metric);
-        await MongoManager.storeIgMongoData(req.user.id, req.metric, " ", " ", data);
-
+        data = await MongoManager.getIgMongoData(req.user.id, req.metric);
+        console.log ("data ", req.metric, data);
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);

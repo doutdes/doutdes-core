@@ -222,15 +222,14 @@ async function removeIgMongoData(userid, metric) {
 }
 
 //update a IG mongo document
-async function updateIgMongoData(userid, metric, start_date, end_date, data) {
+async function updateIgMongoData(userid, metric, end_date, data) {
     try {
         await igMongo.findOneAndUpdate({
             'userid': userid,
             'metric': metric,
         }, {
-            'start_date': start_date,
             'end_date': end_date,
-            $push: {
+            $addToSet: {
                 'data': {$each: data}
             }
         });
