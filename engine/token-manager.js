@@ -15,6 +15,9 @@ const FbAPI = require('../api_handler/facebook-api');
 const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
+/* Dashboard Manager */
+const DashboardManager = require('../engine/dashboard-manager');
+
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 const DS_TYPE = require('../engine/dashboard-manager').DS_TYPE;
 
@@ -66,7 +69,9 @@ const checkExistence = async (req, res) => {
         case D_TYPE.IG:
             joinModel = FbToken;
             break;
-        case D_TYPE.GA: joinModel = GaToken;
+        case D_TYPE.GA:
+        case D_TYPE.YT:
+            joinModel = GaToken;
             break;
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -182,14 +187,19 @@ const revokePermissions = async (req, res) => {
                 await revokeFbPermissions(key);
                 await revokeIgPermissions(key);
                 await FbToken.destroy({where: {user_id: req.user.id}});
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
                 break;
             case D_TYPE.IG:
                 await revokeIgPermissions(key);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
                 break;
             case D_TYPE.GA:
             case D_TYPE.YT:
                 await revokeGaPermissions(key);
                 await GaToken.destroy({where: {user_id: req.user.id}});
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
                 break;
         }
 
@@ -517,9 +527,8 @@ const checkIGContains = (scopes) => {
     return hasBasic & hasInsight;
 };
 const checkGAContains = (scopes) => {
-
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly'));
+    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
 
     return hasEmail & hasAnalytics;
 };
@@ -550,8 +559,6 @@ const revokeFbPermissions = async (token) => {
     return true;
 };
 const revokeGaPermissions = async (token) => { // Token has been expired or revoked.
-    // const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
-
     let result;
 
     try {
@@ -561,7 +568,6 @@ const revokeGaPermissions = async (token) => { // Token has been expired or revo
     }
 
     return result;
-
 };
 const revokeIgPermissions = async (token) => {
     const scopes = ['instagram_basic', 'instagram_manage_insights'];

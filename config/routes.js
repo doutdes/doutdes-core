@@ -102,7 +102,7 @@ module.exports = function (app, passport, config) {
 
     app.get(gaPath + 'login', gaOnlyReqAuth);
     app.get(ytPath + 'login', ytOnlyReqAuth);
-    app.get(gaPath + ytPath + 'login', bothGaYtReqAuth);
+    app.get(indexPath + 'ga/yt/login', bothGaYtReqAuth);
     app.get(gaPath + 'login/success', gaAuth, GaManager.ga_login_success);
 
     /****************** CRUD USERS ********************/

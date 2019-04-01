@@ -10,6 +10,7 @@ const Op = Model.Sequelize.Op;
 const HttpStatus = require('http-status-codes');
 
 const D_TYPE = {
+    CUSTOM: 0,
     FB: 1,
     GA: 2,
     IG: 3,
@@ -17,6 +18,7 @@ const D_TYPE = {
 };
 
 const DS_TYPE = {
+    0: 'Custom',
     1: 'Facebook',
     2: 'Google Analytics',
     3: 'Instagram',
@@ -26,7 +28,7 @@ const DS_TYPE = {
 exports.D_TYPE = D_TYPE;
 exports.DS_TYPE = DS_TYPE;
 
-exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
+exports.internalAssignDashboardToUser = async function (dashboard_id, user_id) {
 
     return new Promise(resolve => {
         UserDashboards.findOne({
@@ -38,8 +40,8 @@ exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
                 .then(() => {
                     resolve(true);
                 }).catch(err => {
-                    console.error(err);
-                    resolve(false);
+                console.error(err);
+                resolve(false);
             })
         }).catch(err => {
             console.error(err);
@@ -48,9 +50,9 @@ exports.internalAssignDashboardToUser = async function(dashboard_id, user_id) {
     });
 };
 
-exports.internalCreateDashboard = async function(name, category) {
+exports.internalCreateDashboard = async function (name, category) {
 
-    const newDashboard = {name : name, category: category};
+    const newDashboard = {name: name, category: category};
 
     return new Promise(resolve => {
         Dashboard.create(newDashboard)
@@ -64,13 +66,13 @@ exports.internalCreateDashboard = async function(name, category) {
     });
 };
 
-exports.internalCreateDefaultDashboards = async function(user_id) {
+exports.internalCreateDefaultDashboards = async function (user_id) {
 
-    const CUSTOM_DASHBOARD    = {category: 0, name: 'Custom'};
-    const FACEBOOK_DASHBOARD  = {category: 1, name: 'Facebook'};
+    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
+    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
     const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
     const INSTAGRAM_DASHBOARD = {category: 3, name: 'Instagram'};
-    const YOUTUBE_DASHBOARD   = {category: 4, name: 'YouTube'};
+    const YOUTUBE_DASHBOARD = {category: 4, name: 'YouTube'};
 
     const dash1 = await this.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
     const dash2 = await this.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
@@ -153,9 +155,9 @@ exports.internalCreateDefaultDashboards = async function(user_id) {
 exports.readUserDashboards = function (req, res, next) {
 
     UserDashboards.findAll({
-        include: [{ model: Dashboard, required: true }],
-        attributes: { exclude: ['DashboardId'] },
-        where: { user_id: req.user.id } // Search for the selected user
+        include: [{model: Dashboard, required: true}],
+        attributes: {exclude: ['DashboardId']},
+        where: {user_id: req.user.id} // Search for the selected user
     })
         .then(userDashboards => {
 
@@ -230,9 +232,9 @@ exports.readUserDashboards = function (req, res, next) {
 exports.getDashboardByType = function (req, res, next) {
 
     UserDashboards.findAll({
-        include: [{ model: Dashboard, required: true, where: {category: req.params.type }}],
-        attributes: { exclude: ['DashboardId'] },
-        where: { user_id: req.user.id }
+        include: [{model: Dashboard, required: true, where: {category: req.params.type}}],
+        attributes: {exclude: ['DashboardId']},
+        where: {user_id: req.user.id}
     })
         .then(userDashboards => {
 
@@ -262,7 +264,7 @@ exports.readNotAddedByDashboard = function (req, res, next) {
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
         "WHERE user_id = :user_id AND dashboard_id = :dashboard_id" +
         ")", {
-        replacements: { user_id: req.user.id, dashboard_id: req.params.dashboard_id }
+        replacements: {user_id: req.user.id, dashboard_id: req.params.dashboard_id}
     })
         .then(chartsNotAdded => {
             if (chartsNotAdded[0].length === 0) {
@@ -377,16 +379,17 @@ exports.getDashboardByID = async function (req, res, next) {
             where: {user_id: req.user.id}
         });
 
-        if(userDashboards.length === 0) {
+        if (userDashboards.length === 0) {
             return res.status(HttpStatus.NO_CONTENT).send({});
         }
 
         // Retrieves all the charts of the dashboard
-        finalResult = await DashboardCharts.findAll({include: [{model: Charts, required: true,}],
+        finalResult = await DashboardCharts.findAll({
+            include: [{model: Charts, required: true,}],
             where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
         });
 
-        for(const i in finalResult) {
+        for (const i in finalResult) {
             dataToReturn.push(formatResult(finalResult[i]));
         }
 
@@ -764,6 +767,39 @@ exports.deleteDashboard = function (req, res, next) {
         })
 };
 
+exports.deleteChartsFromDashboardByType = async (user_id, dashboard_type) => {
+    let dashboard_id, deletion, deletion_custom;
+
+    try {
+        // GET the ID of the dashboard of type dashboard_type
+        dashboard_id = (await UserDashboards.findOne({
+            include: [{model: Dashboard, required: true, where: {category: dashboard_type}}],
+            attributes: {exclude: ['DashboardId']},
+            where: {user_id: user_id}
+        }))['dashboard_id'];
+
+        deletion = await DashboardCharts.destroy({where: {dashboard_id: dashboard_id}});
+
+        // GET the ID of the dashboard custom
+        dashboard_id = (await UserDashboards.findOne({
+            include: [{model: Dashboard, required: true, where: {category: D_TYPE.CUSTOM}}],
+            attributes: {exclude: ['DashboardId']},
+            where: {user_id: user_id}
+        }))['dashboard_id'];
+
+        deletion_custom = await Sequelize.query(
+            'DELETE FROM dashboard_charts WHERE dashboard_charts.dashboard_id = :dashboard_id AND chart_ID IN ( SELECT ID from charts where type = :type )', {
+                replacements: {dashboard_id: dashboard_id, type: dashboard_type},
+                type: Sequelize.QueryTypes.DELETE
+            });
+    } catch (e) {
+        console.error(e);
+        throw new Error('deleteFromDashboardByType -> error deleting the dashboards for type ' + dashboard_type);
+    }
+
+    return deletion && deletion_custom;
+};
+
 const formatResult = (dashChart) => {
 
     /**
@@ -777,6 +813,6 @@ const formatResult = (dashChart) => {
         format: dashChart['dataValues']['Chart']['dataValues']['format'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
-        type:  dashChart['dataValues']['Chart']['dataValues']['type']
+        type: dashChart['dataValues']['Chart']['dataValues']['type']
     };
 };
