@@ -235,13 +235,11 @@ const readAllKeysById = (req, res) => {
             if (fb == null && ga == null)
                 return res.status(HttpStatus.NO_CONTENT).send({});
 
-            let fb_token = (fb == null) ? null : fb.dataValues.api_key;      // FB Token
-            let ga_token = (ga == null) ? null : ga.dataValues.private_key;  // GA Token
-
             return res.status(HttpStatus.OK).send({
                 user_id: req.user.id,
-                fb_token: fb_token,
-                ga_token: ga_token
+                fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
+                ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
+                ga_view_id: (ga == null) ? null : ga.dataValues.view_id, // GA Token
             });
         })
         .catch(err => {
@@ -255,9 +253,9 @@ const insertKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
-        case 0: // fb
+        case D_TYPE.FB: // fb
             return insertFbKey(req, res);
-        case 1: // google
+        case D_TYPE.GA: // google
             return insertGaData(req, res);
         default:
             console.log('ERROR TOKEN-MANAGER. Unrecognized service type: ' + service_id);
@@ -267,12 +265,13 @@ const insertKey = (req, res) => {
             });
     }
 };
-const update = (req, res) => {
-    const service_id = parseInt(req.body.service_id);
+const update = (req, res) => { // TODO sistemare
+    console.log(req.body);
+    const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
-        case 0: //fb
+        case D_TYPE.FB: //fb
             return updateFbKey(req, res);
-        case 1: //google
+        case D_TYPE.GA: //google
             return updateGaData(req, res);
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -377,7 +376,7 @@ const insertGaData = (req, res) => {
 
 const updateFbKey = (req, res) => {
     FbToken.update({
-        api_key: FbToken.api_key
+        api_key: req.body.api.api_key
     }, {
         where: {
             user_id: req.user.id
@@ -385,20 +384,21 @@ const updateFbKey = (req, res) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            api_key: FbToken.api_key
+            api_key: req.body.api.api_key
         })
     }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            api_key: FbToken.api_key,
+            api_key: req.body.api.api_key,
             error: 'Cannot update the Facebook key'
         })
     })
 };
 const updateGaData = (req, res) => {
     GaToken.update({
-        client_email: GaToken.client_email,
-        private_key: GaToken.private_key
+        client_email: req.body.api.client_email,
+        private_key: req.body.api.private_key,
+        view_id: req.body.api.ga_view_id
     }, {
         where: {
             user_id: req.user.id
@@ -406,14 +406,18 @@ const updateGaData = (req, res) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            client_email: GaToken.client_email,
-            private_key: GaToken.private_key
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            view_id: req.body.api.ga_view_id
         })
     }).catch(err => {
+        console.error(err);
+
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            client_email: GaToken.client_email,
-            private_key: GaToken.private_key,
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            view_id: req.body.api.ga_view_id,
             error: 'Cannot update the Google Analytics credentials'
         })
     })

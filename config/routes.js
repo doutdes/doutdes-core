@@ -200,6 +200,7 @@ module.exports = function (app, passport, config) {
      * i - other values
      **/
     app.get(gaPath + 'getScopes/', requireAuth, AccessManager.roleAuthorization(all), GaManager.ga_getScopes);
+    app.get(gaPath + 'getViewList', requireAuth, AccessManager.roleAuthorization(all), GaManager.ga_viewList);
 
     app.get(gaPath + 'sessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.SESSIONS, GAD.DATE), GaManager.ga_getData);
     app.get(gaPath + 'pageviews/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaManager.ga_getData);
