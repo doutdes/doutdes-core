@@ -388,7 +388,7 @@ exports.basicLogin = function (req, res, next) {
     })(req, res, next);
 };
 
-exports.roleAuthorization = function(roles){
+exports.roleAuth = function(roles){
 
     return function(req, res, next){
 

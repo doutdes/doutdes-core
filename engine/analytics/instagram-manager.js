@@ -136,7 +136,7 @@ const ig_getVideos = async (req, res) => {
 
 const ig_getData = async (req, res) => {
     let key, data;
-    let media_id = req.params.media_id | null;
+    let media_id = req.params.media_id || null;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
