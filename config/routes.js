@@ -211,7 +211,9 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'avgsessionduration/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.AVG_SESSION_DURATION, GAD.DATE), GaManager.ga_getData);
     app.get(gaPath + 'users/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.USERS, GAD.DATE), GaManager.ga_getData);
     app.get(gaPath + 'newusers/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.NEW_USERS, GAD.DATE), GaManager.ga_getData);
-
+    app.get(gaPath + 'mobiledevices/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE), GaManager.ga_getData);
+    app.get(gaPath + 'pageloadtime/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE), GaManager.ga_getData);
+    app.get(gaPath + 'percentnewsessions/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaManager.ga_getData);
     /****************** YOUTUBE MANAGER ********************/
     app.get(ytPath + 'proof/', YtManager.proof);
 
