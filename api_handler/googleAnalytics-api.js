@@ -30,6 +30,7 @@ const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
 };
 const FILTER = {
+    SESSIONS_GT_1: 'ga:sessions>1',
     SESSIONS_GT_5: 'ga:sessions>5'
 };
 
