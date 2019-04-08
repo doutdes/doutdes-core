@@ -82,7 +82,7 @@ async function getPageAccessToken(token, pageID) {
     } catch (e) {
         console.error(e);
     }
-}
+};
 
 const revokePermission = require('./facebook-api').revokePermission;
 
