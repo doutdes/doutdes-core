@@ -10,7 +10,9 @@ const METRICS = {
     BOUNCE_RATE: 'ga:bounceRate',
     AVG_SESSION_DURATION: 'ga:avgSessionDuration',
     USERS: 'ga:users',
-    NEW_USERS: 'ga:newUsers'
+    NEW_USERS: 'ga:newUsers',
+    PAGE_LOAD_TIME: 'ga:pageLoadTime',
+    PERCENT_NEW_SESSIONS: 'ga:percentNewSessions'
 };
 const DIMENSIONS = {
     DATE: 'ga:date',
@@ -21,17 +23,21 @@ const DIMENSIONS = {
     MEDIUM_DATE: 'ga:date, ga:medium',
     BROWSER_DATE: 'ga:date, ga:browser',
     PAGE_DATE: 'ga:date, ga:pagePath',
-    COUNTRY_DATE: 'ga:date, ga:country'
+    COUNTRY_DATE: 'ga:date, ga:country',
+    MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
 };
 const FILTER = {
-    SESSIONS_GT_5: 'ga:sessions>5'
+    SESSIONS_GT_1: 'ga:sessions>1',
+    SESSIONS_GT_5: 'ga:sessions>5',
+    PAGE_LOAD_TIME_GT_0: 'ga:pageLoadTime>0'
 };
 
 const getAccessToken = async (refresh_token) => {
     let result;
+
     const options = {
         method: 'POST',
         uri: 'https://www.googleapis.com/oauth2/v4/token',
@@ -72,6 +78,7 @@ const getTokenInfo = async (private_key) => {
 
     return result;//['scope'].split(' ');
 };
+
 const getViewID = async (private_key) => {
     const access_token = await getAccessToken(private_key);
 
@@ -80,11 +87,32 @@ const getViewID = async (private_key) => {
         'accountId': '~all',
         'webPropertyId': '~all'
     });
-    return result.data.items[0].id;
-};
-const getData = async(private_key, start_date, end_date, metrics, dimensions, sort=null, filters=null) => {
 
-    const view_id = await getViewID(private_key);
+    return result.data.items;
+};
+
+const getViewList = async (private_key) => {
+    const access_token = await getAccessToken(private_key);
+
+    const accountList = await google.analytics('v3').management.accounts.list({
+        'access_token': access_token ,
+    });
+
+    const profileList = await google.analytics('v3').management.profiles.list({
+        'access_token': access_token ,
+        'accountId': '~all',
+        'webPropertyId': '~all'
+    });
+
+
+    return {
+        accountList: accountList.data.items,
+        profileList: profileList.data.items,
+    };
+};
+
+const getData = async(private_key, view_id, start_date, end_date, metrics, dimensions, sort=null, filters=null) => {
+
     const access_token = await getAccessToken(private_key);
 
     let params = {
@@ -117,7 +145,6 @@ const revokePermissions = async(private_key) => {
 
     try {
         result = await Request(options);
-        console.log(result);
 
         return result;
     } catch (e) {
@@ -127,4 +154,4 @@ const revokePermissions = async(private_key) => {
 };
 
 /** EXPORTS **/
-module.exports = {getData, getTokenInfo, revokePermissions, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getData, getTokenInfo, revokePermissions, getViewList, METRICS, DIMENSIONS, SORT, FILTER};

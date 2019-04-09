@@ -15,6 +15,9 @@ const FbAPI = require('../api_handler/facebook-api');
 const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
+/* Dashboard Manager */
+const DashboardManager = require('../engine/dashboard-manager');
+
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 const DS_TYPE = require('../engine/dashboard-manager').DS_TYPE;
 
@@ -66,7 +69,9 @@ const checkExistence = async (req, res) => {
         case D_TYPE.IG:
             joinModel = FbToken;
             break;
-        case D_TYPE.GA: joinModel = GaToken;
+        case D_TYPE.GA:
+        case D_TYPE.YT:
+            joinModel = GaToken;
             break;
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -182,14 +187,19 @@ const revokePermissions = async (req, res) => {
                 await revokeFbPermissions(key);
                 await revokeIgPermissions(key);
                 await FbToken.destroy({where: {user_id: req.user.id}});
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
                 break;
             case D_TYPE.IG:
                 await revokeIgPermissions(key);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
                 break;
             case D_TYPE.GA:
             case D_TYPE.YT:
                 await revokeGaPermissions(key);
                 await GaToken.destroy({where: {user_id: req.user.id}});
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
+                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
                 break;
         }
 
@@ -225,13 +235,11 @@ const readAllKeysById = (req, res) => {
             if (fb == null && ga == null)
                 return res.status(HttpStatus.NO_CONTENT).send({});
 
-            let fb_token = (fb == null) ? null : fb.dataValues.api_key;      // FB Token
-            let ga_token = (ga == null) ? null : ga.dataValues.private_key;  // GA Token
-
             return res.status(HttpStatus.OK).send({
                 user_id: req.user.id,
-                fb_token: fb_token,
-                ga_token: ga_token
+                fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
+                ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
+                ga_view_id: (ga == null) ? null : ga.dataValues.view_id, // GA Token
             });
         })
         .catch(err => {
@@ -245,9 +253,9 @@ const insertKey = (req, res) => {
     const service_id = parseInt(req.body.service_id);
 
     switch (service_id) {
-        case 0: // fb
+        case D_TYPE.FB: // fb
             return insertFbKey(req, res);
-        case 1: // google
+        case D_TYPE.GA: // google
             return insertGaData(req, res);
         default:
             console.log('ERROR TOKEN-MANAGER. Unrecognized service type: ' + service_id);
@@ -257,12 +265,13 @@ const insertKey = (req, res) => {
             });
     }
 };
-const update = (req, res) => {
-    const service_id = parseInt(req.body.service_id);
+const update = (req, res) => { // TODO sistemare
+    console.log(req.body);
+    const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
-        case 0: //fb
+        case D_TYPE.FB: //fb
             return updateFbKey(req, res);
-        case 1: //google
+        case D_TYPE.GA: //google
             return updateGaData(req, res);
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -367,7 +376,7 @@ const insertGaData = (req, res) => {
 
 const updateFbKey = (req, res) => {
     FbToken.update({
-        api_key: FbToken.api_key
+        api_key: req.body.api.api_key
     }, {
         where: {
             user_id: req.user.id
@@ -375,20 +384,21 @@ const updateFbKey = (req, res) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            api_key: FbToken.api_key
+            api_key: req.body.api.api_key
         })
     }).catch(err => {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            api_key: FbToken.api_key,
+            api_key: req.body.api.api_key,
             error: 'Cannot update the Facebook key'
         })
     })
 };
 const updateGaData = (req, res) => {
     GaToken.update({
-        client_email: GaToken.client_email,
-        private_key: GaToken.private_key
+        client_email: req.body.api.client_email,
+        private_key: req.body.api.private_key,
+        view_id: req.body.api.ga_view_id
     }, {
         where: {
             user_id: req.user.id
@@ -396,14 +406,18 @@ const updateGaData = (req, res) => {
     }).then(up_key => {
         return res.status(HttpStatus.OK).send({
             updated: true,
-            client_email: GaToken.client_email,
-            private_key: GaToken.private_key
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            view_id: req.body.api.ga_view_id
         })
     }).catch(err => {
+        console.error(err);
+
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             updated: false,
-            client_email: GaToken.client_email,
-            private_key: GaToken.private_key,
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            view_id: req.body.api.ga_view_id,
             error: 'Cannot update the Google Analytics credentials'
         })
     })
@@ -517,9 +531,8 @@ const checkIGContains = (scopes) => {
     return hasBasic & hasInsight;
 };
 const checkGAContains = (scopes) => {
-
     const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly'));
+    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
 
     return hasEmail & hasAnalytics;
 };
@@ -550,8 +563,6 @@ const revokeFbPermissions = async (token) => {
     return true;
 };
 const revokeGaPermissions = async (token) => { // Token has been expired or revoked.
-    // const scopes = ['manage_pages', 'read_insights', 'ads_read', 'read_audience_network_insights'];
-
     let result;
 
     try {
@@ -561,7 +572,6 @@ const revokeGaPermissions = async (token) => { // Token has been expired or revo
     }
 
     return result;
-
 };
 const revokeIgPermissions = async (token) => {
     const scopes = ['instagram_basic', 'instagram_manage_insights'];

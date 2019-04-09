@@ -82,7 +82,7 @@ async function getPageAccessToken(token, pageID) {
     } catch (e) {
         console.error(e);
     }
-}
+};
 
 const revokePermission = require('./facebook-api').revokePermission;
 
@@ -192,7 +192,7 @@ async function getBusinessDiscoveryInfo(pageID, token) {
 }
 
 /** Facebook Page/Insight query **/
-function instagramQuery(method, metric,pageID, token, period=null, since=null, until=null, date_preset=null, mediaID=null) {
+function instagramQuery(method, metric, period=null, since=null, until=null, pageID, token, date_preset=null, mediaID=null) {
 
     if(since){
         since.setDate(since.getDate());
@@ -205,14 +205,14 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
         }
     };
 
-    if (since)    options['qs']['since'] = since;
-    if (until)    options['qs']['until'] = until;
+    if (since) options['qs']['since'] = since;
+    if (until) options['qs']['until'] = until;
 
     if (period)      options['qs']['period'] = period;
     if (date_preset) options['qs']['date_preset'] = date_preset;
 
-    if(mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
-    else          options['uri'] = igInsightURI + pageID + '/insights/';
+    if (mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
+    else           options['uri'] = igInsightURI + pageID + '/insights/';
 
     return new Promise((resolve, reject) => {
         Request(options)
@@ -225,16 +225,15 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
             })
     });
 }
-const getInstagramData = async (pageID, metric, period, token, since=null, until=null, mediaID=null) => {
-    console.log('doing getInstagramData');
+const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
     let result = {}, access_token;
     let final = [], temp = [];
+
     try {
         access_token = await getPageAccessToken(token, pageID);
-        console.log('TOKEN::::'+access_token);
 
         for(let index in metric) {
-            temp.push(JSON.parse(await instagramQuery(GET, metric[index], pageID, access_token, period, since, until, null, mediaID))['data'][0]['values']);
+            temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
             //every data carries on its metric
             for(let i in temp[temp.length-1]) {
                 temp[temp.length-1][i].metric = metric[index];
