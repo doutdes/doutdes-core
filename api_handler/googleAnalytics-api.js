@@ -10,7 +10,9 @@ const METRICS = {
     BOUNCE_RATE: 'ga:bounceRate',
     AVG_SESSION_DURATION: 'ga:avgSessionDuration',
     USERS: 'ga:users',
-    NEW_USERS: 'ga:newUsers'
+    NEW_USERS: 'ga:newUsers',
+    PAGE_LOAD_TIME: 'ga:pageLoadTime',
+    PERCENT_NEW_SESSIONS: 'ga:percentNewSessions'
 };
 const DIMENSIONS = {
     DATE: 'ga:date',
@@ -21,13 +23,16 @@ const DIMENSIONS = {
     MEDIUM_DATE: 'ga:date, ga:medium',
     BROWSER_DATE: 'ga:date, ga:browser',
     PAGE_DATE: 'ga:date, ga:pagePath',
-    COUNTRY_DATE: 'ga:date, ga:country'
+    COUNTRY_DATE: 'ga:date, ga:country',
+    MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
 };
 const FILTER = {
-    SESSIONS_GT_5: 'ga:sessions>5'
+    SESSIONS_GT_1: 'ga:sessions>1',
+    SESSIONS_GT_5: 'ga:sessions>5',
+    PAGE_LOAD_TIME_GT_0: 'ga:pageLoadTime>0'
 };
 
 const getAccessToken = async (refresh_token) => {
