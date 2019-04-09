@@ -92,7 +92,8 @@ module.exports = function (app, passport, config) {
     const GAD = require('../api_handler/googleAnalytics-api').DIMENSIONS;
     const GAS = require('../api_handler/googleAnalytics-api').SORT;
     const GAF = require('../api_handler/googleAnalytics-api').FILTER;
-
+    const YTM = require('../api_handler/youtube-api').METRICS;
+    const YTD = require('../api_handler/youtube-api').DIMENSIONS;
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccessManager.basicLogin);
 
@@ -213,7 +214,7 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'newusers/:start_date/:end_date', requireAuth, AccessManager.roleAuthorization(all), GaManager.setMetrics(GAM.NEW_USERS, GAD.DATE), GaManager.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
-    app.get(ytPath + 'proof/', YtManager.proof);
+    app.get(ytPath + 'pages', requireAuth, AccessManager.roleAuthorization(all), YtManager.getChannelID);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calendPath + 'getEvents', requireAuth, AccessManager.roleAuthorization(all), CalendarManager.getEvents);

@@ -140,6 +140,7 @@ const ig_getData = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
+        console.log(key.api_key);
         (req.since && req.until) ?
             data = await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period,  key.api_key, new Date(req.since), new Date(req.until), media_id)
             :
