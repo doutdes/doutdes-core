@@ -200,7 +200,7 @@ module.exports = function (app, passport, config) {
     /****************** GOOGLE MANAGER ********************/
     /** Data response is always an array of arrays as follows:
      * 0 - data
-     * i - other values
+     * data.length - 1 - other values
      **/
     app.get(gaPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), GaM.ga_getScopes);
     app.get(gaPath + 'getViewList', reqAuth, AccMan.roleAuth(all), GaM.ga_viewList);
