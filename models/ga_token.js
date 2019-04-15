@@ -6,7 +6,8 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER(5),
             primaryKey: true,
         },
-        private_key: DataType.STRING(2000)
+        private_key: DataType.STRING(2000),
+        view_id: DataType.STRING(15)
     }, {
         freezeTableName: true,
         timestamps: false,

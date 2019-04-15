@@ -82,7 +82,7 @@ async function getPageAccessToken(token, pageID) {
     } catch (e) {
         console.error(e);
     }
-}
+};
 
 const revokePermission = require('./facebook-api').revokePermission;
 
@@ -193,7 +193,6 @@ async function getBusinessDiscoveryInfo(pageID, token) {
 
 /** Facebook Page/Insight query **/
 function instagramQuery(method, metric,pageID, token, period=null, since=null, until=null, date_preset=null, mediaID=null) {
-
     if(since){
         since.setDate(since.getDate());
     }
@@ -205,14 +204,14 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
         }
     };
 
-    if (since)    options['qs']['since'] = since;
-    if (until)    options['qs']['until'] = until;
+    if (since) options['qs']['since'] = since;
+    if (until) options['qs']['until'] = until;
 
     if (period)      options['qs']['period'] = period;
     if (date_preset) options['qs']['date_preset'] = date_preset;
 
-    if(mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
-    else          options['uri'] = igInsightURI + pageID + '/insights/';
+    if (mediaID)   options['uri'] = igInsightURI + mediaID + '/insights/';
+    else           options['uri'] = igInsightURI + pageID + '/insights/';
 
     return new Promise((resolve, reject) => {
         Request(options)
@@ -228,6 +227,7 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
 const getInstagramData = async (pageID, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
     let final = [], temp = [];
+
     try {
         access_token = await getPageAccessToken(token, pageID);
 

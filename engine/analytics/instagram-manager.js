@@ -164,8 +164,8 @@ function getIntervalDate(data) {
 }
 
 const ig_getData = async (req, res) => {
-    let data;
-    let media_id = req.params.media_id | null;
+    let key, data;
+    let media_id = req.params.media_id || null;
 
     let old_date, old_startDate, old_endDate;
     let date, today;

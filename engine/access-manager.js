@@ -99,7 +99,7 @@ exports.createUser = async function (req, res, next) {
                     city: user.city,
                     zip: user.zip,
                     password: password,
-                    user_type: user.user_type,
+                    user_type: getUserTypeByStrig(user.user_type),
                     checksum: '0'
                 })
                     .then(newUser => {
@@ -388,7 +388,7 @@ exports.basicLogin = function (req, res, next) {
     })(req, res, next);
 };
 
-exports.roleAuthorization = function(roles){
+exports.roleAuth = function(roles){
 
     return function(req, res, next){
 
@@ -408,4 +408,19 @@ exports.roleAuthorization = function(roles){
                 return next(err);
             });
     }
+};
+
+const getUserTypeByStrig = (stringType) => {
+    let type;
+
+    switch (stringType) {
+        case 'company': type = 1;
+            break;
+        case 'editor': type = 2;
+            break;
+        case 'analyst': type = 3;
+            break;
+    }
+
+    return type;
 };

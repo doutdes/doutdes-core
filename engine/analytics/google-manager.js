@@ -37,7 +37,7 @@ const ga_login_success = async (req, res) => {
     try {
         const upserting = await TokenManager.upsertGaKey(user_id, token);
 
-        res.redirect((site_URL.includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/prealpha') + '/#/preferences/api-keys/');
+        res.redirect((site_URL.includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/prealpha') + '/#/preferences/api-keys?err=false');
     } catch (err) {
         console.error(err);
     }
@@ -139,6 +139,41 @@ const ga_getScopes = async (req, res) => {
     }
 };
 
+const ga_viewList = async (req, res) => {
+    let key, data, index, view_id, result = [];
+
+    try {
+        key = await GaToken.findOne({where: {user_id: req.user.id}});
+        data = await GoogleApi.getViewList(key.private_key);
+
+        for(const i in data.accountList) {
+
+            index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id']);
+            view_id = data.profileList[index]['id'];
+
+            result.push({
+                id: view_id,
+                name: data.accountList[i]['name']
+            });
+        }
+
+        return res.status(HttpStatus.OK).send(result);
+    } catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Google Analytics Bad Request',
+                message: 'Invalid access token.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Google servers or with our database'
+        });
+    }
+};
+
 //get the data from the google analytics API
 async function getAPIData(userid, metric, dimensions, start_date, end_date, sort, filters) {
     let key;
@@ -155,4 +190,4 @@ async function getAPIData(userid, metric, dimensions, start_date, end_date, sort
     return data;
 }
 /** EXPORTS **/
-module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes};
+module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes, ga_viewList};
