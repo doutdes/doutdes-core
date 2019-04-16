@@ -13,7 +13,7 @@ const MongoManager = require ('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
-    min_date: 30
+    min_date: 90
 };
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
@@ -79,7 +79,8 @@ const fb_getData = async (req, res) => {
     let old_endDate;
     let old_date;
 
-    let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0, 0));
+
+    let start_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
     try {
@@ -99,7 +100,7 @@ const fb_getData = async (req, res) => {
         }
         //check if the start date is below our start date. If yes, delete the previous document and create a new one.
         else if (old_startDate > start_date) {
-            //chiedere dati a Facebook e accertarmi che risponda
+            // chiedere dati a Facebook e accertarmi che risponda
             data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
             await MongoManager.removeFbMongoData(req.user.id, req.metric);
             await MongoManager.storeFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0, 10),
@@ -179,6 +180,8 @@ async function getAPIdata (user_id, page_id, metric, start_date, end_date){
     try {
         key = await FbToken.findOne({where: {user_id: user_id}});
         data = await FacebookApi.getFacebookData(page_id, metric, DAY, key.api_key, start_date, end_date);
+        if (metric == 'page_actions_post_reactions_total')
+            console.log("DATA ", data);
         return data;
     }
     catch (e) {

@@ -13,7 +13,7 @@ const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
-    min_date: 30
+    min_date: 90
 };
 
 
@@ -49,12 +49,13 @@ const ga_getData = async (req, res) => {
         let old_startDate;
         let old_endDate;
         let old_date;
-        let start_date = new Date(Date.UTC(2019, 0, 1, 0, 0, 0));
+        let start_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.min_date));
         let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
         try {
             //get the start date of the mongo document if exists
-            old_date = await MongoManager.getGaMongoItemDate(req.user.id, req.metrics, req.dimensions);
+            key = await GaToken.findOne({where: {user_id: req.user.id}});
+            old_date = await MongoManager.getGaMongoItemDate(req.user.id,key.view_id, req.metrics, req.dimensions);
 
             old_startDate = old_date.start_date;
             old_endDate = old_date.end_date;
@@ -62,7 +63,7 @@ const ga_getData = async (req, res) => {
             //check if the previous document exist and create a new one
             if (old_startDate == null) {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
-                await MongoManager.storeGaMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.storeGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
 
                 return res.status(HttpStatus.OK).send(data);
@@ -71,19 +72,19 @@ const ga_getData = async (req, res) => {
             else if (old_startDate > start_date) {
                 //chiedere dati a Google e accertarmi che risponda
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, start_date, end_date, req.sort, req.filters);
-                await MongoManager.removeGaMongoData(req.user.id, req.metrics, req.dimensions);
-                await MongoManager.storeGaMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.removeGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions);
+                await MongoManager.storeGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
 
                 return res.status(HttpStatus.OK).send(data);
             }
             else if (old_endDate < end_date) {
                 data = await getAPIData(req.user.id, req.metrics, req.dimensions, old_endDate, end_date, req.sort, req.filters);
-                await MongoManager.updateGaMongoData(req.user.id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
+                await MongoManager.updateGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
             }
 
-            let response = await MongoManager.getGaMongoData(req.user.id, req.metrics, req.dimensions);
+            let response = await MongoManager.getGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions);
 
             return res.status(HttpStatus.OK).send(response);
         }
@@ -180,7 +181,7 @@ async function getAPIData(userid, metric, dimensions, start_date, end_date, sort
     let data;
     try {
         key = await GaToken.findOne({where: {user_id: userid}});
-        data = await GoogleApi.getData(key.private_key, start_date.toISOString().slice(0, 10),
+        data = await GoogleApi.getData(key.private_key, key.view_id, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), metric, dimensions, sort, filters);
     }
     catch (e) {

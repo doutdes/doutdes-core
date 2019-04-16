@@ -3,11 +3,11 @@ const fbMongo = require('../models/mongo/mongo-fb-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 
 //store GA data in mongo db
-async function storeGaMongoData(userid, metric, dimensions, start_date, end_date, file) {
+async function storeGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, file) {
     let data;
     try {
         data = await new gaMongo({
-            userid: userid, metric: metric, dimensions: dimensions,
+            userid: userid, view_id: view_id, metric: metric, dimensions: dimensions,
             start_date: start_date, end_date: end_date, data: file
         });
         data.save().then(() => {});
@@ -19,11 +19,12 @@ async function storeGaMongoData(userid, metric, dimensions, start_date, end_date
 }
 
 //return the GA start date of a document in mongo
-async function getGaMongoItemDate(userid, metric, dimensions) {
+async function getGaMongoItemDate(userid, view_id, metric, dimensions) {
     let result;
     try {
         result = await gaMongo.find({
             'userid': userid,
+            'view_id': view_id,
             'metric': metric,
             'dimensions': dimensions
         });
@@ -39,10 +40,11 @@ async function getGaMongoItemDate(userid, metric, dimensions) {
 }
 
 //remove a GA mongo document
-async function removeGaMongoData(userid, metric, dimensions) {
+async function removeGaMongoData(userid, view_id, metric, dimensions) {
     try {
         await gaMongo.findOneAndDelete({
             'userid': userid,
+            'view_id': view_id,
             'metric': metric,
             'dimensions': dimensions
         });
@@ -54,11 +56,12 @@ async function removeGaMongoData(userid, metric, dimensions) {
 }
 
 //update a GA mongo document
-async function updateGaMongoData(userid, metric, dimensions, start_date, end_date, data) {
+async function updateGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, data) {
 
     try {
         await gaMongo.findOneAndUpdate({
             'userid': userid,
+            'view_id': view_id,
             'metric': metric,
             'dimensions': dimensions
         }, {
@@ -75,7 +78,7 @@ async function updateGaMongoData(userid, metric, dimensions, start_date, end_dat
 }
 
 //get GA data from mongodb
-async function getGaMongoData(userid, metric, dimensions) {
+async function getGaMongoData(userid, view_id, metric, dimensions) {
     let result;
     try {
         result = await gaMongo.findOne({
