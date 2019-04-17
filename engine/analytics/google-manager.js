@@ -79,7 +79,7 @@ const ga_getData = async (req, res) => {
                 return res.status(HttpStatus.OK).send(data);
             }
             else if (old_endDate < end_date) {
-                data = await getAPIData(req.user.id, req.metrics, req.dimensions, old_endDate, end_date, req.sort, req.filters);
+                data = await getAPIData(req.user.id, req.metrics, req.dimensions, new Date(DateFns.addDays(old_endDate,1)), end_date, req.sort, req.filters);
                 await MongoManager.updateGaMongoData(req.user.id, key.view_id, req.metrics, req.dimensions, start_date.toISOString().slice(0, 10),
                     end_date.toISOString().slice(0, 10), data);
             }
