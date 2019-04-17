@@ -10,7 +10,8 @@ async function storeGaMongoData(userid, view_id, metric, dimensions, start_date,
             userid: userid, view_id: view_id, metric: metric, dimensions: dimensions,
             start_date: start_date, end_date: end_date, data: file
         });
-        data.save().then(() => {});
+        data.save().then(() => {
+        });
     }
     catch (e) {
         console.error(e);
@@ -59,18 +60,31 @@ async function removeGaMongoData(userid, view_id, metric, dimensions) {
 async function updateGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, data) {
 
     try {
-        await gaMongo.findOneAndUpdate({
-            'userid': userid,
-            'view_id': view_id,
-            'metric': metric,
-            'dimensions': dimensions
-        }, {
-            'start_date': start_date,
-            'end_date': end_date,
-            $push: {
-                'data': {$each: data}
-            }
-        });
+        if (data) {
+            await gaMongo.findOneAndUpdate({
+                'userid': userid,
+                'view_id': view_id,
+                'metric': metric,
+                'dimensions': dimensions
+            }, {
+                'start_date': start_date,
+                'end_date': end_date,
+                $push: {
+                    'data': {$each: data}
+                }
+            });
+        }
+        else {
+            await gaMongo.findOneAndUpdate({
+                'userid': userid,
+                'view_id': view_id,
+                'metric': metric,
+                'dimensions': dimensions
+            }, {
+                'start_date': start_date,
+                'end_date': end_date
+            });
+        }
     } catch (e) {
         console.error(e);
         throw new Error("updateMongoData - error updating data");
@@ -101,7 +115,8 @@ async function storeFbMongoData(userid, metric, start_date, end_date, file) {
         data = await new fbMongo({
             userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
         });
-        data.save().then(() => {});
+        data.save().then(() => {
+        });
     }
     catch (e) {
         console.error(e);
@@ -183,7 +198,8 @@ async function storeIgMongoData(userid, metric, start_date, end_date, file) {
         data = await new igMongo({
             userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
         });
-        data.save().then(() => {});
+        data.save().then(() => {
+        });
     }
     catch (e) {
         console.error(e);
@@ -258,6 +274,8 @@ async function getIgMongoData(userid, metric) {
     return result.data;
 }
 
-module.exports = {storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
-                  storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
-                  storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData};
+module.exports = {
+    storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
+    storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
+    storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData
+};

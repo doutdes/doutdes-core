@@ -7,7 +7,9 @@ module.exports = mongoose.model('GaData', new mongoose.Schema({
     dimensions: String,
     start_date: String,
     end_date: String,
-    data: [[String, String, String]]
+    data: Array
 },{
     versionKey: false
 }));
+
+//    data: [[String, String, String]]
