@@ -80,7 +80,8 @@ module.exports = function (app, passport, config) {
     const admin = '0';
     const user = '1';
     const editor = '2';
-    const all = [admin, user, editor];
+    const analyst = '3';
+    const all = [admin, user, editor, analyst];
 
     // TODO gestire le delete bene: se il risultato restituito dalla query è 0, allora non ha eliminato niente
 
