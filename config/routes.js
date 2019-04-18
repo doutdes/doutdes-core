@@ -220,7 +220,9 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'percentnewsessions/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
-    app.get(ytPath + 'pages', reqAuth, AccMan.roleAuth(all), YtM.getChannelID);
+    app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('channels'), YtM.getList);
+    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('playlists'), YtM.getList);
+    app.get(ytPath + ':channel/videos/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('search'), YtM.getList);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calPath + 'getEvents', reqAuth, AccMan.roleAuth(all), CalMan.getEvents);

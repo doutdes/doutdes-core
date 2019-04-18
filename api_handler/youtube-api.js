@@ -11,7 +11,6 @@ const config = require('../config/config').production;
 
 /** METRIC COSTANT **/
 const METRICS = {
-    VIEWSPERC : 'averageViewPercentage',
     COMMENTS: 'comments',
     LIKES: 'likes',
     DISLIKES : 'dislikes',
@@ -19,6 +18,12 @@ const METRICS = {
     SUBGAIN : 'subscribersGained',
     SUBLOSS : 'subscribersLost',
     VIEWS : 'views',
+    RED_VIEWS : 'redViews',
+    VIEWERPERC : 'viewerPercentage ',
+    ESTMINWATCH : 'estimatedMinutesWatched ',
+    ESTREDMINWATCH : 'estimatedRedMinutesWatched',
+    AVGVIEWDUR : 'averageViewDuration ',
+    AVGVIEWPERC : 'averageViewPercentage',
 
 };
 const DIMENSIONS = {
