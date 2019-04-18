@@ -2,6 +2,8 @@ const gaMongo = require('../models/mongo/mongo-ga-model');
 const fbMongo = require('../models/mongo/mongo-fb-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 
+/**GOOGLE ANALYTICS**/
+
 //store GA data in mongo db
 async function storeGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, file) {
     let data;
@@ -108,6 +110,8 @@ async function getGaMongoData(userid, view_id, metric, dimensions) {
     return result.data;
 }
 
+/** FACEBOOK INSIGHTS **/
+
 //store FB data in mongo db
 async function storeFbMongoData(userid, metric, start_date, end_date, file) {
     let data;
@@ -160,16 +164,26 @@ async function removeFbMongoData(userid, metric) {
 //update a FB mongo document
 async function updateFbMongoData(userid, metric, start_date, end_date, data) {
     try {
-        await fbMongo.findOneAndUpdate({
-            'userid': userid,
-            'metric': metric,
-        }, {
-            'start_date': start_date,
-            'end_date': end_date,
-            $push: {
-                'data': {$each: data}
-            }
-        });
+        if (data) {
+            await fbMongo.findOneAndUpdate({
+                'userid': userid,
+                'metric': metric,
+            }, {
+                'start_date': start_date,
+                'end_date': end_date,
+                $push: {
+                    'data': {$each: data}
+                }
+            });
+        } else {
+            await fbMongo.findOneAndUpdate({
+                'userid': userid,
+                'metric': metric,
+            }, {
+                'start_date': start_date,
+                'end_date': end_date
+            });
+        }
     } catch (e) {
         console.error(e);
         throw new Error("updatefbMongoData - error updating data");
@@ -192,6 +206,9 @@ async function getFbMongoData(userid, metric) {
     return result.data;
 }
 
+/**INSTAGRAM INSIGHTS**/
+
+//store IG data in mongo db
 async function storeIgMongoData(userid, metric, start_date, end_date, file) {
     let data;
     try {
@@ -243,15 +260,24 @@ async function removeIgMongoData(userid, metric) {
 //update a IG mongo document
 async function updateIgMongoData(userid, metric, end_date, data) {
     try {
-        await igMongo.findOneAndUpdate({
-            'userid': userid,
-            'metric': metric,
-        }, {
-            'end_date': end_date,
-            $addToSet: {
-                'data': {$each: data}
-            }
-        });
+        if (data) {
+            await igMongo.findOneAndUpdate({
+                'userid': userid,
+                'metric': metric,
+            }, {
+                'end_date': end_date,
+                $addToSet: {
+                    'data': {$each: data}
+                }
+            });
+        } else {
+            await igMongo.findOneAndUpdate({
+                'userid': userid,
+                'metric': metric,
+            }, {
+                'end_date': end_date
+            });
+        }
     } catch (e) {
         console.error(e);
         throw new Error("updateigMongoData - error updating data");

@@ -78,9 +78,7 @@ const fb_getData = async (req, res) => {
     let old_startDate;
     let old_endDate;
     let old_date;
-
-
-    let start_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.min_date));
+    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(),DAYS.yesterday).setUTCHours(0,0,0,0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
 
     try {
