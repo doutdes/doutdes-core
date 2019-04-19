@@ -69,7 +69,6 @@ async function updateGaMongoData(userid, view_id, metric, dimensions, start_date
                 'metric': metric,
                 'dimensions': dimensions
             }, {
-                'start_date': start_date,
                 'end_date': end_date,
                 $push: {
                     'data': {$each: data}
@@ -83,7 +82,6 @@ async function updateGaMongoData(userid, view_id, metric, dimensions, start_date
                 'metric': metric,
                 'dimensions': dimensions
             }, {
-                'start_date': start_date,
                 'end_date': end_date
             });
         }
@@ -169,7 +167,6 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
                 'userid': userid,
                 'metric': metric,
             }, {
-                'start_date': start_date,
                 'end_date': end_date,
                 $push: {
                     'data': {$each: data}
@@ -180,7 +177,6 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
                 'userid': userid,
                 'metric': metric,
             }, {
-                'start_date': start_date,
                 'end_date': end_date
             });
         }

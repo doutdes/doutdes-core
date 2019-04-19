@@ -107,7 +107,7 @@ const fb_getData = async (req, res) => {
             return res.status(HttpStatus.OK).send(data);
         }
         else if (old_endDate < end_date) {
-            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, old_endDate, end_date);
+            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, new Date(DateFns.addDays(old_endDate,1)), end_date);
             await MongoManager.updateFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
