@@ -105,7 +105,7 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'login', gaOnlyReqAuth);
     app.get(ytPath + 'login', ytOnlyReqAuth);
     app.get(gaPath + ytPath + 'login', bothGaYtReqAuth);
-    //app.get(gaPath + 'login/success', gaAuth, GaManager.ga_login_success);
+    app.get(gaPath + 'login/success', gaAuth, GaM.ga_login_success);
 
     /****************** CRUD USERS ********************/
     app.post(amPath + 'create/', AccMan.createUser);
@@ -170,7 +170,7 @@ module.exports = function (app, passport, config) {
     app.get(igPath + ':page_id/emailcontacts', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/followercount', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/getdirclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.D_28, IGI.MONTH), IgM.ig_getData);
+    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.D_28, IGI.DAY), IgM.ig_getData);
     app.get(igPath + ':page_id/onlinefollowers', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/phonecallclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/profileviews', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH), IgM.ig_getData);

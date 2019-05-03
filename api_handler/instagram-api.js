@@ -232,12 +232,20 @@ const getInstagramData = async (pageID, metric, period, since=null, until=null, 
     try {
         access_token = await getPageAccessToken(token, pageID);
 
+        console.log('period ',period);
+        console.log('since',since);
+        console.log('until',until);
+        console.log('pID',pageID);
+        console.log('mID',mediaID);
         for(let index in metric) {
             temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
             //every data carries on its metric
+
             for(let i in temp[temp.length-1]) {
                 temp[temp.length-1][i].metric = metric[index];
             }
+            for(let i in temp)
+                console.log(temp[i]);
         }
         for(let index in temp) {
             final = final.concat(temp[index]);
