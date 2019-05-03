@@ -68,8 +68,8 @@ const ga_storeAllData = async (req, res) => {
 
     try {
         users = await Users.findAll();
-        for (const i in users) {
-            user_id = users[i].dataValues.id;
+        for (const user of users) {
+            user_id = user.dataValues.id;
 
             try {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
@@ -152,7 +152,7 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
         return response;
     }
     catch (err) {
-        throw err;
+
     }
 };
 
