@@ -204,6 +204,7 @@ module.exports = function (app, passport, config) {
      **/
     app.get(gaPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), GaM.ga_getScopes);
     app.get(gaPath + 'getViewList', reqAuth, AccMan.roleAuth(all), GaM.ga_viewList);
+    app.get(gaPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), GaM.ga_storeAllData);
 
     app.get(gaPath + 'sessions/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE), GaM.ga_getData);
     app.get(gaPath + 'pageviews/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaM.ga_getData);

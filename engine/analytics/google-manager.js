@@ -4,10 +4,16 @@ const DateFns = require('date-fns');
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
 
+const GAM = require('../../api_handler/googleAnalytics-api').METRICS;
+const GAD = require('../../api_handler/googleAnalytics-api').DIMENSIONS;
+const GAS = require('../../api_handler/googleAnalytics-api').SORT;
+const GAF = require('../../api_handler/googleAnalytics-api').FILTER;
+
 const TokenManager = require('../token-manager');
 const HttpStatus = require('http-status-codes');
 
 const site_URL = require('../../app').config['site_URL'];
+const D_TYPE = require('../dashboard-manager').D_TYPE;
 
 const MongoManager = require('../mongo-manager');
 
@@ -43,16 +49,48 @@ const ga_login_success = async (req, res) => {
     }
 };
 
-//
-// const ga_storeAllData = async () => {
-//     let user_id = 2;
-//     try {
-//
-//     }
-//     catch (e) {
-//
-//     }
-// }
+
+const ga_storeAllData = async (req, res) => {
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    if (key != auth) {
+        return;
+    }
+
+    let user_id = 2;
+    let permissionGranted;
+    let data;
+
+    try {
+        permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
+        if (permissionGranted.granted) {
+            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC);
+            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5);
+            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.COUNTRY_DATE);
+            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.BROWSER_DATE);
+            await ga_getDataInternal(user_id, GAM.BOUNCE_RATE, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.AVG_SESSION_DURATION, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.USERS, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.NEW_USERS, GAD.DATE);
+            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1);
+            await ga_getDataInternal(user_id, GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0);
+            await ga_getDataInternal(user_id, GAM.PERCENT_NEW_SESSIONS, GAD.DATE);
+
+            return res.status(HttpStatus.OK).send("MongoDb updated successfully");
+        }
+
+    }
+    catch (e) {
+        throw e;
+    }
+};
 
 // const funzione (user_id){
 //     ga_getDataInternal(user_id, metrics)
@@ -65,8 +103,8 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
     let old_startDate;
     let old_endDate;
     let old_date;
-    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(),DAYS.yesterday).setUTCHours(0,0,0,0), DAYS.min_date));
-    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
+    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
+    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
         //get the start date of the mongo document if exists
@@ -173,7 +211,7 @@ const ga_viewList = async (req, res) => {
         key = await GaToken.findOne({where: {user_id: req.user.id}});
         data = await GoogleApi.getViewList(key.private_key);
 
-        for(const i in data.accountList) {
+        for (const i in data.accountList) {
 
             index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id']);
             view_id = data.profileList[index]['id'];
@@ -216,5 +254,6 @@ async function getAPIData(userid, metric, dimensions, start_date, end_date, sort
     }
     return data;
 }
+
 /** EXPORTS **/
-module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes, ga_viewList};
+module.exports = {setMetrics, ga_login_success, ga_getData, ga_getScopes, ga_viewList, ga_storeAllData};

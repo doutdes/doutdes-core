@@ -119,6 +119,11 @@ const permissionGranted = async (req, res) => {
 };
 
 const checkInternalPermission = async (user_id, type) => {
+
+    console.log ("USER ID", user_id);
+    console.log ("TYPE", type);
+
+
     let scopes = [];
     let hasPermission, key;
 
@@ -611,5 +616,6 @@ module.exports = {
     checkExistence,
     permissionGranted,
     revokePermissions,
-    checkFbTokenValidity
+    checkFbTokenValidity,
+    checkInternalPermission
 };
