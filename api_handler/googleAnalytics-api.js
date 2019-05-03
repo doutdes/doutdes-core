@@ -53,7 +53,7 @@ const getAccessToken = async (refresh_token) => {
         result = JSON.parse(await Request(options));
         return result['access_token'];
     } catch (e) {
-        console.error(e);
+        //console.error(e);
     }
 };
 const getTokenInfo = async (private_key) => {
@@ -70,9 +70,14 @@ const getTokenInfo = async (private_key) => {
 
     try {
         options.qs.access_token = await getAccessToken(private_key);
-        result = await Request(options);
+        if (options.qs.access_token){
+            result = await Request(options);
+        } else{
+            throw new Error('getTokenInfo -> Error getting scopes in Google (invalid refresh token)');
+        }
+
     } catch (e) {
-        console.error(e);
+        //console.error(e);
         throw new Error('getTokenInfo -> Error getting scopes in Google');
     }
 

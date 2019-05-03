@@ -3,6 +3,7 @@ const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
+const Users = Model.Users;
 
 const GAM = require('../../api_handler/googleAnalytics-api').METRICS;
 const GAD = require('../../api_handler/googleAnalytics-api').DIMENSIONS;
@@ -61,40 +62,49 @@ const ga_storeAllData = async (req, res) => {
     if (key != auth) {
         return;
     }
-
-    let user_id = 2;
+    let user_id;
     let permissionGranted;
-    let data;
+    let users;
 
     try {
-        permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
-        if (permissionGranted.granted) {
-            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC);
-            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5);
-            await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.COUNTRY_DATE);
-            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.BROWSER_DATE);
-            await ga_getDataInternal(user_id, GAM.BOUNCE_RATE, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.AVG_SESSION_DURATION, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.USERS, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.NEW_USERS, GAD.DATE);
-            await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1);
-            await ga_getDataInternal(user_id, GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0);
-            await ga_getDataInternal(user_id, GAM.PERCENT_NEW_SESSIONS, GAD.DATE);
+        users = await Users.findAll();
+        for (const i in users) {
+            user_id = users[i].dataValues.id;
 
-            return res.status(HttpStatus.OK).send("MongoDb updated successfully");
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
+                if (permissionGranted.granted) {
+                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC);
+                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5);
+                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.COUNTRY_DATE);
+                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.BROWSER_DATE);
+                    await ga_getDataInternal(user_id, GAM.BOUNCE_RATE, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.AVG_SESSION_DURATION, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.USERS, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.NEW_USERS, GAD.DATE);
+                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1);
+                    await ga_getDataInternal(user_id, GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0);
+                    await ga_getDataInternal(user_id, GAM.PERCENT_NEW_SESSIONS, GAD.DATE);
+
+                    console.log("Ga Data updated successfully for user n°", user_id);
+                }
+            }catch(e){
+                    console.warn("The user n°", user_id, " have an invalid key");
+            }
         }
-
+        return res.status(HttpStatus.OK).send({
+            message: "ga_storeAllData executed successfully"
+        });
     }
     catch (e) {
-        throw e;
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
     }
 };
-
-// const funzione (user_id){
-//     ga_getDataInternal(user_id, metrics)
-// }
 
 const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, filters = null) => {
     let key;

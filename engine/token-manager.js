@@ -120,10 +120,6 @@ const permissionGranted = async (req, res) => {
 
 const checkInternalPermission = async (user_id, type) => {
 
-    console.log ("USER ID", user_id);
-    console.log ("TYPE", type);
-
-
     let scopes = [];
     let hasPermission, key;
 
@@ -132,7 +128,7 @@ const checkInternalPermission = async (user_id, type) => {
     } else {
         key = await GaToken.findOne({where: {user_id: user_id}});
     }
-    console.log("KEY",key);
+
     if (!key) { // If a key is not set, return error
         console.log('KEY IS NOT SET UP');
         return {
@@ -171,8 +167,6 @@ const checkInternalPermission = async (user_id, type) => {
                     message: 'The service with id ' + type + ' does not exist.'
                 };
         }
-
-        console.log(hasPermission);
 
         return {
             name: DS_TYPE[parseInt(type)],
