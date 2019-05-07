@@ -202,7 +202,7 @@ const getTokenInfo = async (token) => {
         result = await Request(options);
         return result;
     } catch (err) {
-        console.error(err);
+        //console.error(err);
         throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
     }
 };

@@ -146,6 +146,8 @@ module.exports = function (app, passport, config) {
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
     app.get(fbPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
+    app.get(fbPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), FbM.fb_storeAllData);
+
     app.get(fbPath + ':page_id/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
     app.get(fbPath + ':page_id/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
     app.get(fbPath + ':page_id/fancity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_CITY), FbM.fb_getData);

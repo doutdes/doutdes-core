@@ -3,13 +3,16 @@ const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
+const Users = Model.Users;
 const site_URL = require('../../app').config['site_URL'];
+const D_TYPE = require('../dashboard-manager').D_TYPE;
 
 const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
 
-const MongoManager = require ('../mongo-manager');
+const FBM = require('../../api_handler/facebook-api').METRICS;
+const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -32,7 +35,6 @@ const fb_getScopes = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = await FacebookApi.getTokenInfo(key.api_key);
-
 
 
         return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
@@ -72,6 +74,51 @@ const fb_getPages = async (req, res) => {
     }
 };
 
+const fb_storeAllData = async (req, res) => {
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    if (key != auth) {
+        return;
+    }
+    let user_id = 2;
+    let permissionGranted;
+    let users;
+
+    try {
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
+
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.FB);
+                if (permissionGranted.granted) {
+                    await fb_getDataInternal(user_id, FBM.P_FANS, GAD.DATE);
+
+
+                    console.log("Ga Data updated successfully for user n°", user_id);
+                }
+            }catch(e){
+                console.warn("The user n°", user_id, " have an invalid key");
+            }
+        }
+        return res.status(HttpStatus.OK).send({
+            message: "fb_storeAllData executed successfully"
+        });
+
+    }
+    catch (e) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+};
+
 const fb_getDataInternal = async (user_id, metrics, page_id) => {
 
     let data;
@@ -79,8 +126,8 @@ const fb_getDataInternal = async (user_id, metrics, page_id) => {
     let old_startDate;
     let old_endDate;
     let old_date;
-    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(),DAYS.yesterday).setUTCHours(0,0,0,0), DAYS.min_date));
-    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
+    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
+    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
 
@@ -108,7 +155,7 @@ const fb_getDataInternal = async (user_id, metrics, page_id) => {
             return res.status(HttpStatus.OK).send(data);
         }
         else if (old_endDate < end_date) {
-            data = await getAPIdata(user_id, page_id, metrics, new Date(DateFns.addDays(old_endDate,1)), end_date);
+            data = await getAPIdata(user_id, page_id, metrics, new Date(DateFns.addDays(old_endDate, 1)), end_date);
             await MongoManager.updateFbMongoData(user_id, metrics, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
@@ -183,7 +230,7 @@ const fb_login_success = async (req, res) => {
     }
 };
 
-async function getAPIdata (user_id, page_id, metric, start_date, end_date){
+async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
     let key;
     let data;
     try {
@@ -199,4 +246,4 @@ async function getAPIdata (user_id, page_id, metric, start_date, end_date){
 }
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes};
+module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};
