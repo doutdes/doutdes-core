@@ -224,7 +224,7 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
             })
     });
 }
-const getInstagramData = async (pageID, metric, period, token, since=null, until=null, mediaID=null) => {
+const getInstagramData = async (pageID, metric, period, since=null, until=null, token, mediaID=null) => {
     let result = {}, access_token;
     let final = [], temp = [];
 
@@ -232,7 +232,7 @@ const getInstagramData = async (pageID, metric, period, token, since=null, until
         access_token = await getPageAccessToken(token, pageID);
 
         for(let index in metric) {
-            temp.push(JSON.parse(await instagramQuery(GET, metric[index], pageID, access_token, period, since, until, null, mediaID))['data'][0]['values']);
+            temp.push(JSON.parse(await instagramQuery(GET, metric[index], period, since, until, pageID, access_token, null, mediaID))['data'][0]['values']);
             //every data carries on its metric
             for(let i in temp[temp.length-1]) {
                 temp[temp.length-1][i].metric = metric[index];

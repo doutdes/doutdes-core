@@ -104,7 +104,7 @@ module.exports = function (app, passport, config) {
 
     app.get(gaPath + 'login', gaOnlyReqAuth);
     app.get(ytPath + 'login', ytOnlyReqAuth);
-    app.get(indexPath + 'ga/yt/login', bothGaYtReqAuth);
+    app.get(gaPath + ytPath + 'login', bothGaYtReqAuth);
     app.get(gaPath + 'login/success', gaAuth, GaM.ga_login_success);
 
     /****************** CRUD USERS ********************/
@@ -171,7 +171,7 @@ module.exports = function (app, passport, config) {
     app.get(igPath + ':page_id/emailcontacts', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/followercount', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/getdirclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.D_28, IGI.MONTH), IgM.ig_getData);
+    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.D_28, IGI.DAY), IgM.ig_getData);
     app.get(igPath + ':page_id/onlinefollowers', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/phonecallclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/profileviews', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
@@ -223,12 +223,14 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'percentnewsessions/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
-    app.get(ytPath + 'proof/', YtM.proof);
+    app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('channels'), YtM.getList);
+    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('playlists'), YtM.getList);
+    app.get(ytPath + ':channel/videos/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('search'), YtM.getList);
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calPath + 'getEvents', reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
-    app.post(calPath + 'addEvent', reqAuth, AccMan.roleAuth(all), CalMan.addEvent);
-    app.put(calPath + 'updateEvent', reqAuth, AccMan.roleAuth(all), CalMan.updateEvent);
+    app.post(calPath + 'addEvent',reqAuth, AccMan.roleAuth(all), CalMan.addEvent);
+    app.put(calPath + 'updateEvent', reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
     app.delete(calPath + 'deleteEvent', reqAuth, AccMan.roleAuth(all), CalMan.deleteEvent);
 
     /****************** ERROR HANDLER ********************/

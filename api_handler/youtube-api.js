@@ -1,36 +1,70 @@
-'use strict';
-const {google} = require('googleapis');
-const scopes = 'https://www.googleapis.com/auth/yt-analytics.readonly';
+/** INSTAGRAM API HANDLER **/
 
-async function getViewID(client_email, private_key) {
-    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
-    const response = await jwt.authorize();
-    const result = await google.youtubeAnalytics('v2').management.profiles.list({
-        'auth': jwt,
-        'accountId': '~all',
-        'webPropertyId': '~all'
-    });
-    return result.data.items[0].id;
-}
+/** IMPORTS **/
+const Request = require('request-promise');
 
-exports.youtubeProof = async function (client_email, private_key, start_date, end_date) {
-    const view_id = await getViewID(client_email, private_key);
-    const jwt = new google.auth.JWT(client_email, null, private_key, scopes);
-    const response = await jwt.authorize();
-    const result = await gapi.client.youtubeAnalytics.reports.query({
-        "ids": "channel==MINE",
-        "startDate": "2017-01-01",
-        "endDate": "2017-12-31",
-        "metrics": "views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained",
-        "dimensions": "day",
-        "sort": "day"
-    })
-        .then(response => {
-            // Handle the results here (response.result has the parsed body).
-            console.log("Response", response);
-        }, err => {
-            console.error("Execute error", err);
-        });
-    return result.data.rows;
-}
+/** CONSTANTS **/
+const YTAnalyticsURI = 'https://youtubeanalytics.googleapis.com/v2/reports';
+const date_preset = 'this_year';
+const config = require('../config/config').production;
+
+
+/** METRIC COSTANT **/
+const METRICS = {
+    COMMENTS: 'comments',
+    LIKES: 'likes',
+    DISLIKES : 'dislikes',
+    SHARES : 'shares',
+    SUBGAIN : 'subscribersGained',
+    SUBLOSS : 'subscribersLost',
+    VIEWS : 'views',
+    RED_VIEWS : 'redViews',
+    VIEWERPERC : 'viewerPercentage ',
+    ESTMINWATCH : 'estimatedMinutesWatched ',
+    ESTREDMINWATCH : 'estimatedRedMinutesWatched',
+    AVGVIEWDUR : 'averageViewDuration ',
+    AVGVIEWPERC : 'averageViewPercentage',
+
+};
+const DIMENSIONS = {
+    DAY7 : '7DayTotals',
+    DAY30 : '30DayTotals',
+    AGEGROUP : 'ageGroup',
+    COUNTRY : 'country',
+    GENDER : 'gender',
+    DAY : 'day',
+    MONTH : 'month'
+};
+
+const getTokenInfo = async (private_key) => {
+    let result = null;
+    let access_token;
+    const options = {
+        method: 'GET',
+        uri: 'https://www.googleapis.com/oauth2/v3/tokeninfo',
+        qs: {
+            access_token: null
+        },
+        json: true
+    };
+
+    try {
+        options.qs.access_token = await getAccessToken(private_key);
+        result = await Request(options);
+    } catch (e) {
+        console.error(e);
+        throw new Error('getTokenInfo -> Error getting scopes in Google');
+    }
+
+    return result;//['scope'].split(' ');
+};
+
+const revokePermission = ''; /// TODO
+
+
+module.exports = {METRICS, DIMENSIONS, config};
+
+/** GET pageID from instagram token**/
+
+
 
