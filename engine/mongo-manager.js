@@ -255,6 +255,7 @@ async function removeIgMongoData(userid, metric) {
 
 //update a IG mongo document
 async function updateIgMongoData(userid, metric, end_date, data) {
+    console.log ("Metrica: ", metric);
     try {
         if (data) {
             await igMongo.findOneAndUpdate({

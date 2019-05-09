@@ -3,13 +3,16 @@ const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
+const Users = Model.Users;
 const site_URL = require('../../app').config['site_URL'];
+const D_TYPE = require('../dashboard-manager').D_TYPE;
+const FBM = require('../../api_handler/facebook-api').METRICS;
 
 const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
 
-const MongoManager = require ('../mongo-manager');
+const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -32,7 +35,6 @@ const fb_getScopes = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = await FacebookApi.getTokenInfo(key.api_key);
-
 
 
         return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
@@ -72,51 +74,73 @@ const fb_getPages = async (req, res) => {
     }
 };
 
-const fb_getData = async (req, res) => {
-    let key;
-    let data;
-    let old_startDate;
-    let old_endDate;
-    let old_date;
-    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(),DAYS.yesterday).setUTCHours(0,0,0,0), DAYS.min_date));
-    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0,0,0,0), DAYS.yesterday)); // yesterday
+const fb_storeAllData = async (req, res) => {
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    if (key != auth) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+    let user_id;
+    let permissionGranted;
+    let users;
+    let page_id;
 
     try {
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
 
-        old_date = await MongoManager.getFbMongoItemDate(req.user.id, req.metric);
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.FB);
+                if (permissionGranted.granted) {
 
-        old_startDate = old_date.start_date;
-        old_endDate = old_date.end_date;
+                    let key = await FbToken.findOne({where: {user_id: user_id}});
+                    let page_id = (await FacebookApi.getPagesID(key.api_key))['data'][0]['id']; // TODO it takes only the first page, extend it when adding multiple pages
 
-        //check if the previous document exist and create a new one
-        if (old_startDate == null) {
-            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
-            await MongoManager.storeFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
+                    await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
+                    //await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
+                    await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
+                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
+                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
 
-            return res.status(HttpStatus.OK).send(data);
+                    console.log("Ga Data updated successfully for user n°", user_id);
+                }
+            } catch (err) {
+                console.log(err);
+                console.warn("The user #", user_id, " have an invalid key or an invalid page_id.");
+            }
         }
-        //check if the start date is below our start date. If yes, delete the previous document and create a new one.
-        else if (old_startDate > start_date) {
-            // chiedere dati a Facebook e accertarmi che risponda
-            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, start_date, end_date);
-            await MongoManager.removeFbMongoData(req.user.id, req.metric);
-            await MongoManager.storeFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
+        return res.status(HttpStatus.OK).send({
+            message: "fb_storeAllData executed successfully"
+        });
+    } catch (err) {
 
-            return res.status(HttpStatus.OK).send(data);
-        }
-        else if (old_endDate < end_date) {
-            data = await getAPIdata(req.user.id, req.params.page_id, req.metric, new Date(DateFns.addDays(old_endDate,1)), end_date);
-            await MongoManager.updateFbMongoData(req.user.id, req.metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
-        }
+    }
 
-        let response = await MongoManager.getFbMongoData(req.user.id, req.metric);
+};
+
+const fb_getData = async (req, res) => {
+
+    let response;
+    try {
+        response = await fb_getDataInternal(req.user.id, req.metric, req.params.page_id);
 
         return res.status(HttpStatus.OK).send(response);
-
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
         if (err.statusCode === 400) {
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -129,6 +153,54 @@ const fb_getData = async (req, res) => {
             name: 'Internal Server Error',
             message: 'There is a problem either with Facebook servers or with our database'
         });
+    }
+}
+
+const fb_getDataInternal = async (user_id, metric, page_id) => {
+    let key;
+    let data;
+    let old_startDate;
+    let old_endDate;
+    let old_date;
+    let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
+    let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
+
+    try {
+
+        old_date = await MongoManager.getFbMongoItemDate(user_id, metric);
+
+        old_startDate = old_date.start_date;
+        old_endDate = old_date.end_date;
+
+        //check if the previous document exist and create a new one
+        if (old_startDate == null) {
+            data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
+            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+
+            return data;
+        }
+        //check if the start date is below our start date. If yes, delete the previous document and create a new one.
+        else if (old_startDate > start_date) {
+            // chiedere dati a Facebook e accertarmi che risponda
+            data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
+            await MongoManager.removeFbMongoData(user_id, metric);
+            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+
+            return data;
+        }
+        else if (old_endDate < end_date) {
+            data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
+            await MongoManager.updateFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data);
+        }
+
+        let response = await MongoManager.getFbMongoData(user_id, metric);
+        return response;
+
+    } catch (err) {
+        throw err;
     }
 };
 
@@ -172,14 +244,12 @@ const fb_login_success = async (req, res) => {
     }
 };
 
-async function getAPIdata (user_id, page_id, metric, start_date, end_date){
+async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
     let key;
     let data;
     try {
         key = await FbToken.findOne({where: {user_id: user_id}});
         data = await FacebookApi.getFacebookData(page_id, metric, DAY, key.api_key, start_date, end_date);
-        if (metric == 'page_actions_post_reactions_total')
-            console.log("DATA ", data);
         return data;
     }
     catch (e) {
@@ -188,4 +258,4 @@ async function getAPIdata (user_id, page_id, metric, start_date, end_date){
 }
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes};
+module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};

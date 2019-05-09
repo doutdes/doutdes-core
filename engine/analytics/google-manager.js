@@ -60,8 +60,12 @@ const ga_storeAllData = async (req, res) => {
     }
 
     if (key != auth) {
-        return;
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
     }
+
     let user_id;
     let permissionGranted;
     let users;
