@@ -28,24 +28,14 @@ const InstagramApi = require('../../api_handler/instagram-api');
 
 // TODO change the response if there are no data
 const setMetric = (metric, period, interval = null) => {
-    let until = new Date();
-    let since = new Date();
-
-    if (interval) {
-        since.setDate(since.getDate() - interval);
-    }
 
     return (req, res, next) => {
         req.metric = metric;
         req.period = period;
-        if (interval) {
-            req.since = since;
-            req.until = until;
-        }
+        req.interval = interval;
         next();
     }
 };
-
 
 const ig_getPages = async (req, res) => {
     let data, key;
@@ -170,10 +160,19 @@ function getIntervalDate(data) {
     }
 }
 
-const ig_getDataInternal = async (user_id, page_id, metric, period, since = null, until = null, media_id = null) => {
+const ig_getDataInternal = async (user_id, page_id, metric, period, interval = null, media_id = null) => {
 
     let data;
     let response;
+    let since = null;
+    let until = null;
+
+    // handling interval
+    if (interval) {
+        since = new Date();
+        until = new Date();
+        since.setDate(since.getDate() - interval);
+    }
 
     let old_date, old_startDate, old_endDate;
     let date, today;
@@ -188,7 +187,6 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, since = null
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric);
             date = getIntervalDate(data);
-            console.log ("DATE ", date);
             await MongoManager.storeIgMongoData(user_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (old_endDate < today) {
@@ -204,6 +202,28 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, since = null
         throw err;
     }
 
+};
+
+const ig_getData = async (req, res) => {
+    let response;
+    try {
+        response = await ig_getDataInternal(req.user.id, req.params.page_id, req.metric, req.period, req.interval, req.params.media_id);
+
+        return res.status(HttpStatus.OK).send(response);
+    } catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Instagram Bad Request',
+                message: 'Invalid OAuth access token.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        });
+    }
 };
 
 const ig_storeAllData = async (req, res) => {
@@ -224,6 +244,7 @@ const ig_storeAllData = async (req, res) => {
     let user_id;
     let permissionGranted;
     let users;
+    let temp;
     try {
         users = await Users.findAll();
         for (const user of users) {
@@ -263,28 +284,6 @@ const ig_storeAllData = async (req, res) => {
         });
     } catch (err) {
 
-    }
-};
-
-const ig_getData = async (req, res) => {
-    let response;
-    try {
-        response = await ig_getDataInternal(req.user.id, req.params.page_id, req.metric, req.period, req.since, req.until, req.params.media_id);
-
-        return res.status(HttpStatus.OK).send(response);
-    } catch (err) {
-        console.error(err);
-        if (err.statusCode === 400) {
-            return res.status(HttpStatus.BAD_REQUEST).send({
-                name: 'Instagram Bad Request',
-                message: 'Invalid OAuth access token.'
-            });
-        }
-
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
-        });
     }
 };
 
