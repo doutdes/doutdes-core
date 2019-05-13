@@ -174,7 +174,7 @@ module.exports = function (app, passport, config) {
     app.get(igPath + ':page_id/onlinefollowers', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/phonecallclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/profileviews', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/reach', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH], IGP.D_28, IGI.MONTH), IgM.ig_getData);
+    app.get(igPath + ':page_id/reach', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/textmessageclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/websiteclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/actionsperformed', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
