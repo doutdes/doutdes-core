@@ -116,7 +116,7 @@ const fb_storeAllData = async (req, res) => {
                     // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
                     // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
 
-                    console.log("Ga Data updated successfully for user n°", user_id);
+                    console.log("Fb Data updated successfully for user n°", user_id);
                 }
             } catch (err) {
                 console.log(err);

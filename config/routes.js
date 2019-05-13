@@ -163,6 +163,7 @@ module.exports = function (app, passport, config) {
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
     app.get(igPath + ':page_id/businessInfo', reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
+    app.get(igPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), IgM.ig_storeAllData);
 
     app.get(igPath + ':page_id/audcity', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_CITY], IGP.LIFETIME), IgM.ig_getData);
     app.get(igPath + ':page_id/audcountry', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_COUNTRY], IGP.LIFETIME), IgM.ig_getData);
