@@ -209,7 +209,7 @@ async function storeIgMongoData(userid, metric, start_date, end_date, file) {
     let data;
     try {
         data = await new igMongo({
-            userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
+            userid: userid, metric: [metric], start_date: start_date, end_date: end_date, data: file
         });
         data.save().then(() => {
         });
@@ -226,7 +226,7 @@ async function getIgMongoItemDate(userid, metric) {
     try {
         result = await igMongo.find({
             'userid': userid,
-            'metric': metric
+            'metric': [metric]
         });
     }
     catch (e) {
@@ -244,7 +244,7 @@ async function removeIgMongoData(userid, metric) {
     try {
         await igMongo.findOneAndDelete({
             'userid': userid,
-            'metric': metric,
+            'metric': [metric],
         });
     }
     catch (e) {
@@ -260,7 +260,7 @@ async function updateIgMongoData(userid, metric, end_date, data) {
         if (data) {
             await igMongo.findOneAndUpdate({
                 'userid': userid,
-                'metric': metric,
+                'metric': [metric],
             }, {
                 'end_date': end_date,
                 $addToSet: {
@@ -270,7 +270,7 @@ async function updateIgMongoData(userid, metric, end_date, data) {
         } else {
             await igMongo.findOneAndUpdate({
                 'userid': userid,
-                'metric': metric,
+                'metric': [metric],
             }, {
                 'end_date': end_date
             });
@@ -287,7 +287,7 @@ async function getIgMongoData(userid, metric) {
     try {
         result = await igMongo.findOne({
             'userid': userid,
-            'metric': metric,
+            'metric': [metric],
         });
     }
     catch (e) {

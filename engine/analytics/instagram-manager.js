@@ -188,6 +188,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, since = null
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric);
             date = getIntervalDate(data);
+            console.log ("DATE ", date);
             await MongoManager.storeIgMongoData(user_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (old_endDate < today) {
