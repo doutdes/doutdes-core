@@ -12,7 +12,7 @@ const ErrorHandler = require('../engine/error-handler');
 
 module.exports = function (app, passport, config) {
 
-    const site_URL = (config['site_URL'].includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/prealpha') + '/#/preferences/api-keys?err=true';
+    const site_URL = (config['site_URL'].includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/beta') + '/#/preferences/api-keys?err=true';
 
     /* PATHs */
     let indexPath = "/";
