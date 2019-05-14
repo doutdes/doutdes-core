@@ -266,7 +266,7 @@ const ig_storeAllData = async (req, res) => {
                     await ig_getDataInternal(user_id, page_id, [IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.REACH], IGP.D_28, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.REACH], IGP.DAY, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
