@@ -244,7 +244,6 @@ const ig_storeAllData = async (req, res) => {
     let user_id;
     let permissionGranted;
     let users;
-    let temp;
     try {
         users = await Users.findAll();
         for (const user of users) {
@@ -281,6 +280,53 @@ const ig_storeAllData = async (req, res) => {
         }
         return res.status(HttpStatus.OK).send({
             message: "ig_storeAllData executed successfully"
+        });
+    } catch (err) {
+
+    }
+};
+
+const ig_storeAllDataDaily = async (req, res) => {
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    if (key != auth) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+    let user_id;
+    let permissionGranted;
+    let users;
+    try {
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.IG);
+                if (permissionGranted.granted) {
+                    let key = await FbToken.findOne({where: {user_id: user_id}});
+                    let page_id = (await InstagramApi.getPagesID(key.api_key))['data'][0]['instagram_business_account']['id'];
+
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_CITY], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_COUNTRY], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_LOCALE], IGP.LIFETIME);
+
+                    console.log("Ig Data Daily updated successfully for user n°", user_id);
+                }
+            } catch (err) {
+                console.log(err);
+                console.warn("The user #", user_id, " have an invalid key or an invalid page_id.");
+            }
+        }
+        return res.status(HttpStatus.OK).send({
+            message: "ig_storeAllDataDaily executed successfully"
         });
     } catch (err) {
 
@@ -348,5 +394,6 @@ module.exports = {
     ig_getImages,
     ig_getStories,
     ig_getBusinessInfo,
-    ig_storeAllData
+    ig_storeAllData,
+    ig_storeAllDataDaily
 };
