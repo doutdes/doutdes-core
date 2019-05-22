@@ -396,7 +396,7 @@ exports.roleAuth = function(roles){
         try {
             userFound = await User.findById(user.id);
 
-            if(roles.indexOf(parseInt(userFound.user_type)) > -1){
+            if(roles.indexOf(userFound.user_type) > -1){
                 return next();
             }
 
