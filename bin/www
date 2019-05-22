@@ -29,7 +29,7 @@ if(process.env.PEM_PATH) { // If using certificates, enable SSL
 }
 else {
     server = http.createServer(app);
-    server.listen(443); // Local version
+    server.listen(port); // Local version
 }
 
 server.on('error', onError);
