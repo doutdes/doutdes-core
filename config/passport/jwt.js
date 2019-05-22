@@ -10,11 +10,6 @@ module.exports =
             secretOrKey: 'your_jwt_secret'
         },
         function (jwtPayload, cb) {
-
-            if(jwtPayload.user_type !== '0'){
-                cb("Unauthorized");
-            }
-
             Model.Users.findOne({where: {username: jwtPayload.username}})
                 .then(user => {
                     return cb(null, user);
