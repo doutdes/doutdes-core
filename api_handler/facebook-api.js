@@ -184,16 +184,13 @@ const getFacebookPost = async(pageID, token) => {
 };
 
 /** GET informations about the token - It is useful either to know if the token is valid or the scopes authorized **/
-const getTokenInfo = async (token) => {
+const getAccountInfo = async (token) => {
     let result;
     const options = {
         method: GET,
-        uri: fbInsightURI + 'debug_token',
+        uri: fbInsightURI + 'me',
         headers: {
             'Authorization': 'Bearer ' + token
-        },
-        qs: {
-            input_token: token
         },
         json: true
     };
@@ -203,8 +200,32 @@ const getTokenInfo = async (token) => {
         return result;
     } catch (err) {
         //console.error(err);
-        throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
+        throw new Error('getAccountInfo -> Error during the Facebook query -> ' + err['message']);
     }
+};
+
+
+const getTokenInfo = async (token) => {
+    let result, accountInfo;
+    const options = {
+        method: GET,
+        uri: fbInsightURI,// + '/' + id + '/permissions',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        json: true
+    };
+
+    try {
+        accountInfo = await getAccountInfo(token);
+        options['uri'] += '/' + accountInfo['id'] + '/permissions'
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        //console.error(err);
+        throw new Error('getTokenInfo2 -> Error during the Facebook query -> ' + err['message']);
+    }
+
 };
 
 /** EXPORTS **/

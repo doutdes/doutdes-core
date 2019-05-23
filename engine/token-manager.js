@@ -2,7 +2,8 @@
 
 /* External services */
 const HttpStatus = require('http-status-codes');
-const Request = require('request-promise');
+const Request    = require('request-promise');
+const _          = require('lodash');
 
 /* DB Models */
 const Model = require('../models/index');
@@ -117,7 +118,6 @@ const permissionGranted = async (req, res) => {
         })
     }
 };
-
 const checkInternalPermission = async (user_id, type) => {
 
     let scopes = [];
@@ -142,7 +142,7 @@ const checkInternalPermission = async (user_id, type) => {
     try {
         switch (parseInt(type)) {
             case D_TYPE.FB: // Facebook
-                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
+                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
                 hasPermission = checkFBContains(scopes);
                 scopes = scopes.filter(el => !el.includes('instagram'));
                 break;
@@ -152,7 +152,7 @@ const checkInternalPermission = async (user_id, type) => {
                 scopes = scopes.filter(el => !el.includes('yt-analytics') && !el.includes('youtube'));
                 break;
             case D_TYPE.IG: // Instagram
-                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
+                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
                 hasPermission = checkIGContains(scopes);
                 scopes = scopes.filter(el => el.includes('instagram'));
                 break;
@@ -179,7 +179,6 @@ const checkInternalPermission = async (user_id, type) => {
         throw e;
     }
 };
-
 const revokePermissions = async (req, res) => {
     let type = parseInt(req.params.type);
     let key;
