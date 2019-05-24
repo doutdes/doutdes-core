@@ -99,7 +99,7 @@ exports.createUser = async function (req, res, next) {
                     city: user.city,
                     zip: user.zip,
                     password: password,
-                    user_type: getUserTypeByStrig(user.user_type),
+                    user_type: getUserTypeByString(user.user_type),
                     checksum: '0'
                 })
                     .then(newUser => {
@@ -380,7 +380,8 @@ exports.basicLogin = function (req, res, next) {
                     'username': user.username,
                     'email': user.email,
                     'first_name': user.first_name,
-                    'last_name': user.last_name
+                    'last_name': user.last_name,
+                    'user_type': user.user_type
                 },
                 'token': token
             });
@@ -389,28 +390,29 @@ exports.basicLogin = function (req, res, next) {
 };
 
 exports.roleAuth = function(roles){
-
-    return function(req, res, next){
-
+    return async (req, res, next) => {
         let user = req.user;
+        let userFound;
 
-        User.findById(user.id)
-            .then(userFound => {
-                if(roles.indexOf(userFound.user_type) > -1){
-                    return next();
-                }
+        try {
+            userFound = await User.findById(user.id);
 
-                res.status(401).json({error: 'You are not authorized to view this content'});
-                return next('Unauthorized');
-            })
-            .catch(err => {
-                res.status(422).json({error: 'No user found.'});
-                return next(err);
-            });
+            if(roles.indexOf(userFound.user_type) > -1){
+                return next();
+            }
+
+            res.status(401).json({error: 'You are not authorized to view this content'});
+            return next('Unauthorized');
+
+
+        } catch (e) {
+            res.status(422).json({error: 'No user found.'});
+            return next(err);
+        }
     }
 };
 
-const getUserTypeByStrig = (stringType) => {
+const getUserTypeByString = (stringType) => {
     let type;
 
     switch (stringType) {

@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 
 /** Building system constants **/
 const app = express();
@@ -15,3 +16,9 @@ module.exports = { app, passport, config };
 require('./config/passport')(passport);
 require('./config/express')(app, passport);
 require('./config/routes')(app, passport, config);
+
+/* Connection to Mongo */
+mongoose.Promise = require('bluebird');
+mongoose.connect('mongodb://localhost/doutdes-core', {  useNewUrlParser: true, promiseLibrary: require('bluebird') })
+    .then(() =>  console.log('Engine connected successfully to the mongo database'))
+    .catch((err) => console.error(err));

@@ -4,6 +4,8 @@
  * API calls from Page Insights Facebook
 **/
 
+const DateFns = require('date-fns');
+
 /** IMPORTS **/
 const Request = require('request-promise');
 
@@ -122,7 +124,8 @@ const getPagesID = async (token) =>  {
 };
 
 /** Facebook Page/Insight query **/
-const facebookQuery = async (method, metric, period, pageID, token, date_preset) => {
+//TODO check why it is necessary adds and subs in dates
+const facebookQuery = async (method, metric, period, pageID, token, start_date, end_date) => {
     let result;
     const options = {
         method: method,
@@ -131,7 +134,8 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
             access_token: token,
             metric: metric,
             period: period,
-            date_preset: date_preset
+            since: DateFns.subDays(start_date,1),
+            until: DateFns.addDays(end_date,1)
         },
         json: true
     };
@@ -144,15 +148,14 @@ const facebookQuery = async (method, metric, period, pageID, token, date_preset)
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-const getFacebookData = async (pageID, metric, period, token) => {
-    let access_token, this_year, last_year;
+
+const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
+    let access_token, data;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        this_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'this_year'))['data'][0]['values'];
-        last_year = (await facebookQuery(GET, metric, period, pageID, access_token, 'last_year'))['data'][0]['values'];
-
-        return last_year.concat(this_year);
+        data = (await facebookQuery(GET, metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
+        return data;
     } catch (e) {
         console.error(e);
         throw new Error('getFacebookData -> Error getting the Facebook Data');
@@ -181,16 +184,13 @@ const getFacebookPost = async(pageID, token) => {
 };
 
 /** GET informations about the token - It is useful either to know if the token is valid or the scopes authorized **/
-const getTokenInfo = async (token) => {
+const getAccountInfo = async (token) => {
     let result;
     const options = {
         method: GET,
-        uri: fbInsightURI + 'debug_token',
+        uri: fbInsightURI + 'me',
         headers: {
             'Authorization': 'Bearer ' + token
-        },
-        qs: {
-            input_token: token
         },
         json: true
     };
@@ -199,9 +199,33 @@ const getTokenInfo = async (token) => {
         result = await Request(options);
         return result;
     } catch (err) {
-        console.error(err);
-        throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
+        //console.error(err);
+        throw new Error('getAccountInfo -> Error during the Facebook query -> ' + err['message']);
     }
+};
+
+
+const getTokenInfo = async (token) => {
+    let result, accountInfo;
+    const options = {
+        method: GET,
+        uri: fbInsightURI,// + '/' + id + '/permissions',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        json: true
+    };
+
+    try {
+        accountInfo = await getAccountInfo(token);
+        options['uri'] += '/' + accountInfo['id'] + '/permissions'
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        //console.error(err);
+        throw new Error('getTokenInfo2 -> Error during the Facebook query -> ' + err['message']);
+    }
+
 };
 
 /** EXPORTS **/

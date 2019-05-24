@@ -2,7 +2,8 @@
 
 /* External services */
 const HttpStatus = require('http-status-codes');
-const Request = require('request-promise');
+const Request    = require('request-promise');
+const _          = require('lodash');
 
 /* DB Models */
 const Model = require('../models/index');
@@ -28,7 +29,7 @@ const checkFbTokenValidity = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
 
-        if(!key) {
+        if (!key) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 name: 'Token not found',
                 message: 'Before to check the validity of the Facebook token, you should provide one token instead.'
@@ -48,7 +49,7 @@ const checkFbTokenValidity = async (req, res) => {
     } catch (err) {
         console.error(err);
 
-        if((err + '').includes(HttpStatus.UNAUTHORIZED.toString())) {
+        if ((err + '').includes(HttpStatus.UNAUTHORIZED.toString())) {
             return res.status(HttpStatus.UNAUTHORIZED).send({
                 name: 'Facebook Token Error',
                 message: 'The token is no longer valid.'
@@ -64,7 +65,7 @@ const checkFbTokenValidity = async (req, res) => {
 const checkExistence = async (req, res) => {
     let joinModel;
 
-    switch(parseInt(req.params.type)){
+    switch (parseInt(req.params.type)) {
         case D_TYPE.FB:
         case D_TYPE.IG:
             joinModel = FbToken;
@@ -83,7 +84,7 @@ const checkExistence = async (req, res) => {
     try {
         const key = await Users.findOne({where: {id: req.user.id}, include: [{model: joinModel}]});
 
-        if((key['dataValues']['FbTokens'] && key['dataValues']['FbTokens'].length > 0) ||
+        if ((key['dataValues']['FbTokens'] && key['dataValues']['FbTokens'].length > 0) ||
             (key['dataValues']['GaTokens'] && key['dataValues']['GaTokens'].length > 0)) {
             return res.status(HttpStatus.OK).send({
                 exists: true,
@@ -105,30 +106,43 @@ const checkExistence = async (req, res) => {
     }
 };
 const permissionGranted = async (req, res) => {
+    let response;
+    try {
+       response = await checkInternalPermission(req.user.id, req.params.type);
+       return res.status(HttpStatus.OK).send(response);
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'There is a problem with our servers.'
+        })
+    }
+};
+const checkInternalPermission = async (user_id, type) => {
+
     let scopes = [];
     let hasPermission, key;
-    let type = parseInt(req.params.type);
 
-    if(type === D_TYPE.FB || type === D_TYPE.IG) { // Facebook or Instagram
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
+    if (parseInt(type) === D_TYPE.FB || parseInt(type) === D_TYPE.IG) { // Facebook or Instagram
+        key = await FbToken.findOne({where: {user_id: user_id}});
     } else {
-        key = await GaToken.findOne({where: {user_id: req.user.id}});
+        key = await GaToken.findOne({where: {user_id: user_id}});
     }
 
-    if(!key){ // If a key is not set, return error
+    if (!key) { // If a key is not set, return error
         console.log('KEY IS NOT SET UP');
-        return res.status(HttpStatus.OK).send({
-            name: DS_TYPE[parseInt(req.params.type)],
-            type: parseInt(req.params.type),
+        return {
+            name: DS_TYPE[parseInt(type)],
+            type: parseInt(type),
             granted: false,
             scopes: null
-        });
+        };
     }
 
     try {
-        switch (parseInt(req.params.type)) {
+        switch (parseInt(type)) {
             case D_TYPE.FB: // Facebook
-                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
+                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
                 hasPermission = checkFBContains(scopes);
                 scopes = scopes.filter(el => !el.includes('instagram'));
                 break;
@@ -138,7 +152,7 @@ const permissionGranted = async (req, res) => {
                 scopes = scopes.filter(el => !el.includes('yt-analytics') && !el.includes('youtube'));
                 break;
             case D_TYPE.IG: // Instagram
-                scopes = (await FbAPI.getTokenInfo(key['api_key']))['data']['scopes'];
+                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
                 hasPermission = checkIGContains(scopes);
                 scopes = scopes.filter(el => el.includes('instagram'));
                 break;
@@ -148,34 +162,28 @@ const permissionGranted = async (req, res) => {
                 scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
                 break;
             default:
-                return res.status(HttpStatus.BAD_REQUEST).send({
+                return {
                     error: true,
-                    message: 'The service with id ' + req.params.type + ' does not exist.'
-                });
+                    message: 'The service with id ' + type + ' does not exist.'
+                };
         }
 
-        console.log(hasPermission);
-
-        return res.status(HttpStatus.OK).send({
-            name: DS_TYPE[parseInt(req.params.type)],
-            type: parseInt(req.params.type),
+        return {
+            name: DS_TYPE[parseInt(type)],
+            type: parseInt(type),
             granted: hasPermission === 1,
             scopes: hasPermission === 1 ? scopes : null
-        })
-
-    } catch (err) {
-        console.error(err);
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            error: true,
-            message: 'There is a problem with our servers.'
-        })
+        };
+    }
+    catch (e) {
+        throw e;
     }
 };
 const revokePermissions = async (req, res) => {
     let type = parseInt(req.params.type);
     let key;
 
-    if(type === D_TYPE.FB || type === D_TYPE.IG) { // Facebook or Instagram
+    if (type === D_TYPE.FB || type === D_TYPE.IG) { // Facebook or Instagram
         key = (await FbToken.findOne({where: {user_id: req.user.id}}))['api_key'];
     } else {
         key = (await GaToken.findOne({where: {user_id: req.user.id}}))['private_key'];
@@ -466,7 +474,7 @@ const upsertFbKey = async (user_id, token) => {
         userFind = await FbToken.findOne({where: {user_id: user_id}});
 
         // If an occurrence alread exists, then update it, else insert a new row
-        if(userFind) {
+        if (userFind) {
             result = await FbToken.update({api_key: token}, {where: {user_id: user_id}});
         } else {
             result = await FbToken.create({user_id: user_id, api_key: token});
@@ -485,7 +493,7 @@ const upsertGaKey = async (user_id, token) => {
         userFind = await GaToken.findOne({where: {user_id: user_id}});
 
         // If an occurrence alread exists, then update it, else insert a new row
-        if(userFind) {
+        if (userFind) {
             result = await GaToken.update({private_key: token}, {where: {user_id: user_id}});
         } else {
             result = await GaToken.create({user_id: user_id, private_key: token});
@@ -518,14 +526,14 @@ const getPageToken = async (token) => { // TODO edit
 
 /** CHECK PERMISSIONS **/
 const checkFBContains = (scopes) => {
-    const hasManage  = scopes.includes('manage_pages');
+    const hasManage = scopes.includes('manage_pages');
     const hasInsight = scopes.includes('read_insights');
     const hasAdsRead = scopes.includes('ads_read');
 
     return hasManage & hasInsight & hasAdsRead;
 };
 const checkIGContains = (scopes) => {
-    const hasBasic   = scopes.includes('instagram_basic');
+    const hasBasic = scopes.includes('instagram_basic');
     const hasInsight = scopes.includes('instagram_manage_insights');
 
     return hasBasic & hasInsight;
@@ -550,7 +558,7 @@ const revokeFbPermissions = async (token) => {
     const scopes = ['manage_pages', 'read_insights', 'ads_read'];
     let scope, result;
 
-    for(const i in scopes) {
+    for (const i in scopes) {
         try {
             scope = scopes[i];
             result = await FbAPI.revokePermission(token, scope);
@@ -566,7 +574,7 @@ const revokeGaPermissions = async (token) => { // Token has been expired or revo
     let result;
 
     try {
-      result = await GaAPI.revokePermissions(token);
+        result = await GaAPI.revokePermissions(token);
     } catch (e) {
         throw new Error('tokenManager.revokeGaPermissions -> Error on revoking permissions');
     }
@@ -578,7 +586,7 @@ const revokeIgPermissions = async (token) => {
 
     let scope, result;
 
-    for(const i in scopes) {
+    for (const i in scopes) {
         try {
             scope = scopes[i];
             result = await IgAPI.revokePermission(token, scope);
@@ -591,4 +599,16 @@ const revokeIgPermissions = async (token) => {
     return true;
 };
 
-module.exports = {readAllKeysById, insertKey, update, deleteKey, upsertFbKey, upsertGaKey, checkExistence, permissionGranted, revokePermissions, checkFbTokenValidity};
+module.exports = {
+    readAllKeysById,
+    insertKey,
+    update,
+    deleteKey,
+    upsertFbKey,
+    upsertGaKey,
+    checkExistence,
+    permissionGranted,
+    revokePermissions,
+    checkFbTokenValidity,
+    checkInternalPermission
+};

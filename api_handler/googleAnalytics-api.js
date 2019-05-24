@@ -53,7 +53,7 @@ const getAccessToken = async (refresh_token) => {
         result = JSON.parse(await Request(options));
         return result['access_token'];
     } catch (e) {
-        console.error(e);
+        //console.error(e);
     }
 };
 const getTokenInfo = async (private_key) => {
@@ -70,9 +70,14 @@ const getTokenInfo = async (private_key) => {
 
     try {
         options.qs.access_token = await getAccessToken(private_key);
-        result = await Request(options);
+        if (options.qs.access_token){
+            result = await Request(options);
+        } else{
+            throw new Error('getTokenInfo -> Error getting scopes in Google (invalid refresh token)');
+        }
+
     } catch (e) {
-        console.error(e);
+        //console.error(e);
         throw new Error('getTokenInfo -> Error getting scopes in Google');
     }
 
@@ -83,7 +88,7 @@ const getViewID = async (private_key) => {
     const access_token = await getAccessToken(private_key);
 
     const result = await google.analytics('v3').management.profiles.list({
-        'access_token': access_token ,
+        'access_token': access_token,
         'accountId': '~all',
         'webPropertyId': '~all'
     });
@@ -95,11 +100,11 @@ const getViewList = async (private_key) => {
     const access_token = await getAccessToken(private_key);
 
     const accountList = await google.analytics('v3').management.accounts.list({
-        'access_token': access_token ,
+        'access_token': access_token,
     });
 
     const profileList = await google.analytics('v3').management.profiles.list({
-        'access_token': access_token ,
+        'access_token': access_token,
         'accountId': '~all',
         'webPropertyId': '~all'
     });
@@ -111,12 +116,12 @@ const getViewList = async (private_key) => {
     };
 };
 
-const getData = async(private_key, view_id, start_date, end_date, metrics, dimensions, sort=null, filters=null) => {
+const getData = async (private_key, view_id, start_date, end_date, metrics, dimensions, sort = null, filters = null) => {
 
     const access_token = await getAccessToken(private_key);
 
     let params = {
-        'access_token': access_token ,
+        'access_token': access_token,
         'ids': 'ga:' + view_id,
         'start-date': start_date,
         'end-date': end_date,
@@ -125,14 +130,14 @@ const getData = async(private_key, view_id, start_date, end_date, metrics, dimen
     };
 
     // Optional fields: if they exist, then they can be added to the query params
-    if (sort)       params['sort'] = sort;
-    if (filters)    params['filters'] = filters;
+    if (sort) params['sort'] = sort;
+    if (filters) params['filters'] = filters;
 
     const result = await google.analytics('v3').data.ga.get(params);
 
     return result.data.rows;
 };
-const revokePermissions = async(private_key) => {
+const revokePermissions = async (private_key) => {
     let result;
     const options = {
         method: GET,

@@ -1,33 +1,38 @@
 /** INSTAGRAM MANAGER **/
 
 'use strict';
+const DateFns = require('date-fns');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
+const Users = Model.Users;
+const IGM = require('../../api_handler/instagram-api').METRICS;
+const IGP = require('../../api_handler/instagram-api').PERIOD;
+const IGI = require('../../api_handler/instagram-api').INTERVAL;
+
+const D_TYPE = require('../dashboard-manager').D_TYPE;
 
 const TokenManager = require('../token-manager');
 
 const HttpStatus = require('http-status-codes');
+
+const MongoManager = require('../mongo-manager');
+
+const DAYS = {
+    yesterday: 1,
+    min_date: 30
+};
 
 /***************** INSTAGRAM *****************/
 const InstagramApi = require('../../api_handler/instagram-api');
 
 // TODO change the response if there are no data
 const setMetric = (metric, period, interval = null) => {
-    let until = new Date();
-    let since = new Date();
-
-    if (interval) {
-        since.setDate(since.getDate() - interval);
-    }
 
     return (req, res, next) => {
         req.metric = metric;
         req.period = period;
-        if (interval) {
-            req.since = since;
-            req.until = until;
-        }
+        req.interval = interval;
         next();
     }
 };
@@ -134,17 +139,77 @@ const ig_getVideos = async (req, res) => {
     }
 };
 
-const ig_getData = async (req, res) => {
-    let key, data;
-    let media_id = req.params.media_id || null;
+// Replace some special chars in API JSONs, which are not allowed by Mongoose
+function preProcessIGData(data, metric) {
 
+    let stringified;
+
+    if (metric.toString() === "audience_gender_age") {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
+        data = JSON.parse(stringified);
+    }
+
+    return data;
+}
+
+function getIntervalDate(data) {
+    return {
+        start_date: data[0].end_time,
+        end_date: data[data.length - 1].end_time
+    }
+}
+
+const ig_getDataInternal = async (user_id, page_id, metric, period, interval = null, media_id = null) => {
+
+    let data;
+    let response;
+    let since = null;
+    let until = null;
+
+    // handling interval
+    if (interval) {
+        since = new Date();
+        until = new Date();
+        since.setDate(since.getDate() - interval);
+    }
+
+    let old_date, old_startDate, old_endDate;
+    let date, today;
     try {
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = (req.since && req.until)
-            ? await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, new Date(req.since), new Date(req.until), key.api_key, media_id)
-            : await InstagramApi.getInstagramData(req.params.page_id, req.metric, req.period, null, null, key.api_key, media_id);
+        old_date = await MongoManager.getIgMongoItemDate(user_id, metric);
 
-        return res.status(HttpStatus.OK).send(data);
+        old_startDate = old_date.start_date;
+        old_endDate = old_date.end_date;
+        today = new Date();
+
+        if (old_startDate == null) {
+            data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
+            data = preProcessIGData(data, metric);
+            date = getIntervalDate(data);
+            await MongoManager.storeIgMongoData(user_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
+            return data;
+        } else if (old_endDate < today) {
+            data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
+            date = getIntervalDate(data);
+            data = preProcessIGData(data, metric);
+            await MongoManager.updateIgMongoData(user_id, metric, date.end_date.slice(0, 10), data);
+        }
+
+        response = await MongoManager.getIgMongoData(user_id, metric);
+        return response;
+    } catch (err) {
+        throw err;
+    }
+
+};
+
+const ig_getData = async (req, res) => {
+    let response;
+    try {
+        response = await ig_getDataInternal(req.user.id, req.params.page_id, req.metric, req.period, req.interval, req.params.media_id);
+
+        return res.status(HttpStatus.OK).send(response);
     } catch (err) {
         console.error(err);
         if (err.statusCode === 400) {
@@ -158,6 +223,67 @@ const ig_getData = async (req, res) => {
             name: 'Internal Server Error',
             message: 'There is a problem either with Facebook servers or with our database'
         });
+    }
+};
+
+const ig_storeAllData = async (req, res) => {
+
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    if (key != auth) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+    let user_id;
+    let permissionGranted;
+    let users;
+    let temp;
+    try {
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.IG);
+                if (permissionGranted.granted) {
+                    let key = await FbToken.findOne({where: {user_id: user_id}});
+                    let page_id = (await InstagramApi.getPagesID(key.api_key))['data'][0]['instagram_business_account']['id'];
+
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_CITY], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_COUNTRY], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_LOCALE], IGP.LIFETIME);
+                    await ig_getDataInternal(user_id, page_id, [IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.IMPRESSIONS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.REACH], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH);
+                    await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
+
+
+                    console.log("Ig Data updated successfully for user n°", user_id);
+                }
+            } catch (err) {
+                console.log(err);
+                console.warn("The user #", user_id, " have an invalid key or an invalid page_id.");
+            }
+        }
+        return res.status(HttpStatus.OK).send({
+            message: "ig_storeAllData executed successfully"
+        });
+    } catch (err) {
+
     }
 };
 
@@ -197,6 +323,21 @@ const ig_getBusinessInfo = async (req, res) => {
     }
 };
 
+//get data from Instagram insights
+async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
+    let data, key;
+    key = await FbToken.findOne({where: {user_id: user_id}});
+
+    try {
+        (start_date && end_date) ? data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
+            data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key);
+    } catch (e) {
+        console.error("Error retrieving Instagram data");
+    }
+
+    return data;
+}
+
 /** EXPORTS **/
 module.exports = {
     setMetric,
@@ -206,5 +347,6 @@ module.exports = {
     ig_getVideos,
     ig_getImages,
     ig_getStories,
-    ig_getBusinessInfo
+    ig_getBusinessInfo,
+    ig_storeAllData
 };
