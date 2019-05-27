@@ -113,6 +113,8 @@ module.exports = function (app, passport, config) {
     app.put(amPath + 'update/', reqAuth, AccMan.roleAuth(all), AccMan.updateUser);
     app.delete(amPath + 'delete/', reqAuth, AccMan.roleAuth([admin]), AccMan.deleteUser);
 
+    app.post(amPath + 'sendMail', AccMan.sendMail);
+
     /****************** TOKENS ********************/
     // CRUD
     app.post(keysPath + 'insert/', reqAuth, AccMan.roleAuth(all), TokenManager.insertKey);

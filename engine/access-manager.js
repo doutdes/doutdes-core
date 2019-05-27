@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 
 const HttpStatus = require('http-status-codes');
 
-
+/** USER CRUD **/
 /**
  * @api {post} /users/create/ Create
  *
@@ -60,7 +60,7 @@ const HttpStatus = require('http-status-codes');
  *          "username": "administrator"
  *      }
  */
-exports.createUser = async function (req, res, next) {
+const createUser = async (req, res) =>  {
     const Op = Model.Sequelize.Op;
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
@@ -138,7 +138,6 @@ exports.createUser = async function (req, res, next) {
         })
     ;
 };
-
 /**
  * @api {get} /users/getFromId/ Get From ID
  * @apiName GetFromId
@@ -209,7 +208,7 @@ exports.createUser = async function (req, res, next) {
  *          "message": "Cannot GET the user informations"
  *      }
  */
-exports.getUserById = function (req, res, next) {
+const getUserById = (req, res) =>  {
     User.findById(req.user.id)
         .then(user => {
             return res.status(HttpStatus.OK).send(user);
@@ -221,7 +220,6 @@ exports.getUserById = function (req, res, next) {
             });
         })
 };
-
 /**
  * @api {put} /users/update/ Update
  *
@@ -269,7 +267,7 @@ exports.getUserById = function (req, res, next) {
  *          "message": "Cannot update the user"
  *      }
  */
-exports.updateUser = function (req, res, next) {
+const updateUser = (req, res) =>  {
 
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
@@ -310,7 +308,6 @@ exports.updateUser = function (req, res, next) {
             })
         });
 };
-
 /**
  * @api {delete} /users/delete/ Delete
  *
@@ -345,7 +342,7 @@ exports.updateUser = function (req, res, next) {
  *          "message": "Cannot delete the user"
  *      }
  */
-exports.deleteUser = function (req, res, next) {
+const deleteUser = (req, res) =>  {
     Model.Users.destroy({where: {user: req.body.username}})
         .then(() => {
             return res.status(HttpStatus.OK).json({
@@ -362,7 +359,31 @@ exports.deleteUser = function (req, res, next) {
         })
 };
 
-exports.basicLogin = function (req, res, next) {
+const sendMail = (req, res) => {
+    return res.status(HttpStatus.OK).send({
+        method: 'sendMail'
+    })
+};
+
+/** INTERNAL METHODS **/
+const getUserTypeByString = (stringType) => {
+    let type;
+
+    switch (stringType) {
+        case 'company': type = 1;
+            break;
+        case 'editor': type = 2;
+            break;
+        case 'analyst': type = 3;
+            break;
+    }
+
+    return type;
+};
+
+
+/** LOGIN METHODS **/
+const basicLogin = (req, res, next) =>  {
     passport.authenticate('basic', {session: false}, function (err, user, info) {
         if (err) {
             return next(err);
@@ -388,8 +409,7 @@ exports.basicLogin = function (req, res, next) {
         }
     })(req, res, next);
 };
-
-exports.roleAuth = function(roles){
+const roleAuth = function(roles){
     return async (req, res, next) => {
         let user = req.user;
         let userFound;
@@ -412,17 +432,5 @@ exports.roleAuth = function(roles){
     }
 };
 
-const getUserTypeByString = (stringType) => {
-    let type;
-
-    switch (stringType) {
-        case 'company': type = 1;
-            break;
-        case 'editor': type = 2;
-            break;
-        case 'analyst': type = 3;
-            break;
-    }
-
-    return type;
-};
+/** METHOD EXPORT **/
+module.exports = {createUser, getUserById, updateUser, deleteUser, sendMail, basicLogin, roleAuth};
