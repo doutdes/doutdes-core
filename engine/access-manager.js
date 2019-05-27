@@ -92,7 +92,7 @@ exports.createUser = async function (req, res, next) {
                     first_name: user.first_name,
                     last_name: user.last_name,
                     birth_place: user.birth_place,
-                    birth_date: user.birth_date || user.birth_date == '' ? new Date(user.birth_date) : null,
+                    birth_date: user.birth_date || user.birth_date !== '' ? new Date(user.birth_date) : null,
                     fiscal_code: user.fiscal_code,
                     province: user.province,
                     city: user.city,
