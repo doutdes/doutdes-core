@@ -290,6 +290,9 @@ const ig_storeAllDataDaily = async (req, res) => {
     let key = req.params.key;
     let auth = process.env.KEY || null;
 
+    console.log("Gianni");
+    console.log(auth);
+
     if (auth == null) {
         console.warn("Scaper executed without a valid key");
     }
