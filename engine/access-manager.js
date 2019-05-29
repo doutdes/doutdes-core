@@ -5,7 +5,9 @@ const Model = require('../models');
 const User = require('../models/index').Users;
 const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
+const crypto = require('crypto-random-string');
 const jwt = require('jsonwebtoken');
+const sendmail = require('sendmail')();
 
 const HttpStatus = require('http-status-codes');
 
@@ -60,29 +62,31 @@ const HttpStatus = require('http-status-codes');
  *          "username": "administrator"
  *      }
  */
-const createUser = async (req, res) =>  {
+const createUser = async (req, res) => {
     const Op = Model.Sequelize.Op;
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
+    const token = crypto({length: 30});
 
     User.findAll({
         where: {
-            [Op.or] : [
-                { username: user.username },
-                { email: user.email }
+            [Op.or]: [
+                {username: user.username},
+                {email: user.email}
             ]
         }
     })
         .then(userbn => {
             // user !== null then a username or an email already exists in the sistem
             // the registration has to be rejected
-            if(userbn.length !== 0) {
+            if (userbn.length !== 0) {
                 return res.status(HttpStatus.BAD_REQUEST).send({
                     created: false,
                     error: 'Username or email already exists',
                 });
             } else {
                 // A new user can be created
+
 
                 User.create({
                     username: user.username,
@@ -100,6 +104,8 @@ const createUser = async (req, res) =>  {
                     zip: user.zip,
                     password: password,
                     user_type: getUserTypeByString(user.user_type),
+                    is_verified: false,
+                    token: token,
                     checksum: '0'
                 })
                     .then(newUser => {
@@ -107,19 +113,16 @@ const createUser = async (req, res) =>  {
                         const user_id = newUser.get('id');
                         DashboardManager.internalCreateDefaultDashboards(user_id)
                             .then(() => {
-                                return res.status(HttpStatus.CREATED).send({
-                                    created: true,
-                                    first_name: newUser.get('first_name'),
-                                    last_name: newUser.get('last_name')
-                                });
+                                //if (!is_verified)
+                                sendMail(res, user.email, token);
                             })
                             .catch(err => {
-                                User.destroy({ where: {id : user_id}}); // Deletes the new db row
+                                User.destroy({where: {id: user_id}}); // Deletes the new db row
 
                                 console.log('ACCESS_MANAGER ERROR. Details below:');
                                 console.error(err);
                                 return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                                    created:  false,
+                                    created: false,
                                     message: 'Cannot create the new user',
                                     username: user.username
                                 });
@@ -129,7 +132,7 @@ const createUser = async (req, res) =>  {
                         console.log('ACCESS_MANAGER ERROR. Details below:');
                         console.error(err);
                         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                            created:  false,
+                            created: false,
                             message: 'Cannot create the new user',
                             username: user.username
                         });
@@ -208,7 +211,7 @@ const createUser = async (req, res) =>  {
  *          "message": "Cannot GET the user informations"
  *      }
  */
-const getUserById = (req, res) =>  {
+const getUserById = (req, res) => {
     User.findById(req.user.id)
         .then(user => {
             return res.status(HttpStatus.OK).send(user);
@@ -267,7 +270,7 @@ const getUserById = (req, res) =>  {
  *          "message": "Cannot update the user"
  *      }
  */
-const updateUser = (req, res) =>  {
+const updateUser = (req, res) => {
 
     const user = req.body;
     const password = bcrypt.hashSync(user.password);
@@ -342,7 +345,7 @@ const updateUser = (req, res) =>  {
  *          "message": "Cannot delete the user"
  *      }
  */
-const deleteUser = (req, res) =>  {
+const deleteUser = (req, res) => {
     Model.Users.destroy({where: {user: req.body.username}})
         .then(() => {
             return res.status(HttpStatus.OK).json({
@@ -359,10 +362,58 @@ const deleteUser = (req, res) =>  {
         })
 };
 
-const sendMail = (req, res) => {
-    return res.status(HttpStatus.OK).send({
-        method: 'sendMail'
+const sendMail = (res, email, token) => {
+
+    sendmail({
+        from: 'doutdes.unica@gmail.com',
+        to: email,
+        subject: 'Registrazione DoUtDes.',
+        html: 'Click on this <a href="http://localhost:8080/users/verifyEmail?token=' + token + '&email=' + email + '"' + '>link</a> to verify your email.'
+    }, function (err, reply) {
+        if (err) {
+            console.error(err);
+            console.log(reply);
+
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                message: 'Email non inviata',
+                error: err
+            })
+        } else {
+            return res.status(HttpStatus.OK).send({
+                message: 'Email inviata'
+            })
+        }
+    });
+
+};
+
+const verifyEmail = (req, res) => {
+    const email = req.query.email;
+    const token = req.query.token;
+
+    User.find({
+        where: {email: email}
+    }).then(user => {
+        if (user.is_verified) {
+            return res.status(202).send('Email Already Verified');
+        } else {
+            if (user.token === token) {
+                user
+                    .update({is_verified: true})
+                    .then(updateUser => {
+                        return res.status(200).send('User with ' + email +' has been verified');
+                    })
+                    .catch(reason => {
+                        return res.status(403).send('Token failed');
+                    });
+            } else {
+                return res.status(404).send('Token expired');
+            }
+        }
     })
+        .catch(reason => {
+            return res.status(404).send('Email not found');
+        });
 };
 
 /** INTERNAL METHODS **/
@@ -370,11 +421,14 @@ const getUserTypeByString = (stringType) => {
     let type;
 
     switch (stringType) {
-        case 'company': type = 1;
+        case 'company':
+            type = 1;
             break;
-        case 'editor': type = 2;
+        case 'editor':
+            type = 2;
             break;
-        case 'analyst': type = 3;
+        case 'analyst':
+            type = 3;
             break;
     }
 
@@ -383,7 +437,7 @@ const getUserTypeByString = (stringType) => {
 
 
 /** LOGIN METHODS **/
-const basicLogin = (req, res, next) =>  {
+const basicLogin = (req, res, next) => {
     passport.authenticate('basic', {session: false}, function (err, user, info) {
         if (err) {
             return next(err);
@@ -409,7 +463,7 @@ const basicLogin = (req, res, next) =>  {
         }
     })(req, res, next);
 };
-const roleAuth = function(roles){
+const roleAuth = function (roles) {
     return async (req, res, next) => {
         let user = req.user;
         let userFound;
@@ -417,7 +471,7 @@ const roleAuth = function(roles){
         try {
             userFound = await User.findById(user.id);
 
-            if(roles.indexOf(userFound.user_type) > -1){
+            if (roles.indexOf(userFound.user_type) > -1) {
                 return next();
             }
 
@@ -433,4 +487,4 @@ const roleAuth = function(roles){
 };
 
 /** METHOD EXPORT **/
-module.exports = {createUser, getUserById, updateUser, deleteUser, sendMail, basicLogin, roleAuth};
+module.exports = {createUser, getUserById, updateUser, deleteUser, sendMail, basicLogin, roleAuth, verifyEmail};
