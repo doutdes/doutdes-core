@@ -363,12 +363,16 @@ const deleteUser = (req, res) => {
 };
 
 const sendMail = (res, email, token) => {
+    let mail = 'Click on this <a href="http://localhost:8080/users/verifyEmail?token=' + token +
+        '&email=' + email + '&redirect=true"' + '>link</a> to verify your email.' +
+        '<br>Se il link non funziona, clicca <a href="http://localhost:4200/#/authentication/account-verification">qui</a> ' +
+        'ed inserisci il token: ' + token;
 
     sendmail({
         from: 'doutdes.unica@gmail.com',
         to: email,
         subject: 'Registrazione DoUtDes.',
-        html: 'Click on this <a href="http://localhost:8080/users/verifyEmail?token=' + token + '&email=' + email + '"' + '>link</a> to verify your email.'
+        html: mail
     }, function (err, reply) {
         if (err) {
             console.error(err);
@@ -390,29 +394,52 @@ const sendMail = (res, email, token) => {
 const verifyEmail = (req, res) => {
     const email = req.query.email;
     const token = req.query.token;
+    const redirect = req.query.redirect ? (req.query.redirect === 'true') : null;
 
     User.find({
         where: {email: email}
     }).then(user => {
         if (user.is_verified) {
-            return res.status(202).send('Email Already Verified');
+            if (redirect) {
+                return res.redirect('http://localhost:4200/#/authentication/login?verified=true');
+            }
+            return res.status(202).send({
+                verified: true,
+                message: 'Email Already Verified'
+            });
+
         } else {
             if (user.token === token) {
                 user
                     .update({is_verified: true})
                     .then(updateUser => {
-                        return res.status(200).send('User with ' + email +' has been verified');
+                        if (redirect){
+                            return res.redirect('http://localhost:4200/#/authentication/login?verified=true');
+                        }
+                        return res.status(200).send({
+                            verified: true,
+                            message: 'User with ' + email + ' has been verified'
+                        });
                     })
                     .catch(reason => {
-                        return res.status(403).send('Token failed');
+                        return res.status(403).send({
+                            verified: false,
+                            message: 'Token failed'
+                        });
                     });
             } else {
-                return res.status(404).send('Token expired');
+                return res.status(404).send({
+                    verified: false,
+                    message: 'Token expired'
+                });
             }
         }
     })
         .catch(reason => {
-            return res.status(404).send('Email not found');
+            return res.status(404).send({
+                verified: false,
+                message: 'Email not found'
+            });
         });
 };
 
