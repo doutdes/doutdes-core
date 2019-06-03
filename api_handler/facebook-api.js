@@ -27,6 +27,10 @@ const METRICS = {
     P_FANS_REMOVES_UNIQUE: 'page_fan_removes_unique',
     P_VIEWS_EXT_REFERRALS: 'page_views_external_referrals',
     P_VIEWS_TOTAL: 'page_views_total',
+    P_CONSUMPTIONS: 'page_consumptions',
+    P_PLACES_CHECKIN_TOTAL: 'page_places_checkin_total',
+    P_NEGATIVE_FEEDBACK: 'page_negative_feedback',
+
 };
 
 /** GLOBAL PARAMETERS **/
