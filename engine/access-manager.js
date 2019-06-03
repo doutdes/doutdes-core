@@ -364,8 +364,8 @@ const deleteUser = (req, res) => {
 
 const sendMail = (res, email, token) => {
     let mail = 'Click on this <a href="http://localhost:8080/users/verifyEmail?token=' + token +
-        '&email=' + email + '&redirect=true"' + '>link</a> to verify your email.' +
-        '<br>Se il link non funziona, clicca <a href="http://localhost:4200/#/authentication/account-verification">qui</a> ' +
+        '&email=' + email + '&redirect=true"' + '> link </a> to verify your email.' +
+        ' <br>Se il link non funziona, clicca <a href="http://localhost:4200/#/authentication/account-verification">qui</a> ' +
         'ed inserisci il token: ' + token;
 
     sendmail({
@@ -394,16 +394,19 @@ const sendMail = (res, email, token) => {
 const verifyEmail = (req, res) => {
     const email = req.query.email;
     const token = req.query.token;
-    const redirect = req.query.redirect ? (req.query.redirect === 'true') : null;
+    const redirect = req.query.redirect ? (req.query.redirect === 'true') : false;
+
+    console.log(redirect);
 
     User.find({
         where: {email: email}
     }).then(user => {
         if (user.is_verified) {
-            if (redirect) {
-                return res.redirect('http://localhost:4200/#/authentication/login?verified=true');
-            }
-            return res.status(202).send({
+             if (redirect) {
+                return res.redirect('http://localhost:4200/#/authentication/login?verified=true&token_verified=true');
+             }
+
+            return res.status(HttpStatus.ACCEPTED).send({
                 verified: true,
                 message: 'Email Already Verified'
             });
@@ -413,33 +416,53 @@ const verifyEmail = (req, res) => {
                 user
                     .update({is_verified: true})
                     .then(updateUser => {
+                        console.log('OK');
+                        console.log('Redirect:', redirect);
                         if (redirect){
-                            return res.redirect('http://localhost:4200/#/authentication/login?verified=true');
+                            console.log('OKOK');
+                            return res.redirect('http://localhost:4200/#/authentication/login?verified=true&token_verified=false');
                         }
-                        return res.status(200).send({
+
+                        return res.status(HttpStatus.OK).send({
                             verified: true,
                             message: 'User with ' + email + ' has been verified'
                         });
+
                     })
                     .catch(reason => {
-                        return res.status(403).send({
+
+                        if (redirect) {
+                            return res.redirect('http://localhost:4200/#/authentication/account-verification?verified=false&token_validation=false');
+                        }
+
+                        return res.status(HttpStatus.FORBIDDEN).send({
                             verified: false,
                             message: 'Token failed'
                         });
+
                     });
             } else {
-                return res.status(404).send({
+                if (redirect) {
+                    return res.redirect('http://localhost:4200/#/authentication/account-verification?verified=false&token_validation=false');
+                }
+                return res.status(HttpStatus.NOT_FOUND).send({
                     verified: false,
-                    message: 'Token expired'
+                    message: 'Token expired',
                 });
             }
         }
     })
         .catch(reason => {
-            return res.status(404).send({
+
+            if (redirect) {
+                return res.redirect('http://localhost:4200/#/authentication/account-verification?verified=false&email_validation=false');
+            }
+
+            return res.status(HttpStatus.NOT_FOUND).send({
                 verified: false,
                 message: 'Email not found'
             });
+
         });
 };
 
