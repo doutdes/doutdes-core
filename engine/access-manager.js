@@ -390,13 +390,10 @@ const sendMail = (res, email, token) => {
     });
 
 };
-
 const verifyEmail = (req, res) => {
     const email = req.query.email;
     const token = req.query.token;
     const redirect = req.query.redirect ? (req.query.redirect === 'true') : false;
-
-    console.log(redirect);
 
     User.find({
         where: {email: email}
@@ -406,7 +403,7 @@ const verifyEmail = (req, res) => {
                 return res.redirect('http://localhost:4200/#/authentication/login?verified=true&token_verified=true');
              }
 
-            return res.status(HttpStatus.ACCEPTED).send({
+            return res.status(HttpStatus.OK).send({
                 verified: true,
                 message: 'Email Already Verified'
             });
@@ -416,10 +413,7 @@ const verifyEmail = (req, res) => {
                 user
                     .update({is_verified: true})
                     .then(updateUser => {
-                        console.log('OK');
-                        console.log('Redirect:', redirect);
                         if (redirect){
-                            console.log('OKOK');
                             return res.redirect('http://localhost:4200/#/authentication/login?verified=true&token_verified=false');
                         }
 
@@ -453,7 +447,6 @@ const verifyEmail = (req, res) => {
         }
     })
         .catch(reason => {
-
             if (redirect) {
                 return res.redirect('http://localhost:4200/#/authentication/account-verification?verified=false&email_validation=false');
             }
@@ -462,7 +455,6 @@ const verifyEmail = (req, res) => {
                 verified: false,
                 message: 'Email not found'
             });
-
         });
 };
 
