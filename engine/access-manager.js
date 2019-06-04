@@ -491,17 +491,25 @@ const basicLogin = (req, res, next) => {
             })
         } else {
             const token = jwt.sign(user.dataValues, 'your_jwt_secret');
-            return res.status(HttpStatus.OK).send({
-                'User': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'user_type': user.user_type
-                },
-                'token': token
-            });
+
+            if(user.is_verified) {
+                return res.status(HttpStatus.OK).send({
+                    'User': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'user_type': user.user_type
+                    },
+                    'token': token
+                });
+            } else {
+                return res.status(HttpStatus.FORBIDDEN).send({
+                    logged: false,
+                    error: 'Account not verified'
+                })
+            }
         }
     })(req, res, next);
 };
