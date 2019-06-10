@@ -146,7 +146,7 @@ module.exports = function (app, passport, config) {
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
     app.get(fbPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
-    app.get(fbPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), FbM.fb_storeAllData);
+    app.get(fbPath + 'storeAllData/:key*?', FbM.fb_storeAllData);
 
     app.get(fbPath + ':page_id/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
     app.get(fbPath + ':page_id/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
@@ -159,11 +159,22 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + ':page_id/pagereactions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbM.fb_getData);
     app.get(fbPath + ':page_id/pageimpressionscity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbM.fb_getData);
     app.get(fbPath + ':page_id/pageimpressionscountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id/pageconsumptions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_CONSUMPTIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id/placescheckin', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_PLACES_CHECKIN_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id/negativefeedback', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_NEGATIVE_FEEDBACK), FbM.fb_getData);
+    app.get(fbPath + ':page_id/fansonlineperday', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ONLINE_DAY), FbM.fb_getData);
+    app.get(fbPath + ':page_id/fansadds', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ADDS), FbM.fb_getData);
+    app.get(fbPath + ':page_id/fanremoves', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_REMOVES), FbM.fb_getData);
+    app.get(fbPath + ':page_id/pageimpressionspaid', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_PAID), FbM.fb_getData);
+    app.get(fbPath + ':page_id/videoviews', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_VIEWS), FbM.fb_getData);
+    app.get(fbPath + ':page_id/postimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.POST_IMPRESSIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
     app.get(igPath + ':page_id/businessInfo', reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
-    app.get(igPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), IgM.ig_storeAllData);
+    app.get(igPath + 'storeAllData/:key*?', IgM.ig_storeAllData);
+    app.get(igPath + 'storeAllDataDaily/:key*?', IgM.ig_storeAllDataDaily);
 
     app.get(igPath + ':page_id/audcity', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_CITY], IGP.LIFETIME), IgM.ig_getData);
     app.get(igPath + ':page_id/audcountry', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_COUNTRY], IGP.LIFETIME), IgM.ig_getData);
@@ -207,21 +218,21 @@ module.exports = function (app, passport, config) {
      **/
     app.get(gaPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), GaM.ga_getScopes);
     app.get(gaPath + 'getViewList', reqAuth, AccMan.roleAuth(all), GaM.ga_viewList);
-    app.get(gaPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), GaM.ga_storeAllData);
+    app.get(gaPath + 'storeAllData/:key*?', GaM.ga_storeAllData);
 
-    app.get(gaPath + 'sessions/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'pageviews/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'mostviews/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC), GaM.ga_getData);
-    app.get(gaPath + 'sources/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5), GaM.ga_getData);
-    app.get(gaPath + 'viewsbycountry/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.COUNTRY_DATE), GaM.ga_getData);
-    app.get(gaPath + 'browsers/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.BROWSER_DATE), GaM.ga_getData);
-    app.get(gaPath + 'bouncerate/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.BOUNCE_RATE, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'avgsessionduration/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.AVG_SESSION_DURATION, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'users/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'newusers/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.NEW_USERS, GAD.DATE), GaM.ga_getData);
-    app.get(gaPath + 'mobiledevices/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1), GaM.ga_getData);
-    app.get(gaPath + 'pageloadtime/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0), GaM.ga_getData);
-    app.get(gaPath + 'percentnewsessions/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'sessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'pageviews/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'mostviews/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC), GaM.ga_getData);
+    app.get(gaPath + 'sources/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5), GaM.ga_getData);
+    app.get(gaPath + 'viewsbycountry/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.COUNTRY_DATE), GaM.ga_getData);
+    app.get(gaPath + 'browsers/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.BROWSER_DATE), GaM.ga_getData);
+    app.get(gaPath + 'bouncerate/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.BOUNCE_RATE, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'avgsessionduration/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.AVG_SESSION_DURATION, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'users/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'newusers/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.NEW_USERS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'mobiledevices/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1), GaM.ga_getData);
+    app.get(gaPath + 'pageloadtime/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0), GaM.ga_getData);
+    app.get(gaPath + 'percentnewsessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
     app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'part':'snippet, id'}), YtM.yt_getPages);
