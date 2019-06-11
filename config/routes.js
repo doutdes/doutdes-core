@@ -52,6 +52,7 @@ module.exports = function (app, passport, config) {
         })(req, res, next)
     };
     const ytOnlyReqAuth = (req, res, next) => {
+        console.log(req);
         passport.authenticate('google', {
             scope: 'https://www.googleapis.com/auth/userinfo.email ' +
                 'https://www.googleapis.com/auth/youtube.readonly ' +

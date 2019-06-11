@@ -25,9 +25,7 @@ const setParams = function({ids, metrics, dimensions, part, type, sort, filters,
         next();
     }
 };
-/// TODO
-const fb_getScopes = async (req, res) => {
-};
+
 
 const setEndPoint = (EP, sEP=null) => {
     return function(req, res, next) {
