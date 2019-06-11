@@ -25,11 +25,14 @@ const DIMENSIONS = {
     PAGE_DATE: 'ga:date, ga:pagePath',
     COUNTRY_DATE: 'ga:date, ga:country',
     MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
+    DATE_HOUR: 'ga:date, ga:hour',
+    DEVICE_CAT_DATE: 'ga:date, ga:deviceCategory'
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
 };
 const FILTER = {
+    SESSION_GT_0: 'ga:sessions>0',
     SESSIONS_GT_1: 'ga:sessions>1',
     SESSIONS_GT_5: 'ga:sessions>5',
     PAGE_LOAD_TIME_GT_0: 'ga:pageLoadTime>0'
@@ -126,7 +129,8 @@ const getData = async (private_key, view_id, start_date, end_date, metrics, dime
         'start-date': start_date,
         'end-date': end_date,
         'metrics': metrics,
-        'dimensions': dimensions
+        'dimensions': dimensions,
+        'max-results': 10000
     };
 
     // Optional fields: if they exist, then they can be added to the query params
