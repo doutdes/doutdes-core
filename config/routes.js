@@ -244,7 +244,7 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'percentnewsessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
     app.get(gaPath + 'onlineusers/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE_HOUR, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
     app.get(gaPath + 'devicecategory/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DEVICE_CAT_DATE, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
-
+    app.get(gaPath + 'usersinterests/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.INTEREST_DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
     app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('channels'), YtM.getList);

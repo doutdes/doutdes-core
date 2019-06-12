@@ -26,7 +26,8 @@ const DIMENSIONS = {
     COUNTRY_DATE: 'ga:date, ga:country',
     MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
     DATE_HOUR: 'ga:date, ga:hour',
-    DEVICE_CAT_DATE: 'ga:date, ga:deviceCategory'
+    DEVICE_CAT_DATE: 'ga:date, ga:deviceCategory',
+    INTEREST_DATE: 'ga:date, ga:interestAffinityCategory'
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
