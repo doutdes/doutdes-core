@@ -27,13 +27,14 @@ const DIMENSIONS = {
     MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
     DATE_HOUR: 'ga:date, ga:hour',
     DEVICE_CAT_DATE: 'ga:date, ga:deviceCategory',
-    INTEREST_DATE: 'ga:date, ga:interestAffinityCategory'
+    INTEREST_DATE: 'ga:date, ga:interestAffinityCategory',
+    AUD_GENDER_AGE_DATE: 'ga:date, ga:userGender, ga:userAgeBracket'
 };
 const SORT = {
     PAGE_VIEWS_DESC: '-ga:pageviews'
 };
 const FILTER = {
-    SESSION_GT_0: 'ga:sessions>0',
+    SESSIONS_GT_0: 'ga:sessions>0',
     SESSIONS_GT_1: 'ga:sessions>1',
     SESSIONS_GT_5: 'ga:sessions>5',
     PAGE_LOAD_TIME_GT_0: 'ga:pageLoadTime>0'
