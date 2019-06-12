@@ -111,11 +111,11 @@ async function getGaMongoData(userid, view_id, metric, dimensions) {
 /** FACEBOOK INSIGHTS **/
 
 //store FB data in mongo db
-async function storeFbMongoData(userid, metric, start_date, end_date, file) {
+async function storeFbMongoData(userid, page_id, metric, start_date, end_date, file) {
     let data;
     try {
         data = await new fbMongo({
-            userid: userid, metric: metric, start_date: start_date, end_date: end_date, data: file
+            userid: userid, page_id: page_id, metric: metric, start_date: start_date, end_date: end_date, data: file
         });
         data.save().then(() => {
         });
@@ -127,11 +127,12 @@ async function storeFbMongoData(userid, metric, start_date, end_date, file) {
 }
 
 //return the FB start date of a document in mongo
-async function getFbMongoItemDate(userid, metric) {
+async function getFbMongoItemDate(userid, page_id, metric) {
     let result;
     try {
         result = await fbMongo.find({
             'userid': userid,
+            'page_id': page_id,
             'metric': metric
         });
     }
@@ -146,10 +147,11 @@ async function getFbMongoItemDate(userid, metric) {
 }
 
 //remove a FB mongo document
-async function removeFbMongoData(userid, metric) {
+async function removeFbMongoData(userid, page_id, metric) {
     try {
         await fbMongo.findOneAndDelete({
             'userid': userid,
+            'page_id': page_id,
             'metric': metric,
         });
     }
@@ -160,11 +162,12 @@ async function removeFbMongoData(userid, metric) {
 }
 
 //update a FB mongo document
-async function updateFbMongoData(userid, metric, start_date, end_date, data) {
+async function updateFbMongoData(userid, page_id, metric, start_date, end_date, data) {
     try {
         if (data) {
             await fbMongo.findOneAndUpdate({
                 'userid': userid,
+                'page_id': page_id,
                 'metric': metric,
             }, {
                 'end_date': end_date,
@@ -175,6 +178,7 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
         } else {
             await fbMongo.findOneAndUpdate({
                 'userid': userid,
+                'page_id': page_id,
                 'metric': metric,
             }, {
                 'end_date': end_date
@@ -187,11 +191,12 @@ async function updateFbMongoData(userid, metric, start_date, end_date, data) {
 }
 
 //get FB data from mongodb
-async function getFbMongoData(userid, metric) {
+async function getFbMongoData(userid, page_id, metric) {
     let result;
     try {
         result = await fbMongo.findOne({
             'userid': userid,
+            'page_id': page_id,
             'metric': metric,
         });
     }

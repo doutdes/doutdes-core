@@ -166,8 +166,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
-
-        old_date = await MongoManager.getFbMongoItemDate(user_id, metric);
+        old_date = await MongoManager.getFbMongoItemDate(user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -175,7 +174,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
-            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
@@ -184,19 +183,19 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         else if (old_startDate > start_date) {
             // chiedere dati a Facebook e accertarmi che risponda
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
-            await MongoManager.removeFbMongoData(user_id, metric);
-            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.removeFbMongoData(user_id, page_id, metric);
+            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
         }
         else if (old_endDate < end_date) {
             data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
-            await MongoManager.updateFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.updateFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
 
-        let response = await MongoManager.getFbMongoData(user_id, metric);
+        let response = await MongoManager.getFbMongoData(user_id, page_id, metric);
         return response;
 
     } catch (err) {
