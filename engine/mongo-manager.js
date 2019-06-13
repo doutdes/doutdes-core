@@ -210,11 +210,11 @@ async function getFbMongoData(userid, page_id, metric) {
 /**INSTAGRAM INSIGHTS**/
 
 //store IG data in mongo db
-async function storeIgMongoData(userid, metric, start_date, end_date, file) {
+async function storeIgMongoData(userid, page_id, metric, start_date, end_date, file) {
     let data;
     try {
         data = await new igMongo({
-            userid: userid, metric: [metric], start_date: start_date, end_date: end_date, data: file
+            userid: userid, page_id: page_id, metric: [metric], start_date: start_date, end_date: end_date, data: file
         });
         data.save().then(() => {
         });
@@ -226,11 +226,12 @@ async function storeIgMongoData(userid, metric, start_date, end_date, file) {
 }
 
 //return the IG start date of a document in mongo
-async function getIgMongoItemDate(userid, metric) {
+async function getIgMongoItemDate(userid, page_id, metric) {
     let result;
     try {
         result = await igMongo.find({
             'userid': userid,
+            'page_id': page_id,
             'metric': [metric]
         });
     }
@@ -245,10 +246,11 @@ async function getIgMongoItemDate(userid, metric) {
 }
 
 //remove a IG mongo document
-async function removeIgMongoData(userid, metric) {
+async function removeIgMongoData(userid, page_id, metric) {
     try {
         await igMongo.findOneAndDelete({
             'userid': userid,
+            'page_id': page_id,
             'metric': [metric],
         });
     }
@@ -259,12 +261,12 @@ async function removeIgMongoData(userid, metric) {
 }
 
 //update a IG mongo document
-async function updateIgMongoData(userid, metric, end_date, data) {
-    console.log ("Metrica: ", metric);
+async function updateIgMongoData(userid, page_id, metric, end_date, data) {
     try {
         if (data) {
             await igMongo.findOneAndUpdate({
                 'userid': userid,
+                'page_id': page_id,
                 'metric': [metric],
             }, {
                 'end_date': end_date,
@@ -275,6 +277,7 @@ async function updateIgMongoData(userid, metric, end_date, data) {
         } else {
             await igMongo.findOneAndUpdate({
                 'userid': userid,
+                'page_id': page_id,
                 'metric': [metric],
             }, {
                 'end_date': end_date
@@ -287,11 +290,12 @@ async function updateIgMongoData(userid, metric, end_date, data) {
 }
 
 //get IG data from mongodb
-async function getIgMongoData(userid, metric) {
+async function getIgMongoData(userid, page_id, metric) {
     let result;
     try {
         result = await igMongo.findOne({
             'userid': userid,
+            'page_id': page_id,
             'metric': [metric],
         });
     }
