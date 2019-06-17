@@ -16,6 +16,8 @@ const FbAPI = require('../api_handler/facebook-api');
 const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
+const MongoManager = require('./mongo-manager');
+
 /* Dashboard Manager */
 const DashboardManager = require('../engine/dashboard-manager');
 
@@ -198,6 +200,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.FB);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);
@@ -209,6 +213,8 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.GA);
+                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 

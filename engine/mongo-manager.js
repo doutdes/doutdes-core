@@ -2,7 +2,35 @@ const gaMongo = require('../models/mongo/mongo-ga-model');
 const fbMongo = require('../models/mongo/mongo-fb-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 
+const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
+
 /**GOOGLE ANALYTICS**/
+//remove all documents of a user by type
+async function removeUserMongoData(userid, type) {
+    try {
+        switch (type) {
+            case D_TYPE.GA:
+                await gaMongo.deleteMany({
+                    'userid': userid
+                });
+                break;
+            case D_TYPE.FB:
+                await fbMongo.deleteMany({
+                    'userid': userid
+                });
+                break;
+            case D_TYPE.IG:
+                await igMongo.deleteMany({
+                    'userid': userid
+                });
+                break;
+        }
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("removeUserMongoData - error removing data");
+    }
+}
 
 //store GA data in mongo db
 async function storeGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, file) {
@@ -309,5 +337,6 @@ async function getIgMongoData(userid, page_id, metric) {
 module.exports = {
     storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
     storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
-    storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData
+    storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
+    removeUserMongoData
 };
