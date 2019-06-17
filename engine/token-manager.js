@@ -555,18 +555,18 @@ const checkYTContains = (scopes) => {
 
 /** REVOKE PERMISSIONS **/
 const revokeFbPermissions = async (token) => {
-    const scopes = ['manage_pages', 'read_insights', 'ads_read'];
+    // const scopes = ['manage_pages', 'read_insights', 'ads_read'];
     let scope, result;
 
-    for (const i in scopes) {
+    // for (const i in scopes) {
         try {
-            scope = scopes[i];
-            result = await FbAPI.revokePermission(token, scope);
+            // scope = scopes[i];
+            result = await FbAPI.revokePermission(token);
         } catch (e) {
             console.error(e);
-            throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
+            throw new Error('revokeFbPermissions -> error revoking permission');
         }
-    }
+    // }
 
     return true;
 };
@@ -582,19 +582,19 @@ const revokeGaPermissions = async (token) => { // Token has been expired or revo
     return result;
 };
 const revokeIgPermissions = async (token) => {
-    const scopes = ['instagram_basic', 'instagram_manage_insights'];
+    // const scopes = ['instagram_basic', 'instagram_manage_insights'];
 
     let scope, result;
 
-    for (const i in scopes) {
+    // for (const i in scopes) {
         try {
-            scope = scopes[i];
+            // scope = scopes[i];
             result = await IgAPI.revokePermission(token, scope);
         } catch (e) {
             console.error(e);
-            throw new Error('revokeFbPermissions -> error revoking permission ' + scope);
+            throw new Error('revokeFbPermissions -> error revoking permissions');
         }
-    }
+    // }
 
     return true;
 };
