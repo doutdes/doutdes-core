@@ -192,16 +192,17 @@ const revokePermissions = async (req, res) => {
     try {
         switch (type) {
             case D_TYPE.FB:
+            case D_TYPE.IG:
                 await revokeFbPermissions(key);
-                await revokeIgPermissions(key);
+                // await revokeIgPermissions(key);
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
                 break;
-            case D_TYPE.IG:
-                await revokeIgPermissions(key);
-                await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
-                break;
+            // case D_TYPE.IG:
+            //     await revokeFbPermissions(key);
+            //     await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
+            //     break;
             case D_TYPE.GA:
             case D_TYPE.YT:
                 await revokeGaPermissions(key);
