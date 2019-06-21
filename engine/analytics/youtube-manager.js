@@ -11,17 +11,20 @@ const HttpStatus = require('http-status-codes');
 const YoutubeApi = require('../../api_handler/youtube-api');
 
 // TODO change the response if there are no data
-const setParams = function({ids, metrics, dimensions, part, type, sort, filters, analytics}) {
+const setParams = function(data) {
     return function (req, res, next) {
         //ids must be passed as boolean to distinguish the case in which I want "channelId" and "ids == channel"
-        (ids) ? req.ids = req.params.channel : req.channelId = req.params.channel;
-        req.metrics = metrics;
-        req.dimensions = dimensions;
-        req.part = part;
-        req.sort = sort;
-        req.filters = filters;
-        req.type = type;
-        req.analytics = analytics;
+        for (let par of Object.keys(data.params)) {
+            //console.log('p', data.params[par]);
+            req.params[par] = data.params[par];
+        }
+       /* (ids) ? req.ids = req.params.channel : req.channelId = req.params.channel;
+        (metrics) ? req.params.metrics = metrics : null;
+        (part) ? req.params.part = part : null;
+        (sort) ? req.params.sort = sort : null;
+        (type) ? req.params.type = type : null;
+        (analytics) ? req.params.analytics = analytics : null;
+*/
         next();
     }
 };
@@ -35,13 +38,31 @@ const setEndPoint = (EP, sEP=null) => {
     }
 
 };
+const yt_getSubs = async (req, res) => {
+    let data;
+    let result = [];
+    try {
+        req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
+        data = await YoutubeApi.yt_getData(req);
+        result.push({
+            'value' : parseInt(data.pageInfo.totalResults, 10)
+        });
 
+
+        return res.status(HttpStatus.OK).send(result);
+    } catch (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+}
 
 const yt_getPages = async (req, res) => {
     let data, rt;
     let pages = [];
     let userId = req.user.dataValues.id;
-    console.log(userId);
 
     try {
         req.rt = await GaToken.findOne({where: {user_id: userId}});
@@ -65,16 +86,16 @@ const yt_getPages = async (req, res) => {
 };
 
 const yt_getData = async (req, res) => {
-    let data, rt;
+    let data;
     let result = [];
     try {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
         data = await YoutubeApi.yt_getData(req);
-        if(req.analytics) {
-            for(const el of data['columnHeaders']) {
+        if(req.params['analytics']) {
+            for(const el of data['rows']) {
                 result.push({
-                    'name' : el['name'],
-                    'value' : data['rows'][0][0]
+                    'date' : new Date(el[0]),
+                    'value' : parseInt(el[1], 10)
                 });
             }
         }
@@ -198,4 +219,4 @@ async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
 }
 */
 /** EXPORTS **/
-module.exports = {setParams, yt_getPages, setEndPoint, yt_getData};
+module.exports = {setParams, yt_getPages, setEndPoint, yt_getData, yt_getSubs};

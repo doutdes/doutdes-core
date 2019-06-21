@@ -97,20 +97,17 @@ const youtubeQuery = async (req) => {
         method: GET,
         uri: EP,
         qs: {
-            access_token: req.token,
-            mine : 'true',
+            access_token: req.token
         },
         json: true
     };
-    req.part ? options.qs.part = req.part : null;
-    req.type ? options.qs.type = req.type : null;
-    req.metrics ? options.qs.metrics = req.metrics : null;
-    req.dimension ? options.qs.dimension = req.dimension : null;
-    req.ids ? options.qs.ids = 'channel=='+req.ids : null;
-    (req.channelId && !req.ids) ? options.qs.channelId = req.channelId : null;
-    req.params.start_date ? options.qs.startDate = req.params.start_date : null;
-    req.params.end_date ? options.qs.endDate = req.params.end_date : null;
-
+    for(let par of Object.keys(req.params))
+    {
+        console.log(par+' '+req.params[par]);
+        options.qs[par] = req.params[par];
+    }
+    (options.qs.ids) ? options.qs.ids += req.params.channel : null;
+    (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
     try {
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));
