@@ -103,11 +103,11 @@ const youtubeQuery = async (req) => {
     };
     for(let par of Object.keys(req.params))
     {
-        console.log(par+' '+req.params[par]);
         options.qs[par] = req.params[par];
     }
     (options.qs.ids) ? options.qs.ids += req.params.channel : null;
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
+    (options.qs.channelId) ? options.qs.channelId = req.params.channel : null;
     try {
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));
@@ -132,7 +132,6 @@ async function yt_getAnData(req, res) {
             type : 'video',
         }
     };
-    //console.log(req);
 
     req.channelId ? options.qs.channelId = req.channel : null;
     req.start_date ? options.qs.publishedAfter = new Date(req.start_date) : null;
@@ -141,7 +140,6 @@ async function yt_getAnData(req, res) {
     try {
         data = JSON.parse(await Request(options))['items'];
         let result = [];
-        //console.log(JSON.parse(JSON.stringify(data[0])));
         for(let i in data){
             result.push({
                 'id' : data[i]['id'],

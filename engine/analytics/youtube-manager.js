@@ -15,16 +15,8 @@ const setParams = function(data) {
     return function (req, res, next) {
         //ids must be passed as boolean to distinguish the case in which I want "channelId" and "ids == channel"
         for (let par of Object.keys(data.params)) {
-            //console.log('p', data.params[par]);
             req.params[par] = data.params[par];
         }
-       /* (ids) ? req.ids = req.params.channel : req.channelId = req.params.channel;
-        (metrics) ? req.params.metrics = metrics : null;
-        (part) ? req.params.part = part : null;
-        (sort) ? req.params.sort = sort : null;
-        (type) ? req.params.type = type : null;
-        (analytics) ? req.params.analytics = analytics : null;
-*/
         next();
     }
 };
@@ -47,6 +39,7 @@ const yt_getSubs = async (req, res) => {
         result.push({
             'value' : parseInt(data.pageInfo.totalResults, 10)
         });
+
 
 
         return res.status(HttpStatus.OK).send(result);
