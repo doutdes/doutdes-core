@@ -21,6 +21,7 @@ module.exports = function (app, passport, config) {
     let dashPath  = indexPath + 'dashboards/';
     let calPath   = indexPath + 'calendar/';
 
+
     let gaPath = indexPath + 'ga/';
     let fbPath = indexPath + 'fb/';
     let igPath = indexPath + 'ig/';
@@ -114,6 +115,8 @@ module.exports = function (app, passport, config) {
     app.put(amPath + 'update/', reqAuth, AccMan.roleAuth(all), AccMan.updateUser);
     app.delete(amPath + 'delete/', reqAuth, AccMan.roleAuth([admin]), AccMan.deleteUser);
 
+    app.get(amPath + 'verifyEmail', AccMan.verifyEmail);
+
     /****************** TOKENS ********************/
     // CRUD
     app.post(keysPath + 'insert/', reqAuth, AccMan.roleAuth(all), TokenManager.insertKey);
@@ -126,6 +129,8 @@ module.exports = function (app, passport, config) {
     app.get(keysPath + 'isPermissionGranted/:type', reqAuth, AccMan.roleAuth(all), TokenManager.permissionGranted);
     app.get(keysPath + 'isFbTokenValid', reqAuth, AccMan.roleAuth(all), TokenManager.checkFbTokenValidity);
     app.delete(keysPath + 'revokePermissions/:type', reqAuth, AccMan.roleAuth(all), TokenManager.revokePermissions);
+
+
     // Delete permissions
     // app.delete();
 
