@@ -254,7 +254,8 @@ const readAllKeysById = (req, res) => {
                 user_id: req.user.id,
                 fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
                 ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
-                ga_view_id: (ga == null) ? null : ga.dataValues.view_id, // GA Token
+                ga_view_id: (ga == null) ? null : ga.dataValues.view_id,   // GA View_id
+                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id
             });
         })
         .catch(err => {
@@ -391,7 +392,8 @@ const insertGaData = (req, res) => {
 
 const updateFbKey = (req, res) => {
     FbToken.update({
-        api_key: req.body.api.api_key
+        api_key: req.body.api.api_key,
+        fb_page_id: req.body.fb_page_id
     }, {
         where: {
             user_id: req.user.id
