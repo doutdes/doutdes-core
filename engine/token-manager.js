@@ -393,7 +393,7 @@ const insertGaData = (req, res) => {
 const updateFbKey = (req, res) => {
     FbToken.update({
         api_key: req.body.api.api_key,
-        fb_page_id: req.body.fb_page_id
+        fb_page_id: req.body.api.fb_page_id
     }, {
         where: {
             user_id: req.user.id

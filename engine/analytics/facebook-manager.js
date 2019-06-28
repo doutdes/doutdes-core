@@ -144,9 +144,12 @@ const fb_storeAllData = async (req, res) => {
 
 const fb_getData = async (req, res) => {
 
+
     let response;
+    let page_id;
     try {
-        response = await fb_getDataInternal(req.user.id, req.metric, req.params.page_id);
+        page_id = req.params.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
+        response = await fb_getDataInternal(req.user.id, req.metric, page_id);
 
         return res.status(HttpStatus.OK).send(response);
     }
@@ -216,10 +219,12 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
 const fb_getPost = async (req, res) => {
     let key;
     let data;
+    let page_id;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookPost(req.params.page_id, key.api_key);
+        page_id = req.params.page_id || key.dataValues.fb_page_id;
+        data = await FacebookApi.getFacebookPost(page_id, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
