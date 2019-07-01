@@ -165,4 +165,4 @@ const revokePermissions = async (private_key) => {
 };
 
 /** EXPORTS **/
-module.exports = {getData, getTokenInfo, revokePermissions, getViewList, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getAccessToken, getData, getTokenInfo, revokePermissions, getViewList, METRICS, DIMENSIONS, SORT, FILTER};

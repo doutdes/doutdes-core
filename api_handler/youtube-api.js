@@ -2,11 +2,16 @@
 
 /** IMPORTS **/
 const Request = require('request-promise');
+const Model = require('../models/index');
+const GaToken = Model.GaToken;
 
 /** CONSTANTS **/
-const YTAnalyticsURI = 'https://youtubeanalytics.googleapis.com/v2/reports';
 const date_preset = 'this_year';
 const config = require('../config/config').production;
+
+const dataEndPoint = 'https://www.googleapis.com/youtube/v3/';
+const analyticsEndPoint = 'https://youtubeanalytics.googleapis.com/v2/reports';
+const tokenEndPoint = 'https://www.googleapis.com/oauth2/v4/token';
 
 
 /** METRIC COSTANT **/
@@ -36,33 +41,122 @@ const DIMENSIONS = {
     MONTH : 'month'
 };
 
-const getTokenInfo = async (private_key) => {
-    let result = null;
-    let access_token;
+const getAccessToken = async (rt) => {
+    let result;
+    rt = rt['dataValues']['private_key'];
     const options = {
-        method: 'GET',
-        uri: 'https://www.googleapis.com/oauth2/v3/tokeninfo',
+        method: 'POST',
+        uri: tokenEndPoint,
         qs: {
-            access_token: null
-        },
-        json: true
+            client_id: config.ga_client_id,
+            client_secret: config.ga_client_secret,
+            refresh_token: rt,//await GaToken.findOne({where: {user_id: req.user.id}})['dataValues']['private_key'],
+            grant_type: 'refresh_token'
+        }
+
     };
 
     try {
-        options.qs.access_token = await getAccessToken(private_key);
-        result = await Request(options);
+        result = JSON.parse(await Request(options));
+        return result['access_token'];
     } catch (e) {
         console.error(e);
-        throw new Error('getTokenInfo -> Error getting scopes in Google');
     }
-
-    return result;//['scope'].split(' ');
 };
 
-const revokePermission = ''; /// TODO
+async function yt_getData(req) {
+    req.token =  await getAccessToken(req.rt);
+    let data = await youtubeQuery(req);
+    try {
+        return (data);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+//TODO check why it is necessary adds and subs in dates
+const youtubeQuery = async (req) => {
+    let result;
+    let EP;
+
+    //getting which endpoint should be used
+    switch(req.EP){
+        case 0 :
+            EP = dataEndPoint;
+             break;
+        case 1:
+            EP = analyticsEndPoint;
+            break;
+        case 2:
+            EP = tokenEndPoint;
+    }
+
+    //adding the sub-endpoint if avaiable
+    EP += (req.sEP) ? req.sEP : '';
+    const options = {
+        method: GET,
+        uri: EP,
+        qs: {
+            access_token: req.token
+        },
+        json: true
+    };
+    for(let par of Object.keys(req.params))
+    {
+        options.qs[par] = req.params[par];
+    }
+    (options.qs.ids) ? options.qs.ids += req.params.channel : null;
+    (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
+    (options.qs.channelId) ? options.qs.channelId = req.params.channel : null;
+    try {
+        result = await Request(options);
+        result = JSON.parse(JSON.stringify(result));
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('youtubeQuery -> Error during the YouTube query -> ' + err['message']);
+    }
+};
+
+async function yt_getAnData(req, res) {
+    let token = await getAccessToken(req);
+    let data;
+    const options = {
+        method: GET,
+        uri: dataEndPoint+req.kind,
+        qs: {
+            access_token: token,
+            //mine : 'true',
+            channelId : req.params.channel,
+            part : 'snippet',
+            type : 'video',
+        }
+    };
+
+    req.channelId ? options.qs.channelId = req.channel : null;
+    req.start_date ? options.qs.publishedAfter = new Date(req.start_date) : null;
+    req.end_date ? options.qs.publishedBefore = new Date(req.end_date) : null;
+
+    try {
+        data = JSON.parse(await Request(options))['items'];
+        let result = [];
+        for(let i in data){
+            result.push({
+                'id' : data[i]['id'],
+                'name' : data[i]['snippet']['title'],
+                'date' : data[i]['snippet']['publishedAt']
+            });
+        }
+        return res.status(HttpStatus.OK).send(result);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+module.exports = {yt_getData};
 
 
-module.exports = {METRICS, DIMENSIONS, config};
+module.exports = {METRICS, DIMENSIONS, config, yt_getData};
 
 /** GET pageID from instagram token**/
 
