@@ -10,10 +10,11 @@ const D_TYPE = require('../dashboard-manager').D_TYPE;
 const FBM = require('../../api_handler/facebook-api').METRICS;
 
 const TokenManager = require('../token-manager');
+const MongoManager = require('../mongo-manager');
 
 const HttpStatus = require('http-status-codes');
+const _ = require('lodash');
 
-const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -37,8 +38,10 @@ const fb_getScopes = async (req, res) => {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = await FacebookApi.getTokenInfo(key.api_key);
 
+        data = _.map(data['data'], el => el.status === 'granted' ? el.permission : '');
+        data = _.filter(data, el => el !== '');
 
-        return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
+        return res.status(HttpStatus.OK).send({scopes: data});
     } catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
