@@ -5,6 +5,7 @@ module.exports = (sequelize, DataType) => {
         type: DataType.INTEGER(5),  // Type identifies the service that the chart belongs to (FB, GA, etc.)
         title: DataType.STRING(30),
         format: DataType.STRING(30),
+        description: DataType.STRING(200),
     }, {
         freezeTableName: true,
         timestamps: false,
