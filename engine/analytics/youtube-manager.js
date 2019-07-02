@@ -93,8 +93,10 @@ const yt_getData = async (req, res) => {
         let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
         let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
 
-        req.params.startDate = start_date.getFullYear()+'-'+start_date.getMonth().toString().padStart(2, "0")+'-'+start_date.getDay().toString().padStart(2, "0");
-        req.params.endDate = end_date.getFullYear()+'-'+end_date.getMonth().toString().padStart(2, "0")+'-'+end_date.getDay().toString().padStart(2, "0");
+        req.params.startDate = start_date.getFullYear()+'-'+((start_date.getMonth())+1).toString().padStart(2, "0")+'-'+start_date.getDay().toString().padStart(2, "0");
+        req.params.endDate = end_date.getFullYear()+'-'+((end_date.getMonth())+1).toString().padStart(2, "0")+'-'+end_date.getDay().toString().padStart(2, "0");
+
+        console.log ("endDate", req.params.endDate);
 
         data = await YoutubeApi.yt_getData(req);
         if(req.params['analytics']) {

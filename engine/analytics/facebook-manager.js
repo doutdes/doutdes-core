@@ -13,8 +13,6 @@ const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 
 const HttpStatus = require('http-status-codes');
-const _ = require('lodash');
-
 
 const DAYS = {
     yesterday: 1,
