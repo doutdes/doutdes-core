@@ -589,6 +589,60 @@ exports.removeChartFromDashboard = function (req, res, next) {
         });
 };
 
+// It clears the dashboard
+exports.clearAllDashboard = async function(req, res, next) {
+    let userDashboards, finalResult;
+
+    try {
+        // Fetches the chosen dashboard of the user
+        userDashboards = UserDashboards.findAll({
+            include: [
+                {
+                    model: Dashboard,
+                    required: true,
+                    where: {id: req.body.dashboard_id} // dashboard type (instagram, facebook, yt, ga)
+                }
+            ],
+            attributes: {exclude: ['DashboardId']},
+            where: {user_id: req.user.id}
+        });
+
+        if (userDashboards.length === 0) {
+            return res.status(HttpStatus.BAD_REQUEST).send({});
+            //message
+        }
+
+        // Retrieves all the charts of the dashboard
+        finalResult = await DashboardCharts.destroy({
+            //include: [{model: Charts, required: true,}],
+            where: {dashboard_id: req.body.dashboard_id}
+        });
+
+        if (finalResult === 0) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR
+            ).send({
+                error: true,
+                message: 'Dashboard is empty'
+                }
+            )
+        }
+
+        return res.status(HttpStatus.OK).send({
+            delete: true,
+            message: 'Dashboard cleared'
+        }); // returns chart list
+
+    } catch (err) {
+        console.error(err);
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'Cannot delete dashboard charts.'
+        })
+    }
+
+};
+
 // It updates a chart holded by a dashboard
 exports.updateChartInDashboard = function (req, res, next) {
     const chart = req.body.chart;
