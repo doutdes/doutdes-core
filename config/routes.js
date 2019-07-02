@@ -144,6 +144,7 @@ module.exports = function (app, passport, config) {
     app.post(dashPath + 'addChartToDashboard', reqAuth, AccMan.roleAuth(all), DashMan.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', reqAuth, AccMan.roleAuth(all), DashMan.removeChartFromDashboard);
     app.put(dashPath + 'updateChartInDashboard', reqAuth, AccMan.roleAuth(all), DashMan.updateChartInDashboard);
+    app.delete(dashPath + 'clearDashboard', reqAuth, AccMan.roleAuth(all), DashMan.clearAllDashboard);
     // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuth(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
     app.post(dashPath + 'createDashboard', reqAuth, AccMan.roleAuth(all), DashMan.createDashboard);
@@ -182,18 +183,22 @@ module.exports = function (app, passport, config) {
     app.get(igPath + 'storeAllData/:key*?', IgM.ig_storeAllData);
     app.get(igPath + 'storeAllDataDaily/:key*?', IgM.ig_storeAllDataDaily);
 
-    app.get(igPath + ':page_id/audcity', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_CITY], IGP.LIFETIME), IgM.ig_getData);
-    app.get(igPath + ':page_id/audcountry', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_COUNTRY], IGP.LIFETIME), IgM.ig_getData);
+    app.get(igPath + ':page_id/reach', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/audgenderage', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME), IgM.ig_getData);
     app.get(igPath + ':page_id/audlocale', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_LOCALE], IGP.LIFETIME), IgM.ig_getData);
+    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
+    app.get(igPath + ':page_id/audcity', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_CITY], IGP.LIFETIME), IgM.ig_getData);
+    app.get(igPath + ':page_id/audcountry', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_COUNTRY], IGP.LIFETIME), IgM.ig_getData);
+    app.get(igPath + ':page_id/onlinefollowers', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgM.ig_getData);
+
     app.get(igPath + ':page_id/emailcontacts', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/followercount', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/getdirclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/impressions', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/onlinefollowers', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH), IgM.ig_getData);
+
+
     app.get(igPath + ':page_id/phonecallclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/profileviews', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
-    app.get(igPath + ':page_id/reach', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH], IGP.DAY, IGI.MONTH), IgM.ig_getData);
+
     app.get(igPath + ':page_id/textmessageclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/websiteclicks', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/actionsperformed', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH), IgM.ig_getData);
@@ -239,6 +244,10 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'mobiledevices/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1), GaM.ga_getData);
     app.get(gaPath + 'pageloadtime/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0), GaM.ga_getData);
     app.get(gaPath + 'percentnewsessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'onlineusers/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE_HOUR, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
+    app.get(gaPath + 'devicecategory/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DEVICE_CAT_DATE, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
+    app.get(gaPath + 'usersinterests/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.INTEREST_DATE), GaM.ga_getData);
+    app.get(gaPath + 'audgenderage/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.AUD_GENDER_AGE_DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
     app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
