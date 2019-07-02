@@ -108,7 +108,6 @@ const fb_storeAllData = async (req, res) => {
 
                     page_list = _.map((await FacebookApi.getPagesID(key.api_key)).data,'id');
 
-                    //let page_id = (await FacebookApi.getPagesID(key.api_key))['data'][0]['id']; // TODO it takes only the first page, extend it when adding multiple pages
                     for (page_id of page_list) {
 
                         await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
