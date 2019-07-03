@@ -142,10 +142,13 @@ async function getGaMongoData(userid, view_id, metric, dimensions) {
 async function storeFbMongoData(userid, page_id, metric, start_date, end_date, file) {
     let data;
     try {
-        data = await new fbMongo({
+        // data = await new fbMongo({
+        //     userid: userid, page_id: page_id, metric: metric, start_date: start_date, end_date: end_date, data: file
+        // });
+        // data.save().then(() => {
+        // });
+        await fbMongo.create({
             userid: userid, page_id: page_id, metric: metric, start_date: start_date, end_date: end_date, data: file
-        });
-        data.save().then(() => {
         });
     }
     catch (e) {
