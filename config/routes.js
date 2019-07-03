@@ -155,27 +155,27 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
     app.get(fbPath + 'storeAllData/:key*?', FbM.fb_storeAllData);
 
-    app.get(fbPath + ':page_id/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
-    app.get(fbPath + ':page_id/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fancity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_CITY), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fancountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_COUNTRY), FbM.fb_getData);
-    app.get(fbPath + ':page_id/engageduser', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ENGAGED_USERS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageviewstotal', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_TOTAL), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageviewsexternals', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pagereactions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionscity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionscountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageconsumptions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_CONSUMPTIONS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/placescheckin', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_PLACES_CHECKIN_TOTAL), FbM.fb_getData);
-    app.get(fbPath + ':page_id/negativefeedback', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_NEGATIVE_FEEDBACK), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fansonlineperday', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ONLINE_DAY), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fansadds', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ADDS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fanremoves', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_REMOVES), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionspaid', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_PAID), FbM.fb_getData);
-    app.get(fbPath + ':page_id/videoviews', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_VIEWS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/postimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.POST_IMPRESSIONS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
+    app.get(fbPath + ':page_id*?/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fancity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_CITY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fancountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_COUNTRY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/engageduser', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ENGAGED_USERS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageviewstotal', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageviewsexternals', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pagereactions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionscity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionscountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageconsumptions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_CONSUMPTIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/placescheckin', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_PLACES_CHECKIN_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/negativefeedback', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_NEGATIVE_FEEDBACK), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fansonlineperday', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ONLINE_DAY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fansadds', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ADDS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fanremoves', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_REMOVES), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionspaid', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_PAID), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/videoviews', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_VIEWS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/postimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.POST_IMPRESSIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);

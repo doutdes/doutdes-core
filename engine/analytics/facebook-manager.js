@@ -1,5 +1,6 @@
 'use strict';
 const DateFns = require('date-fns');
+const _ = require('lodash');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
@@ -9,10 +10,9 @@ const D_TYPE = require('../dashboard-manager').D_TYPE;
 const FBM = require('../../api_handler/facebook-api').METRICS;
 
 const TokenManager = require('../token-manager');
+const MongoManager = require('../mongo-manager');
 
 const HttpStatus = require('http-status-codes');
-
-const MongoManager = require('../mongo-manager');
 
 const DAYS = {
     yesterday: 1,
@@ -36,8 +36,10 @@ const fb_getScopes = async (req, res) => {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = await FacebookApi.getTokenInfo(key.api_key);
 
+        data = _.map(data['data'], el => el.status === 'granted' ? el.permission : '');
+        data = _.filter(data, el => el !== '');
 
-        return res.status(HttpStatus.OK).send({scopes: data['data']['scopes']});
+        return res.status(HttpStatus.OK).send({scopes: data});
     } catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
@@ -92,6 +94,7 @@ const fb_storeAllData = async (req, res) => {
     let permissionGranted;
     let users;
     let page_id;
+    let page_list;
 
     try {
         users = await Users.findAll();
@@ -103,18 +106,32 @@ const fb_storeAllData = async (req, res) => {
                 if (permissionGranted.granted) {
 
                     let key = await FbToken.findOne({where: {user_id: user_id}});
-                    let page_id = (await FacebookApi.getPagesID(key.api_key))['data'][0]['id']; // TODO it takes only the first page, extend it when adding multiple pages
 
-                    await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
-                    //await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
-                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
-                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
+                    page_list = _.map((await FacebookApi.getPagesID(key.api_key)).data,'id');
+
+                    for (page_id of page_list) {
+
+                        await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
+                        //await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_CONSUMPTIONS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_PLACES_CHECKIN_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_NEGATIVE_FEEDBACK, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_ONLINE_DAY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_ADDS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_REMOVES, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_PAID, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIDEO_VIEWS, page_id);
+                        await fb_getDataInternal(user_id, FBM.POST_IMPRESSIONS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIDEO_ADS, page_id);
+                    }
 
                     console.log("Fb Data updated successfully for user n°", user_id);
                 }
@@ -134,9 +151,12 @@ const fb_storeAllData = async (req, res) => {
 
 const fb_getData = async (req, res) => {
 
+
     let response;
+    let page_id;
     try {
-        response = await fb_getDataInternal(req.user.id, req.metric, req.params.page_id);
+        page_id = req.params.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
+        response = await fb_getDataInternal(req.user.id, req.metric, page_id);
 
         return res.status(HttpStatus.OK).send(response);
     }
@@ -206,10 +226,12 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
 const fb_getPost = async (req, res) => {
     let key;
     let data;
+    let page_id;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookPost(req.params.page_id, key.api_key);
+        page_id = req.params.page_id || key.dataValues.fb_page_id;
+        data = await FacebookApi.getFacebookPost(page_id, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {

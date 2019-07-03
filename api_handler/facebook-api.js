@@ -37,6 +37,8 @@ const METRICS = {
     P_VIDEO_ADS: 'page_daily_video_ad_break_ad_ impressions_by_crosspost_status'
 };
 
+//
+
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
@@ -90,11 +92,11 @@ const getLongLiveAccessToken = async (token) => {
 };
 
 /** DELETE the permissions from the token **/
-const revokePermission = async (token, permission) => {
+const revokePermission = async (token) => {
     let result;
     const options = {
         method: 'DELETE',
-        uri: fbInsightURI + 'me/permissions/' + permission,
+        uri: fbInsightURI + 'me/permissions/',
         qs: {
             access_token: token,
         },
@@ -106,6 +108,7 @@ const revokePermission = async (token, permission) => {
         return result;
     } catch (err) {
         console.error(err['message']);
+        console.error(err);
         throw new Error('deletePermissions -> Error during the Facebook query -> ' + err['message']);
     }
 };
@@ -226,11 +229,11 @@ const getTokenInfo = async (token) => {
 
     try {
         accountInfo = await getAccountInfo(token);
-        options['uri'] += '/' + accountInfo['id'] + '/permissions'
+        options['uri'] += '/' + accountInfo['id'] + '/permissions';
         result = await Request(options);
         return result;
     } catch (err) {
-        //console.error(err);
+        console.error(err);
         throw new Error('getTokenInfo2 -> Error during the Facebook query -> ' + err['message']);
     }
 
