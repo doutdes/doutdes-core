@@ -117,7 +117,7 @@ const fb_storeAllData = async (req, res) => {
                         await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
                         await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
                         await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
-                        //await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
                         await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
                         await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
                         await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
@@ -194,6 +194,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
+            data = preProcessFBData(data, metric);
             await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
@@ -203,6 +204,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         else if (old_startDate > start_date) {
             // chiedere dati a Facebook e accertarmi che risponda
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
+            data = preProcessFBData(data, metric);
             await MongoManager.removeFbMongoData(user_id, page_id, metric);
             await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
@@ -211,6 +213,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         }
         else if (old_endDate < end_date) {
             data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
+            data = preProcessFBData(data, metric);
             await MongoManager.updateFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
@@ -222,6 +225,20 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         throw err;
     }
 };
+
+function preProcessFBData(data, metric) {
+
+    let stringified;
+
+    if (metric.toString() === "page_views_external_referrals") {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace(/\./g, "$");
+
+        data = JSON.parse(stringified);
+    }
+
+    return data;
+}
 
 const fb_getPost = async (req, res) => {
     let key;
