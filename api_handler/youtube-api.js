@@ -118,41 +118,6 @@ const youtubeQuery = async (req) => {
     }
 };
 
-async function yt_getAnData(req, res) {
-    let token = await getAccessToken(req);
-    let data;
-    const options = {
-        method: GET,
-        uri: dataEndPoint+req.kind,
-        qs: {
-            access_token: token,
-            //mine : 'true',
-            channelId : req.params.channel,
-            part : 'snippet',
-            type : 'video',
-        }
-    };
-
-    req.channelId ? options.qs.channelId = req.channel : null;
-    req.start_date ? options.qs.publishedAfter = new Date(req.start_date) : null;
-    req.end_date ? options.qs.publishedBefore = new Date(req.end_date) : null;
-
-    try {
-        data = JSON.parse(await Request(options))['items'];
-        let result = [];
-        for(let i in data){
-            result.push({
-                'id' : data[i]['id'],
-                'name' : data[i]['snippet']['title'],
-                'date' : data[i]['snippet']['publishedAt']
-            });
-        }
-        return res.status(HttpStatus.OK).send(result);
-    } catch (e) {
-        console.error(e);
-    }
-}
-
 module.exports = {yt_getData};
 
 
