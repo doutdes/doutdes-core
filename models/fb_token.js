@@ -9,7 +9,8 @@ module.exports = (sequelize, DataType) => {
         api_key: {
             type : DataType.STRING(250),
             primaryKey: true,
-        }
+        },
+        fb_page_id: DataType.STRING(20)
     }, {
         freezeTableName: true,
         timestamps: false,

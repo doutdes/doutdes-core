@@ -1,5 +1,6 @@
 'use strict';
 const DateFns = require('date-fns');
+const _ = require('lodash');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
@@ -12,8 +13,6 @@ const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 
 const HttpStatus = require('http-status-codes');
-const _ = require('lodash');
-
 
 const DAYS = {
     yesterday: 1,
@@ -95,6 +94,7 @@ const fb_storeAllData = async (req, res) => {
     let permissionGranted;
     let users;
     let page_id;
+    let page_list;
 
     try {
         users = await Users.findAll();
@@ -106,18 +106,32 @@ const fb_storeAllData = async (req, res) => {
                 if (permissionGranted.granted) {
 
                     let key = await FbToken.findOne({where: {user_id: user_id}});
-                    let page_id = (await FacebookApi.getPagesID(key.api_key))['data'][0]['id']; // TODO it takes only the first page, extend it when adding multiple pages
 
-                    await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
-                    //await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
-                    await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
-                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
-                    // await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
+                    page_list = _.map((await FacebookApi.getPagesID(key.api_key)).data,'id');
+
+                    for (page_id of page_list) {
+
+                        await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_CONSUMPTIONS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_PLACES_CHECKIN_TOTAL, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_NEGATIVE_FEEDBACK, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_ONLINE_DAY, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_ADDS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_FANS_REMOVES, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_PAID, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIDEO_VIEWS, page_id);
+                        await fb_getDataInternal(user_id, FBM.POST_IMPRESSIONS, page_id);
+                        await fb_getDataInternal(user_id, FBM.P_VIDEO_ADS, page_id);
+                    }
 
                     console.log("Fb Data updated successfully for user n°", user_id);
                 }
@@ -137,9 +151,12 @@ const fb_storeAllData = async (req, res) => {
 
 const fb_getData = async (req, res) => {
 
+
     let response;
+    let page_id;
     try {
-        response = await fb_getDataInternal(req.user.id, req.metric, req.params.page_id);
+        page_id = req.params.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
+        response = await fb_getDataInternal(req.user.id, req.metric, page_id);
 
         return res.status(HttpStatus.OK).send(response);
     }
@@ -169,8 +186,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
-
-        old_date = await MongoManager.getFbMongoItemDate(user_id, metric);
+        old_date = await MongoManager.getFbMongoItemDate(user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -178,7 +194,8 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
-            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            data = preProcessFBData(data, metric);
+            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
@@ -187,19 +204,21 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         else if (old_startDate > start_date) {
             // chiedere dati a Facebook e accertarmi che risponda
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
-            await MongoManager.removeFbMongoData(user_id, metric);
-            await MongoManager.storeFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            data = preProcessFBData(data, metric);
+            await MongoManager.removeFbMongoData(user_id, page_id, metric);
+            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
         }
         else if (old_endDate < end_date) {
             data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
-            await MongoManager.updateFbMongoData(user_id, metric, start_date.toISOString().slice(0, 10),
+            data = preProcessFBData(data, metric);
+            await MongoManager.updateFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
 
-        let response = await MongoManager.getFbMongoData(user_id, metric);
+        let response = await MongoManager.getFbMongoData(user_id, page_id, metric);
         return response;
 
     } catch (err) {
@@ -207,13 +226,29 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
     }
 };
 
+function preProcessFBData(data, metric) {
+
+    let stringified;
+
+    if (metric.toString() === "page_views_external_referrals") {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace(/\./g, "$");
+
+        data = JSON.parse(stringified);
+    }
+
+    return data;
+}
+
 const fb_getPost = async (req, res) => {
     let key;
     let data;
+    let page_id;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = await FacebookApi.getFacebookPost(req.params.page_id, key.api_key);
+        page_id = req.params.page_id || key.dataValues.fb_page_id;
+        data = await FacebookApi.getFacebookPost(page_id, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {

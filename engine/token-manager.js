@@ -16,6 +16,8 @@ const FbAPI = require('../api_handler/facebook-api');
 const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
+const MongoManager = require('./mongo-manager');
+
 /* Dashboard Manager */
 const DashboardManager = require('../engine/dashboard-manager');
 
@@ -198,6 +200,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.FB);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);
@@ -209,6 +213,8 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.GA);
+                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 
@@ -248,7 +254,8 @@ const readAllKeysById = (req, res) => {
                 user_id: req.user.id,
                 fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
                 ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
-                ga_view_id: (ga == null) ? null : ga.dataValues.view_id, // GA Token
+                ga_view_id: (ga == null) ? null : ga.dataValues.view_id,   // GA View_id
+                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id
             });
         })
         .catch(err => {
@@ -385,7 +392,8 @@ const insertGaData = (req, res) => {
 
 const updateFbKey = (req, res) => {
     FbToken.update({
-        api_key: req.body.api.api_key
+        api_key: req.body.api.api_key,
+        fb_page_id: req.body.api.fb_page_id
     }, {
         where: {
             user_id: req.user.id

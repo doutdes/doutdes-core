@@ -23,11 +23,21 @@ const METRICS = {
     P_FANS: 'page_fans',
     P_FANS_CITY: 'page_fans_city',
     P_FANS_COUNTRY: 'page_fans_country',
-    P_FANS_ADD_UNIQUE: 'page_fan_adds_unique',
-    P_FANS_REMOVES_UNIQUE: 'page_fan_removes_unique',
+    P_FANS_ADDS: 'page_fan_adds',
+    P_FANS_REMOVES: 'page_fan_removes',
     P_VIEWS_EXT_REFERRALS: 'page_views_external_referrals',
     P_VIEWS_TOTAL: 'page_views_total',
+    P_CONSUMPTIONS: 'page_consumptions',
+    P_PLACES_CHECKIN_TOTAL: 'page_places_checkin_total',
+    P_NEGATIVE_FEEDBACK: 'page_negative_feedback',
+    P_FANS_ONLINE_DAY: 'page_fans_online_per_day',
+    P_IMPRESSIONS_PAID: 'page_impressions_paid',
+    P_VIDEO_VIEWS: 'page_video_views',
+    POST_IMPRESSIONS: 'post_impressions',
+    P_VIDEO_ADS: 'page_daily_video_ad_break_ad_ impressions_by_crosspost_status'
 };
+
+//
 
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';

@@ -177,7 +177,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
     let old_date, old_startDate, old_endDate;
     let date, today;
     try {
-        old_date = await MongoManager.getIgMongoItemDate(user_id, metric);
+        old_date = await MongoManager.getIgMongoItemDate(user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -185,18 +185,18 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            data = preProcessIGData(data, metric);
+            data = preProcessIGData(data, page_id, metric);
             date = getIntervalDate(data);
-            await MongoManager.storeIgMongoData(user_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
+            await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (old_endDate < today) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             date = getIntervalDate(data);
-            data = preProcessIGData(data, metric);
-            await MongoManager.updateIgMongoData(user_id, metric, date.end_date.slice(0, 10), data);
+            data = preProcessIGData(data, page_id, metric);
+            await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
         }
 
-        response = await MongoManager.getIgMongoData(user_id, metric);
+        response = await MongoManager.getIgMongoData(user_id, page_id, metric);
         return response;
     } catch (err) {
         throw err;

@@ -53,6 +53,7 @@ module.exports = function (app, passport, config) {
         })(req, res, next)
     };
     const ytOnlyReqAuth = (req, res, next) => {
+        console.log(req);
         passport.authenticate('google', {
             scope: 'https://www.googleapis.com/auth/userinfo.email ' +
                 'https://www.googleapis.com/auth/youtube.readonly ' +
@@ -143,6 +144,7 @@ module.exports = function (app, passport, config) {
     app.post(dashPath + 'addChartToDashboard', reqAuth, AccMan.roleAuth(all), DashMan.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', reqAuth, AccMan.roleAuth(all), DashMan.removeChartFromDashboard);
     app.put(dashPath + 'updateChartInDashboard', reqAuth, AccMan.roleAuth(all), DashMan.updateChartInDashboard);
+    app.delete(dashPath + 'clearDashboard', reqAuth, AccMan.roleAuth(all), DashMan.clearAllDashboard);
     // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuth(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
     app.post(dashPath + 'createDashboard', reqAuth, AccMan.roleAuth(all), DashMan.createDashboard);
@@ -153,17 +155,27 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
     app.get(fbPath + 'storeAllData/:key*?', FbM.fb_storeAllData);
 
-    app.get(fbPath + ':page_id/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
-    app.get(fbPath + ':page_id/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fancity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_CITY), FbM.fb_getData);
-    app.get(fbPath + ':page_id/fancountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_COUNTRY), FbM.fb_getData);
-    app.get(fbPath + ':page_id/engageduser', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ENGAGED_USERS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageviewstotal', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_TOTAL), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageviewsexternals', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pagereactions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionscity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbM.fb_getData);
-    app.get(fbPath + ':page_id/pageimpressionscountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
+    app.get(fbPath + ':page_id*?/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fancity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_CITY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fancountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_COUNTRY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/engageduser', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ENGAGED_USERS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageviewstotal', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageviewsexternals', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIEWS_EXT_REFERRALS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pagereactions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_ACTION_POST_REACTIONS_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionscity', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_CITY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionscountry', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageconsumptions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_CONSUMPTIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/placescheckin', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_PLACES_CHECKIN_TOTAL), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/negativefeedback', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_NEGATIVE_FEEDBACK), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fansonlineperday', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ONLINE_DAY), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fansadds', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_ADDS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/fanremoves', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS_REMOVES), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/pageimpressionspaid', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_IMPRESSIONS_PAID), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/videoviews', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_VIEWS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/postimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.POST_IMPRESSIONS), FbM.fb_getData);
+    app.get(fbPath + ':page_id*?/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
@@ -232,11 +244,24 @@ module.exports = function (app, passport, config) {
     app.get(gaPath + 'mobiledevices/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1), GaM.ga_getData);
     app.get(gaPath + 'pageloadtime/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0), GaM.ga_getData);
     app.get(gaPath + 'percentnewsessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PERCENT_NEW_SESSIONS, GAD.DATE), GaM.ga_getData);
+    app.get(gaPath + 'onlineusers/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE_HOUR, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
+    app.get(gaPath + 'devicecategory/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DEVICE_CAT_DATE, null, GAF.SESSIONS_GT_0), GaM.ga_getData);
+    app.get(gaPath + 'usersinterests/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.INTEREST_DATE), GaM.ga_getData);
+    app.get(gaPath + 'audgenderage/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.USERS, GAD.AUD_GENDER_AGE_DATE), GaM.ga_getData);
 
     /****************** YOUTUBE MANAGER ********************/
-    app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('channels'), YtM.getList);
-    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('playlists'), YtM.getList);
-    app.get(ytPath + ':channel/videos/:start_date/:end_date', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint('search'), YtM.getList);
+    app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
+    app.get(ytPath + ':channel/subscribers/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'subscriptions'), YtM.setParams({'params':{'part':'snippet','mySubscribers':true}}), YtM.yt_getSubs);
+    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet'}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/videos/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'search'), YtM.setParams({'params':{'part':'snippet','type':'video', 'mine':'true', 'type':'video', 'channelId':' '}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/views/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'views','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/comments/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'comments','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/likes/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'likes','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/dislikes/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'dislikes','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/shares/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'shares','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/avgView/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'averageViewDuration','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/estWatch/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'estimatedMinutesWatched','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calPath + 'getEvents', reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
