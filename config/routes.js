@@ -151,7 +151,7 @@ module.exports = function (app, passport, config) {
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
     app.get(fbPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
-    app.get(fbPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), FbM.fb_storeAllData);
+    app.get(fbPath + 'storeAllData/:key*?', FbM.fb_storeAllData);
 
     app.get(fbPath + ':page_id/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
     app.get(fbPath + ':page_id/fancount', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_FANS), FbM.fb_getData);
@@ -168,8 +168,8 @@ module.exports = function (app, passport, config) {
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
     app.get(igPath + ':page_id/businessInfo', reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
-    app.get(igPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), IgM.ig_storeAllData);
-    app.get(igPath + 'storeAllDataDaily/:key*?', reqAuth, AccMan.roleAuth(all), IgM.ig_storeAllDataDaily);
+    app.get(igPath + 'storeAllData/:key*?', IgM.ig_storeAllData);
+    app.get(igPath + 'storeAllDataDaily/:key*?', IgM.ig_storeAllDataDaily);
 
     app.get(igPath + ':page_id/reach', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH], IGP.DAY, IGI.MONTH), IgM.ig_getData);
     app.get(igPath + ':page_id/audgenderage', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME), IgM.ig_getData);
@@ -217,7 +217,7 @@ module.exports = function (app, passport, config) {
      **/
     app.get(gaPath + 'getScopes/', reqAuth, AccMan.roleAuth(all), GaM.ga_getScopes);
     app.get(gaPath + 'getViewList', reqAuth, AccMan.roleAuth(all), GaM.ga_viewList);
-    app.get(gaPath + 'storeAllData/:key*?', reqAuth, AccMan.roleAuth(all), GaM.ga_storeAllData);
+    app.get(gaPath + 'storeAllData/:key*?', GaM.ga_storeAllData);
 
     app.get(gaPath + 'sessions/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.SESSIONS, GAD.DATE), GaM.ga_getData);
     app.get(gaPath + 'pageviews/', reqAuth, AccMan.roleAuth(all), GaM.setMetrics(GAM.PAGE_VIEWS, GAD.DATE), GaM.ga_getData);
