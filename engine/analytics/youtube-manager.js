@@ -87,11 +87,11 @@ const yt_getPages = async (req, res) => {
 const yt_getDataInternal = async (req) => {
     let data;
     let result = [];
+    let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
+    let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
+
     try {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
-        let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
-        let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
-
         req.params.startDate = start_date.toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
 

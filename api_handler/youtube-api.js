@@ -65,6 +65,7 @@ const getAccessToken = async (rt) => {
 };
 
 async function yt_getData(req) {
+    console.log ('yt_getData req', req);
     req.token =  await getAccessToken(req.rt);
     let data = await youtubeQuery(req);
     try {
