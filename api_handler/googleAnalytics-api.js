@@ -81,9 +81,8 @@ const getTokenInfo = async (private_key) => {
             throw new Error('getTokenInfo -> Error getting scopes in Google (invalid refresh token)');
         }
 
-    } catch (e) {
-        //console.error(e);
-        throw new Error('getTokenInfo -> Error getting scopes in Google');
+    } catch (err) {
+        throw new Error('getTokenInfo -> Error getting scopes in Google (401) -> ' + err['message']);
     }
 
     return result;//['scope'].split(' ');
