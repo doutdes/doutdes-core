@@ -18,7 +18,7 @@ const DAYS = {
 const YoutubeApi = require('../../api_handler/youtube-api');
 
 // TODO change the response if there are no data
-const setParams = function(data) {
+const setParams = function (data) {
     return function (req, res, next) {
         //ids must be passed as boolean to distinguish the case in which I want "channelId" and "ids == channel"
         for (let par of Object.keys(data.params)) {
@@ -29,8 +29,8 @@ const setParams = function(data) {
 };
 
 
-const setEndPoint = (EP, sEP=null) => {
-    return function(req, res, next) {
+const setEndPoint = (EP, sEP = null) => {
+    return function (req, res, next) {
         req.EP = EP;
         (sEP) ? req.sEP = sEP : null;
         next();
@@ -44,9 +44,8 @@ const yt_getSubs = async (req, res) => {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
         data = await YoutubeApi.yt_getData(req);
         result.push({
-            'value' : parseInt(data.pageInfo.totalResults, 10)
+            'value': parseInt(data.pageInfo.totalResults, 10)
         });
-
 
 
         return res.status(HttpStatus.OK).send(result);
@@ -69,9 +68,9 @@ const yt_getPages = async (req, res) => {
         data = await YoutubeApi.yt_getData(req);
         for (const el of data['items']) {
             pages.push({
-                'id' : el['id'],
-                'name' : el['snippet']['title'],
-                'date' : el['snippet']['publishedAt']
+                'id': el['id'],
+                'name': el['snippet']['title'],
+                'date': el['snippet']['publishedAt']
             });
         }
 
@@ -85,7 +84,7 @@ const yt_getPages = async (req, res) => {
     }
 };
 
-const yt_getData = async (req, res) => {
+const yt_getDataInternal = async (req) => {
     let data;
     let result = [];
     try {
@@ -95,8 +94,6 @@ const yt_getData = async (req, res) => {
 
         req.params.startDate = start_date.toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
-
-        console.log ("endDate", req.params.endDate);
 
         data = await YoutubeApi.yt_getData(req);
         if(req.params['analytics']) {
@@ -115,15 +112,36 @@ const yt_getData = async (req, res) => {
             });
         }
 
-        return res.status(HttpStatus.OK).send(result);
+        return result;
     } catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Youtube servers or with our database'
         })
     }
-}
+};
+
+const yt_getData = async (req, res) => {
+    let response;
+    try {
+        response = await yt_getDataInternal(req);
+        return res.status(HttpStatus.OK).send(response);
+    } catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Youtube Bad Request',
+                message: 'Invalid access token.'
+            });
+        }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Youtube servers or with our database'
+        });
+    }
+};
 /*
 const fb_getDataInternal = async (user_id, metric, page_id) => {
     let key;
