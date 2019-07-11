@@ -210,7 +210,6 @@ const getAccountInfo = async (token) => {
         result = await Request(options);
         return result;
     } catch (err) {
-        //console.error(err);
         throw new Error('getAccountInfo -> Error during the Facebook query -> ' + err['message']);
     }
 };
@@ -234,7 +233,7 @@ const getTokenInfo = async (token) => {
         return result;
     } catch (err) {
         console.error(err);
-        throw new Error('getTokenInfo2 -> Error during the Facebook query -> ' + err['message']);
+        throw new Error('getTokenInfo -> Error during the Facebook query -> ' + err['message']);
     }
 
 };

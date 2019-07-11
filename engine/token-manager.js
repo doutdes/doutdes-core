@@ -1,24 +1,23 @@
 'use strict';
 
-/* External services */
+/** External services **/
 const HttpStatus = require('http-status-codes');
-const Request    = require('request-promise');
-const _          = require('lodash');
+const Request = require('request-promise');
+const _ = require('lodash');
 
-/* DB Models */
+/** DB Models **/
 const Model = require('../models/index');
 const Users = Model.Users;
 const FbToken = Model.FbToken;
 const GaToken = Model.GaToken;
 
-/* Api Handlers */
+/** Api Handlers **/
 const FbAPI = require('../api_handler/facebook-api');
-const IgAPI = require('../api_handler/instagram-api');
 const GaAPI = require('../api_handler/googleAnalytics-api');
 
 const MongoManager = require('./mongo-manager');
 
-/* Dashboard Manager */
+/** Dashboard Manager **/
 const DashboardManager = require('../engine/dashboard-manager');
 
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
@@ -110,10 +109,20 @@ const checkExistence = async (req, res) => {
 const permissionGranted = async (req, res) => {
     let response;
     try {
-       response = await checkInternalPermission(req.user.id, req.params.type);
-       return res.status(HttpStatus.OK).send(response);
+        response = await checkInternalPermission(req.user.id, req.params.type);
+        return res.status(HttpStatus.OK).send(response);
     } catch (err) {
-        console.error(err);
+        console.error(err.message);
+
+        if(err.message.includes('401')){ // Token expired
+            return res.status(HttpStatus.OK).send({
+                name: DS_TYPE[parseInt(req.params.type)],
+                type: parseInt(req.params.type),
+                granted: false,
+                scopes: null
+            });
+        }
+
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             error: true,
             message: 'There is a problem with our servers.'
@@ -141,45 +150,41 @@ const checkInternalPermission = async (user_id, type) => {
         };
     }
 
-    try {
-        switch (parseInt(type)) {
-            case D_TYPE.FB: // Facebook
-                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
-                hasPermission = checkFBContains(scopes);
-                scopes = scopes.filter(el => !el.includes('instagram'));
-                break;
-            case D_TYPE.GA: // Google Analytics
-                scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
-                hasPermission = checkGAContains(scopes);
-                scopes = scopes.filter(el => !el.includes('yt-analytics') && !el.includes('youtube'));
-                break;
-            case D_TYPE.IG: // Instagram
-                scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
-                hasPermission = checkIGContains(scopes);
-                scopes = scopes.filter(el => el.includes('instagram'));
-                break;
-            case D_TYPE.YT: // YouTube
-                scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
-                hasPermission = checkYTContains(scopes);
-                scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
-                break;
-            default:
-                return {
-                    error: true,
-                    message: 'The service with id ' + type + ' does not exist.'
-                };
-        }
+    switch (parseInt(type)) {
+        case D_TYPE.FB: // Facebook
+            scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
+            hasPermission = checkFBContains(scopes);
+            scopes = scopes.filter(el => !el.includes('instagram'));
+            break;
+        case D_TYPE.GA: // Google Analytics
+            scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
+            hasPermission = checkGAContains(scopes);
+            scopes = scopes.filter(el => !el.includes('yt-analytics') && !el.includes('youtube'));
+            break;
+        case D_TYPE.IG: // Instagram
+            scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
+            hasPermission = checkIGContains(scopes);
+            scopes = scopes.filter(el => el.includes('instagram'));
+            break;
+        case D_TYPE.YT: // YouTube
+            scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
+            hasPermission = checkYTContains(scopes);
+            scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
+            break;
+        default:
+            return {
+                error: true,
+                message: 'The service with id ' + type + ' does not exist.'
+            };
+    }
 
-        return {
-            name: DS_TYPE[parseInt(type)],
-            type: parseInt(type),
-            granted: hasPermission === 1,
-            scopes: hasPermission === 1 ? scopes : null
-        };
-    }
-    catch (e) {
-        throw e;
-    }
+    return {
+        name: DS_TYPE[parseInt(type)],
+        type: parseInt(type),
+        granted: hasPermission === 1,
+        scopes: hasPermission === 1 ? scopes : null
+    };
+
 };
 const revokePermissions = async (req, res) => {
     let type = parseInt(req.params.type);
@@ -200,8 +205,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
-                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.FB);
-                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.IG);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);
@@ -213,7 +218,7 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
-                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.GA);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
                 //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
@@ -568,13 +573,13 @@ const revokeFbPermissions = async (token) => {
     let scope, result;
 
     // for (const i in scopes) {
-        try {
-            // scope = scopes[i];
-            result = await FbAPI.revokePermission(token);
-        } catch (e) {
-            console.error(e);
-            throw new Error('revokeFbPermissions -> error revoking permission');
-        }
+    try {
+        // scope = scopes[i];
+        result = await FbAPI.revokePermission(token);
+    } catch (e) {
+        console.error(e);
+        throw new Error('revokeFbPermissions -> error revoking permission');
+    }
     // }
 
     return true;
@@ -589,23 +594,6 @@ const revokeGaPermissions = async (token) => { // Token has been expired or revo
     }
 
     return result;
-};
-const revokeIgPermissions = async (token) => {
-    // const scopes = ['instagram_basic', 'instagram_manage_insights'];
-
-    let scope, result;
-
-    // for (const i in scopes) {
-        try {
-            // scope = scopes[i];
-            result = await IgAPI.revokePermission(token, scope);
-        } catch (e) {
-            console.error(e);
-            throw new Error('revokeFbPermissions -> error revoking permissions');
-        }
-    // }
-
-    return true;
 };
 
 module.exports = {
