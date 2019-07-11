@@ -11,10 +11,5 @@ module.exports = new GoogleStrategy({
     clientSecret: clientSecret,
     callbackURL: callbackURL
 }, (req, refreshToken, accessToken, profile, done) => {
-    console.log(refreshToken);
-    console.log(accessToken);
-    console.log(profile);
-    console.log(req);
-
     return done(null, {accessToken: accessToken, refreshToken: refreshToken});
 });
