@@ -94,7 +94,7 @@ const yt_getDataInternal = async (req) => {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
         req.params.startDate = start_date.toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
-
+        console.log ("req.params", req.params);
         data = await YoutubeApi.yt_getData(req);
         if(req.params['analytics']) {
             for(const el of data['rows']) {
