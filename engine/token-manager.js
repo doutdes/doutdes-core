@@ -98,8 +98,16 @@ const checkExistence = async (req, res) => {
             });
         }
 
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
+
+        if(err.message.includes('401')) {
+            return res.status(HttpStatus.UNAUTHORIZED).send({
+                error: true,
+                message: 'The token is either not valid or expired.'
+            })
+        }
+
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             error: true,
             message: 'An error occurred while checking the existence of a token service.'
@@ -119,6 +127,7 @@ const permissionGranted = async (req, res) => {
                 name: DS_TYPE[parseInt(req.params.type)],
                 type: parseInt(req.params.type),
                 granted: false,
+                tokenValid: false,
                 scopes: null
             });
         }
@@ -146,6 +155,7 @@ const checkInternalPermission = async (user_id, type) => {
             name: DS_TYPE[parseInt(type)],
             type: parseInt(type),
             granted: false,
+            tokenValid: true,
             scopes: null
         };
     }
@@ -182,6 +192,7 @@ const checkInternalPermission = async (user_id, type) => {
         name: DS_TYPE[parseInt(type)],
         type: parseInt(type),
         granted: hasPermission === 1,
+        tokenValid: true,
         scopes: hasPermission === 1 ? scopes : null
     };
 
