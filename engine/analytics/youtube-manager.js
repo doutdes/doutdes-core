@@ -43,9 +43,18 @@ const yt_getSubs = async (req, res) => {
     try {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
         data = await YoutubeApi.yt_getData(req);
-        result.push({
-            'value': parseInt(data.pageInfo.totalResults, 10)
-        });
+        for(let el of data.items)
+        {
+            result.push({
+                'value' : el.snippet.channelId, //id of the subscriber's channel
+                'date' : new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
+            });
+
+        }
+        /*result.push({
+            'value' : parseInt(data.pageInfo.totalResults, 10)
+        });*/
+
 
 
         return res.status(HttpStatus.OK).send(result);
