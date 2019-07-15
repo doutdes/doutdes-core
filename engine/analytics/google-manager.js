@@ -50,7 +50,6 @@ const ga_login_success = async (req, res) => {
     }
 };
 
-
 const ga_storeAllData = async (req, res) => {
     let key = req.params.key;
     let auth = process.env.KEY || null;
@@ -94,8 +93,8 @@ const ga_storeAllData = async (req, res) => {
 
                     console.log("Ga Data updated successfully for user n°", user_id);
                 }
-            }catch(e){
-                    console.warn("The user n°", user_id, " have an invalid key");
+            } catch (e) {
+                console.warn("The user n°", user_id, " have an invalid key");
             }
         }
         return res.status(HttpStatus.OK).send({
@@ -120,68 +119,62 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
     let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
-    try {
-        //get the start date of the mongo document if exists
-        key = await GaToken.findOne({where: {user_id: user_id}});
-        old_date = await MongoManager.getGaMongoItemDate(user_id, key.view_id, metrics, dimensions);
+    //get the start date of the mongo document if exists
+    key = await GaToken.findOne({where: {user_id: user_id}});
+    old_date = await MongoManager.getGaMongoItemDate(user_id, key.view_id, metrics, dimensions);
 
-        old_startDate = old_date.start_date;
-        old_endDate = old_date.end_date;
+    old_startDate = old_date.start_date;
+    old_endDate = old_date.end_date;
 
-        //check if the previous document exist and create a new one
-        if (old_startDate == null) {
-            data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-            await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
+    //check if the previous document exist and create a new one
+    if (old_startDate == null) {
+        data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
+        await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data);
 
-            return data;
-        }
-        //check if the start date is below our start date. If yes, delete the previous document and create a new one.
-        else if (old_startDate > start_date) {
-            //chiedere dati a Google e accertarmi che risponda
-            data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-            await MongoManager.removeGaMongoData(user_id, key.view_id, metrics, dimensions);
-            await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
-
-            return data;
-        }
-        else if (old_endDate < end_date) {
-            data = await getAPIData(user_id, metrics, dimensions, new Date(DateFns.addDays(old_endDate, 1)), end_date, sort, filters);
-            await MongoManager.updateGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data);
-        }
-
-        response = await MongoManager.getGaMongoData(user_id, key.view_id, metrics, dimensions);
-        return response;
+        return data;
     }
-    catch (err) {
+    //check if the start date is below our start date. If yes, delete the previous document and create a new one.
+    else if (old_startDate > start_date) {
+        //chiedere dati a Google e accertarmi che risponda
+        data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
+        await MongoManager.removeGaMongoData(user_id, key.view_id, metrics, dimensions);
+        await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data);
 
+        return data;
     }
+    else if (old_endDate < end_date) {
+        data = await getAPIData(user_id, metrics, dimensions, new Date(DateFns.addDays(old_endDate, 1)), end_date, sort, filters);
+        await MongoManager.updateGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data);
+    }
+
+    response = await MongoManager.getGaMongoData(user_id, key.view_id, metrics, dimensions);
+    return response;
+
 };
 
 const ga_getData = async (req, res) => {
-
-        try {
-            let response = await ga_getDataInternal(req.user.id, req.metrics, req.dimensions, req.sort, req.filters);
-            return res.status(HttpStatus.OK).send(response);
-        }
-        catch (err) {
-            console.error(err);
-            if (err.statusCode === 400) {
-                return res.status(HttpStatus.BAD_REQUEST).send({
-                    name: 'Google Analytics Bad Request',
-                    message: 'Invalid access token.'
-                });
-            }
-
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-                name: 'Internal Server Error',
-                message: 'There is a problem either with Google servers or with our database'
+    try {
+        let response = await ga_getDataInternal(req.user.id, req.metrics, req.dimensions, req.sort, req.filters);
+        return res.status(HttpStatus.OK).send(response);
+    }
+    catch (err) {
+        console.error(err);
+        if (err.statusCode === 400) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                name: 'Google Analytics Bad Request',
+                message: 'Invalid access token.'
             });
         }
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Google servers or with our database'
+        });
     }
-;
+};
 
 const ga_getScopes = async (req, res) => {
     let key;
