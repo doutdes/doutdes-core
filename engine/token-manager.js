@@ -191,9 +191,9 @@ const checkInternalPermission = async (user_id, type) => {
     return {
         name: DS_TYPE[parseInt(type)],
         type: parseInt(type),
-        granted: hasPermission === 1,
+        granted: hasPermission,
         tokenValid: true,
-        scopes: hasPermission === 1 ? scopes : null
+        scopes: hasPermission ? scopes : null
     };
 
 };
@@ -555,27 +555,27 @@ const checkFBContains = (scopes) => {
     const hasInsight = scopes.includes('read_insights');
     const hasAdsRead = scopes.includes('ads_read');
 
-    return hasManage & hasInsight & hasAdsRead;
+    return hasManage && hasInsight && hasAdsRead;
 };
 const checkIGContains = (scopes) => {
     const hasBasic = scopes.includes('instagram_basic');
     const hasInsight = scopes.includes('instagram_manage_insights');
 
-    return hasBasic & hasInsight;
+    return hasBasic && hasInsight;
 };
 const checkGAContains = (scopes) => {
-    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
+    const hasEmail = scopes.find(el => el.includes('userinfo.email'));
+    const hasAnalytics = scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
 
-    return hasEmail & hasAnalytics;
+    return hasEmail && hasAnalytics;
 };
 const checkYTContains = (scopes) => {
-    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasYoutube = !!scopes.find(el => el.includes('youtube.readonly'));
-    const hasAnalytics = !!scopes.find(el => el.includes('yt-analytics.readonly'));
-    const hasMonetary = !!scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
+    const hasEmail = scopes.find(el => el.includes('userinfo.email'));
+    const hasYoutube = scopes.find(el => el.includes('youtube.readonly'));
+    const hasAnalytics = scopes.find(el => el.includes('yt-analytics.readonly'));
+    const hasMonetary = scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
 
-    return hasEmail & hasYoutube & hasMonetary & hasAnalytics;
+    return hasEmail && hasYoutube && hasMonetary && hasAnalytics;
 };
 
 /** REVOKE PERMISSIONS **/
