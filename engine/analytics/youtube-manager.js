@@ -103,7 +103,7 @@ const yt_getDataInternal = async (req) => {
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
 
-    console.log (old_date);
+    console.log(old_date);
 
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
@@ -112,7 +112,20 @@ const yt_getDataInternal = async (req) => {
         result = await getResult(req);
         await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
+        return result;
     }
+
+    else if (old_startDate > start_date) {
+        req.params.startDate = start_date.toISOString().slice(0, 10);
+        req.params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(req);
+        await MongoManager.removeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics);
+        await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+            start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
+        return result;
+    }
+
+
     return result;
 };
 
