@@ -98,8 +98,16 @@ const checkExistence = async (req, res) => {
             });
         }
 
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error(err);
+
+        if(err.message.includes('401')) {
+            return res.status(HttpStatus.UNAUTHORIZED).send({
+                error: true,
+                message: 'The token is either not valid or expired.'
+            })
+        }
+
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             error: true,
             message: 'An error occurred while checking the existence of a token service.'
@@ -119,6 +127,7 @@ const permissionGranted = async (req, res) => {
                 name: DS_TYPE[parseInt(req.params.type)],
                 type: parseInt(req.params.type),
                 granted: false,
+                tokenValid: false,
                 scopes: null
             });
         }
@@ -146,6 +155,7 @@ const checkInternalPermission = async (user_id, type) => {
             name: DS_TYPE[parseInt(type)],
             type: parseInt(type),
             granted: false,
+            tokenValid: true,
             scopes: null
         };
     }
@@ -181,8 +191,9 @@ const checkInternalPermission = async (user_id, type) => {
     return {
         name: DS_TYPE[parseInt(type)],
         type: parseInt(type),
-        granted: hasPermission === 1,
-        scopes: hasPermission === 1 ? scopes : null
+        granted: hasPermission,
+        tokenValid: true,
+        scopes: hasPermission ? scopes : null
     };
 
 };
@@ -544,27 +555,27 @@ const checkFBContains = (scopes) => {
     const hasInsight = scopes.includes('read_insights');
     const hasAdsRead = scopes.includes('ads_read');
 
-    return hasManage & hasInsight & hasAdsRead;
+    return hasManage && hasInsight && hasAdsRead;
 };
 const checkIGContains = (scopes) => {
     const hasBasic = scopes.includes('instagram_basic');
     const hasInsight = scopes.includes('instagram_manage_insights');
 
-    return hasBasic & hasInsight;
+    return hasBasic && hasInsight;
 };
 const checkGAContains = (scopes) => {
-    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasAnalytics = !!scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
+    const hasEmail = scopes.find(el => el.includes('userinfo.email'));
+    const hasAnalytics = scopes.find(el => el.includes('analytics.readonly') && !el.includes('yt-analytics.readonly'));
 
-    return hasEmail & hasAnalytics;
+    return hasEmail && hasAnalytics;
 };
 const checkYTContains = (scopes) => {
-    const hasEmail = !!scopes.find(el => el.includes('userinfo.email'));
-    const hasYoutube = !!scopes.find(el => el.includes('youtube.readonly'));
-    const hasAnalytics = !!scopes.find(el => el.includes('yt-analytics.readonly'));
-    const hasMonetary = !!scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
+    const hasEmail = scopes.find(el => el.includes('userinfo.email'));
+    const hasYoutube = scopes.find(el => el.includes('youtube.readonly'));
+    const hasAnalytics = scopes.find(el => el.includes('yt-analytics.readonly'));
+    const hasMonetary = scopes.find(el => el.includes('yt-analytics-monetary.readonly'));
 
-    return hasEmail & hasYoutube & hasMonetary & hasAnalytics;
+    return hasEmail && hasYoutube && hasMonetary && hasAnalytics;
 };
 
 /** REVOKE PERMISSIONS **/

@@ -18,27 +18,27 @@ const tokenEndPoint = 'https://www.googleapis.com/oauth2/v4/token';
 const METRICS = {
     COMMENTS: 'comments',
     LIKES: 'likes',
-    DISLIKES : 'dislikes',
-    SHARES : 'shares',
-    SUBGAIN : 'subscribersGained',
-    SUBLOSS : 'subscribersLost',
-    VIEWS : 'views',
-    RED_VIEWS : 'redViews',
-    VIEWERPERC : 'viewerPercentage ',
-    ESTMINWATCH : 'estimatedMinutesWatched ',
-    ESTREDMINWATCH : 'estimatedRedMinutesWatched',
-    AVGVIEWDUR : 'averageViewDuration ',
-    AVGVIEWPERC : 'averageViewPercentage',
+    DISLIKES: 'dislikes',
+    SHARES: 'shares',
+    SUBGAIN: 'subscribersGained',
+    SUBLOSS: 'subscribersLost',
+    VIEWS: 'views',
+    RED_VIEWS: 'redViews',
+    VIEWERPERC: 'viewerPercentage ',
+    ESTMINWATCH: 'estimatedMinutesWatched ',
+    ESTREDMINWATCH: 'estimatedRedMinutesWatched',
+    AVGVIEWDUR: 'averageViewDuration ',
+    AVGVIEWPERC: 'averageViewPercentage',
 
 };
 const DIMENSIONS = {
-    DAY7 : '7DayTotals',
-    DAY30 : '30DayTotals',
-    AGEGROUP : 'ageGroup',
-    COUNTRY : 'country',
-    GENDER : 'gender',
-    DAY : 'day',
-    MONTH : 'month'
+    DAY7: '7DayTotals',
+    DAY30: '30DayTotals',
+    AGEGROUP: 'ageGroup',
+    COUNTRY: 'country',
+    GENDER: 'gender',
+    DAY: 'day',
+    MONTH: 'month'
 };
 
 const getAccessToken = async (rt) => {
@@ -53,7 +53,6 @@ const getAccessToken = async (rt) => {
             refresh_token: rt,//await GaToken.findOne({where: {user_id: req.user.id}})['dataValues']['private_key'],
             grant_type: 'refresh_token'
         }
-
     };
 
     try {
@@ -65,13 +64,16 @@ const getAccessToken = async (rt) => {
 };
 
 async function yt_getData(req) {
-    req.token =  await getAccessToken(req.rt);
-    let data = await youtubeQuery(req);
+    let data;
+
     try {
-        return (data);
+        req.token = await getAccessToken(req.rt);
+        data = await youtubeQuery(req);
     } catch (e) {
         console.error(e);
     }
+
+    return data;
 }
 
 //TODO check why it is necessary adds and subs in dates
@@ -80,10 +82,10 @@ const youtubeQuery = async (req) => {
     let EP;
 
     //getting which endpoint should be used
-    switch(req.EP){
+    switch (req.EP) {
         case 0 :
             EP = dataEndPoint;
-             break;
+            break;
         case 1:
             EP = analyticsEndPoint;
             break;
@@ -101,8 +103,7 @@ const youtubeQuery = async (req) => {
         },
         json: true
     };
-    for(let par of Object.keys(req.params))
-    {
+    for (let par of Object.keys(req.params)) {
         options.qs[par] = req.params[par];
     }
     (options.qs.ids) ? options.qs.ids += req.params.channel : null;
@@ -118,12 +119,4 @@ const youtubeQuery = async (req) => {
     }
 };
 
-module.exports = {yt_getData};
-
-
 module.exports = {METRICS, DIMENSIONS, config, yt_getData};
-
-/** GET pageID from instagram token**/
-
-
-
