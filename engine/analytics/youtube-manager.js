@@ -6,7 +6,7 @@ const config = require('../../api_handler/youtube-api').config;
 const GAn = require('../../api_handler/googleAnalytics-api');
 const DateFns = require('date-fns');
 
-
+const MongoManager = require('../mongo-manager');
 const HttpStatus = require('http-status-codes');
 
 const DAYS = {
@@ -43,18 +43,16 @@ const yt_getSubs = async (req, res) => {
     try {
         req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
         data = await YoutubeApi.yt_getData(req);
-        for(let el of data.items)
-        {
+        for (let el of data.items) {
             result.push({
-                'value' : el.snippet.channelId, //id of the subscriber's channel
-                'date' : new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
+                'value': el.snippet.channelId, //id of the subscriber's channel
+                'date': new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
             });
 
         }
         /*result.push({
             'value' : parseInt(data.pageInfo.totalResults, 10)
         });*/
-
 
 
         return res.status(HttpStatus.OK).send(result);
@@ -99,36 +97,29 @@ const yt_getDataInternal = async (req) => {
     let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
     let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
 
-    try {
-        req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
-        req.params.startDate = start_date.toISOString().slice(0, 10);
-        req.params.endDate = end_date.toISOString().slice(0, 10);
-        console.log ("req.params", req.params);
-        data = await YoutubeApi.yt_getData(req);
-        if(req.params['analytics']) {
-            for(const el of data['rows']) {
-                result.push({
-                    'date' : new Date(el[0]),
-                    'value' : parseInt(el[1], 10)
-                });
-            }
-        }
-        else for (const el of data['items']) {
+    req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
+    req.params.startDate = start_date.toISOString().slice(0, 10);
+    req.params.endDate = end_date.toISOString().slice(0, 10);
+    //console.log ("req.params", req.params);
+    data = await YoutubeApi.yt_getData(req);
+    if (req.params['analytics']) {
+        for (const el of data['rows']) {
             result.push({
-                'id' : el['id'],
-                'name' : el['snippet']['title'],
-                'date' : el['snippet']['publishedAt']
+                'date': new Date(el[0]),
+                'value': parseInt(el[1], 10)
             });
         }
-
-        return result;
-    } catch (err) {
-        console.error(err);
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-            name: 'Internal Server Error',
-            message: 'There is a problem either with Youtube servers or with our database'
-        })
     }
+    else for (const el of data['items']) {
+        result.push({
+            'id': el['id'],
+            'name': el['snippet']['title'],
+            'date': el['snippet']['publishedAt']
+        });
+    }
+    await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+        start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
+    return result;
 };
 
 const yt_getData = async (req, res) => {
@@ -144,7 +135,6 @@ const yt_getData = async (req, res) => {
                 message: 'Invalid access token.'
             });
         }
-
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
             message: 'There is a problem either with Youtube servers or with our database'

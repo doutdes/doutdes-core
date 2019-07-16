@@ -1,6 +1,7 @@
 const gaMongo = require('../models/mongo/mongo-ga-model');
 const fbMongo = require('../models/mongo/mongo-fb-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
+const ytMongo = require('../models/mongo/mongo-yt-model');
 
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 
@@ -337,9 +338,113 @@ async function getIgMongoData(userid, page_id, metric) {
     return result.data;
 }
 
+/**YOUTUBE ANALYTICS**/
+
+//store GA data in mongo db
+async function storeYtMongoData(userid, channel_id, metric, start_date, end_date, file) {
+    try {
+        await ytMongo.create({
+            userid: userid, channel_id: channel_id, metric: metric,
+            start_date: start_date, end_date: end_date, data: file
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("storeYtMongoData - error doing the insert");
+    }
+}
+
+// //return the GA start date of a document in mongo
+// async function getYtMongoItemDate(userid, view_id, metric, dimensions) {
+//     let result;
+//     try {
+//         result = await gaMongo.find({
+//             'userid': userid,
+//             'view_id': view_id,
+//             'metric': metric,
+//             'dimensions': dimensions
+//         });
+//     }
+//     catch (e) {
+//         console.error(e);
+//         throw new Error("getMongoGaItemDate - error doing the query");
+//     }
+//     return result[0] ? {
+//         start_date: new Date(result[0].start_date),
+//         end_date: new Date(result[0].end_date)
+//     } : {start_date: null, end_date: null};
+// }
+//
+// //remove a GA mongo document
+// async function removeYtMongoData(userid, view_id, metric, dimensions) {
+//     try {
+//         await gaMongo.findOneAndDelete({
+//             'userid': userid,
+//             'view_id': view_id,
+//             'metric': metric,
+//             'dimensions': dimensions
+//         });
+//     }
+//     catch (e) {
+//         console.error(e);
+//         throw new Error("removeMongoData - error removing data");
+//     }
+// }
+//
+// //update a GA mongo document
+// async function updateYtMongoData(userid, view_id, metric, dimensions, start_date, end_date, data) {
+//
+//     try {
+//         if (data) {
+//             await gaMongo.findOneAndUpdate({
+//                 'userid': userid,
+//                 'view_id': view_id,
+//                 'metric': metric,
+//                 'dimensions': dimensions
+//             }, {
+//                 'end_date': end_date,
+//                 $push: {
+//                     'data': {$each: data}
+//                 }
+//             });
+//         }
+//         else {
+//             await gaMongo.findOneAndUpdate({
+//                 'userid': userid,
+//                 'view_id': view_id,
+//                 'metric': metric,
+//                 'dimensions': dimensions
+//             }, {
+//                 'end_date': end_date
+//             });
+//         }
+//     } catch (e) {
+//         console.error(e);
+//         throw new Error("updateMongoData - error updating data");
+//     }
+// }
+//
+// //get GA data from mongodb
+// async function getYtMongoData(userid, view_id, metric, dimensions) {
+//     let result;
+//     try {
+//         result = await gaMongo.findOne({
+//             'userid': userid,
+//             'metric': metric,
+//             'dimensions': dimensions
+//         });
+//     }
+//     catch (e) {
+//         console.error(e);
+//         throw new Error("getMongodata - error retrieving data");
+//     }
+//     return result.data;
+// }
+
 module.exports = {
     storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
     storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
     storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
+    storeYtMongoData,
     removeUserMongoData
 };
