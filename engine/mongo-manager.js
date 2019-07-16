@@ -354,6 +354,25 @@ async function storeYtMongoData(userid, channel_id, metric, start_date, end_date
     }
 }
 
+async function getYtMongoItemDate(userid, channel_id, metric) {
+    let result;
+    try {
+        result = await ytMongo.find({
+            'userid': userid,
+            'channel_id': channel_id,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getMongoYtItemDate - error doing the query");
+    }
+    return result[0] ? {
+        start_date: new Date(result[0].start_date),
+        end_date: new Date(result[0].end_date)
+    } : {start_date: null, end_date: null};
+}
+
 // //return the GA start date of a document in mongo
 // async function getYtMongoItemDate(userid, view_id, metric, dimensions) {
 //     let result;
@@ -445,6 +464,6 @@ module.exports = {
     storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
     storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
     storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
-    storeYtMongoData,
+    storeYtMongoData, getYtMongoItemDate,
     removeUserMongoData
 };

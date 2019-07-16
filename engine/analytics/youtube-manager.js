@@ -55,7 +55,6 @@ const yt_getSubs = async (req, res) => {
         });*/
 
 
-
         return res.status(HttpStatus.OK).send(result);
     } catch (err) {
         console.error(err);
@@ -93,33 +92,27 @@ const yt_getPages = async (req, res) => {
 };
 
 const yt_getDataInternal = async (req) => {
-    let data;
+    let data, old_date, old_startDate, old_endDate;
     let result = [];
     let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
     let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
 
     req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
-    req.params.startDate = start_date.toISOString().slice(0, 10);
-    req.params.endDate = end_date.toISOString().slice(0, 10);
-    //console.log ("req.params", req.params);
-    data = await YoutubeApi.yt_getData(req);
-    if (req.params['analytics']) {
-        for (const el of data['rows']) {
-            result.push({
-                'date': new Date(el[0]),
-                'value': parseInt(el[1], 10)
-            });
-        }
+    old_date = await MongoManager.getYtMongoItemDate(req.user.dataValues.id, req.params.channel, req.params.metrics);
+
+    old_startDate = old_date.start_date;
+    old_endDate = old_date.end_date;
+
+    console.log (old_date);
+
+    //check if the previous document exist and create a new one
+    if (old_startDate == null) {
+        req.params.startDate = start_date.toISOString().slice(0, 10);
+        req.params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(req);
+        await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+            start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
     }
-    else for (const el of data['items']) {
-        result.push({
-            'id': el['id'],
-            'name': el['snippet']['title'],
-            'date': el['snippet']['publishedAt']
-        });
-    }
-    await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
-        start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
     return result;
 };
 
@@ -142,5 +135,27 @@ const yt_getData = async (req, res) => {
         });
     }
 };
+
+async function getResult(req) {
+    let data = await YoutubeApi.yt_getData(req);
+    let result = [];
+    if (req.params['analytics']) {
+        for (const el of data['rows']) {
+            result.push({
+                'date': new Date(el[0]),
+                'value': parseInt(el[1], 10)
+            });
+        }
+    }
+    else for (const el of data['items']) {
+        result.push({
+            'id': el['id'],
+            'name': el['snippet']['title'],
+            'date': el['snippet']['publishedAt']
+        });
+    }
+    return result;
+}
+
 /** EXPORTS **/
 module.exports = {setParams, yt_getPages, setEndPoint, yt_getData, yt_getSubs};
