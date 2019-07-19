@@ -126,6 +126,7 @@ async function getGaMongoData(userid, view_id, metric, dimensions) {
     try {
         result = await gaMongo.findOne({
             'userid': userid,
+            'view_id': view_id,
             'metric': metric,
             'dimensions': dimensions
         });
@@ -387,11 +388,57 @@ async function removeYtMongoData(userid, channel_id, metric) {
     }
 }
 
+async function updateYtMongoData(userid, channel_id, metric, end_date, data) {
+
+    try {
+        if (data) {
+            await ytMongo.findOneAndUpdate({
+                'userid': userid,
+                'channel_id': channel_id,
+                'metric': metric,
+            }, {
+                'end_date': end_date,
+                $push: {
+                    'data': {$each: data}
+                }
+            });
+        }
+        else {
+            await ytMongo.findOneAndUpdate({
+                'userid': userid,
+                'channel_id': channel_id,
+                'metric': metric,
+            }, {
+                'end_date': end_date
+            });
+        }
+    } catch (e) {
+        console.error(e);
+        throw new Error("update ytMongoData - error updating data");
+    }
+}
+
+async function getYtMongoData(userid, channel_id, metric) {
+    let result;
+    try {
+        result = await ytMongo.findOne({
+            'userid': userid,
+            'channel_id': channel_id,
+            'metric': metric,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getYtMongodata - error retrieving data");
+    }
+    return result.data;
+}
+
 
 module.exports = {
     storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
     storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
     storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
-    storeYtMongoData, getYtMongoItemDate, removeYtMongoData,
+    storeYtMongoData, getYtMongoItemDate, removeYtMongoData, updateYtMongoData, getYtMongoData,
     removeUserMongoData
 };

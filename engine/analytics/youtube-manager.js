@@ -124,8 +124,14 @@ const yt_getDataInternal = async (req) => {
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
         return result;
     }
-
-
+    else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(end_date)) {
+        req.params.startDate = (DateFns.addDays(old_endDate, 1)).toISOString().slice(0, 10);
+        req.params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(req);
+        await MongoManager.updateYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+            req.params.endDate, result);
+    }
+    result = await MongoManager.getYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics);
     return result;
 };
 
