@@ -92,7 +92,7 @@ const yt_getPages = async (req, res) => {
 };
 
 const yt_getDataInternal = async (req) => {
-    let data, old_date, old_startDate, old_endDate;
+    let data, old_date, old_startDate, old_endDate, old_lastDate;
     let result = [];
     let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
     let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
@@ -102,6 +102,7 @@ const yt_getDataInternal = async (req) => {
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
+    old_lastDate = old_date.last_date;
 
     console.log(old_date);
 
@@ -125,7 +126,7 @@ const yt_getDataInternal = async (req) => {
         return result;
     }
     else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(end_date)) {
-        req.params.startDate = (DateFns.addDays(old_endDate, 1)).toISOString().slice(0, 10);
+        req.params.startDate = (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
         result = await getResult(req);
         await MongoManager.updateYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,

@@ -363,6 +363,7 @@ async function getYtMongoItemDate(userid, channel_id, metric) {
             'channel_id': channel_id,
             'metric': metric,
         });
+        console.log('result yt mongo item date', result[0].data[result[0].data.length-1].date);
     }
     catch (e) {
         console.error(e);
@@ -370,8 +371,9 @@ async function getYtMongoItemDate(userid, channel_id, metric) {
     }
     return result[0] ? {
         start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date)
-    } : {start_date: null, end_date: null};
+        end_date: new Date(result[0].end_date),
+        last_date: new Date(result[0].data[result[0].data.length-1].date)
+    } : {start_date: null, end_date: null, last_date: null};
 }
 
 async function removeYtMongoData(userid, channel_id, metric) {
