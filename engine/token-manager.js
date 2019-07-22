@@ -150,7 +150,7 @@ const checkInternalPermission = async (user_id, type) => {
     }
 
     if (!key) { // If a key is not set, return error
-        console.log('KEY IS NOT SET UP');
+        console.warn('KEY IS NOT SET UP');
         return {
             name: DS_TYPE[parseInt(type)],
             type: parseInt(type),
@@ -230,7 +230,7 @@ const revokePermissions = async (req, res) => {
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
                 await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
-                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 

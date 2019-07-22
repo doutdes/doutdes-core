@@ -2,10 +2,12 @@
 const Request = require('request-promise');
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
+const Users = Model.Users;
 const config = require('../../api_handler/youtube-api').config;
 const GAn = require('../../api_handler/googleAnalytics-api');
 const DateFns = require('date-fns');
-
+const D_TYPE = require('../dashboard-manager').D_TYPE;
+const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 const HttpStatus = require('http-status-codes');
 
@@ -65,6 +67,49 @@ const yt_getSubs = async (req, res) => {
     }
 };
 
+const yt_storeAllData = async (req, res) => {
+    let key = req.params.key;
+    let auth = process.env.KEY || null;
+
+    if (auth == null) {
+        console.warn("Scaper executed without a valid key");
+    }
+
+    let user_id;
+    let permissionGranted;
+    let users;
+
+    if (key != auth) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+    try {
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
+                if (permissionGranted.granted) {
+                    console.log("Ga Data updated successfully for user n°", user_id);
+                }
+            } catch (e) {
+                console.warn("The user n°", user_id, " have an invalid key");
+            }
+        }
+        return res.status(HttpStatus.OK).send({
+            message: "ga_storeAllData executed successfully"
+        });
+    }
+    catch (e) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+};
+
 const yt_getPages = async (req, res) => {
     let data, rt;
     let pages = [];
@@ -104,14 +149,11 @@ const yt_getDataInternal = async (req) => {
     old_endDate = old_date.end_date;
     old_lastDate = old_date.last_date;
 
-    console.log(old_date);
-
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         req.params.startDate = start_date.toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
         result = await getResult(req);
-        console.log(result);
         await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
         return result;
@@ -179,4 +221,4 @@ async function getResult(req) {
 }
 
 /** EXPORTS **/
-module.exports = {setParams, yt_getPages, setEndPoint, yt_getData, yt_getSubs};
+module.exports = {setParams, yt_getPages, setEndPoint, yt_getData, yt_getSubs, yt_storeAllData};
