@@ -111,6 +111,7 @@ const yt_getDataInternal = async (req) => {
         req.params.startDate = start_date.toISOString().slice(0, 10);
         req.params.endDate = end_date.toISOString().slice(0, 10);
         result = await getResult(req);
+        console.log(result);
         await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
         return result;
