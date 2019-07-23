@@ -70,7 +70,6 @@ const yt_getSubs = async (req, res) => {
 const yt_storeAllData = async (req, res) => {
     let key = req.params.key;
     let auth = process.env.KEY || null;
-
     if (auth == null) {
         console.warn("Scaper executed without a valid key");
     }
@@ -86,20 +85,24 @@ const yt_storeAllData = async (req, res) => {
         });
     }
     try {
-        users = await Users.findAll();
-        for (const user of users) {
-            user_id = user.dataValues.id;
-            try {
-                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
-                if (permissionGranted.granted) {
-                    console.log("Ga Data updated successfully for user n°", user_id);
-                }
-            } catch (e) {
-                console.warn("The user n°", user_id, " have an invalid key");
+        //users = await Users.findAll();
+        // for (const user of users) {
+        //user_id = user.dataValues.id;
+        user_id = 2;
+        try {
+            permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
+            if (permissionGranted.granted) {
+                // this.setEndPoint(0, 'playlists');
+                // this.setParams({'params': {'part': 'snippet', 'metrics': 'playlists'}});
+                await yt_getDataInternal(req);
+                console.log("Ga Data updated successfully for user n°", user_id);
             }
+        } catch (e) {
+            console.warn("The user n°", user_id, " have an invalid key");
         }
+        // }
         return res.status(HttpStatus.OK).send({
-            message: "ga_storeAllData executed successfully"
+            message: "yt_storeAllData executed successfully"
         });
     }
     catch (e) {
@@ -136,14 +139,14 @@ const yt_getPages = async (req, res) => {
     }
 };
 
-const yt_getDataInternal = async (req) => {
+const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
     let data, old_date, old_startDate, old_endDate, old_lastDate;
     let result = [];
     let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
     let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
 
-    req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
-    old_date = await MongoManager.getYtMongoItemDate(req.user.dataValues.id, req.params.channel, req.params.metrics);
+    let rt = await GaToken.findOne({where: {user_id: user_id}});
+    old_date = await MongoManager.getYtMongoItemDate(user_id, params.channel, params.metrics);
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
@@ -151,38 +154,38 @@ const yt_getDataInternal = async (req) => {
 
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
-        req.params.startDate = start_date.toISOString().slice(0, 10);
-        req.params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(req);
-        await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+        params.startDate = start_date.toISOString().slice(0, 10);
+        params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(rt, EP, params, sEP);
+        await MongoManager.storeYtMongoData(user_id, params.channel, params.metrics,
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
         return result;
     }
 
     else if (old_startDate > start_date) {
-        req.params.startDate = start_date.toISOString().slice(0, 10);
-        req.params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(req);
-        await MongoManager.removeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics);
-        await MongoManager.storeYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
+        params.startDate = start_date.toISOString().slice(0, 10);
+        params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(rt, EP, params, sEP);
+        await MongoManager.removeYtMongoData(user_id, params.channel, params.metrics);
+        await MongoManager.storeYtMongoData(user_id, params.channel, params.metrics,
             start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
         return result;
     }
     else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(end_date)) {
-        req.params.startDate = (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10);
-        req.params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(req);
-        await MongoManager.updateYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics,
-            req.params.endDate, result);
+        params.startDate = (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10);
+        params.endDate = end_date.toISOString().slice(0, 10);
+        result = await getResult(rt, EP, params, sEP);
+        await MongoManager.updateYtMongoData(user_id, params.channel, params.metrics,
+            params.endDate, result);
     }
-    result = await MongoManager.getYtMongoData(req.user.dataValues.id, req.params.channel, req.params.metrics);
+    result = await MongoManager.getYtMongoData(user_id, params.channel, params.metrics);
     return result;
 };
 
 const yt_getData = async (req, res) => {
     let response;
     try {
-        response = await yt_getDataInternal(req);
+        response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP = null);
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
         console.error(err);
@@ -199,10 +202,10 @@ const yt_getData = async (req, res) => {
     }
 };
 
-async function getResult(req) {
-    let data = await YoutubeApi.yt_getData(req);
+async function getResult(rt, EP, params, sEP = null) {
+    let data = await YoutubeApi.yt_getData(rt, EP, params, sEP);
     let result = [];
-    if (req.params['analytics']) {
+    if (params['analytics']) {
         for (const el of data['rows']) {
             result.push({
                 'date': new Date(el[0]),

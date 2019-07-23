@@ -63,12 +63,12 @@ const getAccessToken = async (rt) => {
     }
 };
 
-async function yt_getData(req) {
-    let data;
+async function yt_getData(rt, EP, params, sEP = null) {
+    let data, token;
 
     try {
-        req.token = await getAccessToken(req.rt);
-        data = await youtubeQuery(req);
+        token = await getAccessToken(rt);
+        data = await youtubeQuery(token, EP, params, sEP);
     } catch (e) {
         console.error(e);
     }
@@ -77,12 +77,11 @@ async function yt_getData(req) {
 }
 
 //TODO check why it is necessary adds and subs in dates
-const youtubeQuery = async (req) => {
+const youtubeQuery = async (token, EP, params, sEP = null) => {
     let result;
-    let EP;
 
     //getting which endpoint should be used
-    switch (req.EP) {
+    switch (EP) {
         case 0 :
             EP = dataEndPoint;
             break;
@@ -94,21 +93,24 @@ const youtubeQuery = async (req) => {
     }
 
     //adding the sub-endpoint if avaiable
-    EP += (req.sEP) ? req.sEP : '';
+    EP += (sEP) ? sEP : '';
     const options = {
         method: GET,
         uri: EP,
         qs: {
-            access_token: req.token
+            access_token: token
         },
         json: true
     };
-    for (let par of Object.keys(req.params)) {
-        options.qs[par] = req.params[par];
+
+    for (let par of Object.keys(params)) {
+        options.qs[par] = params[par];
     }
-    (options.qs.ids) ? options.qs.ids += req.params.channel : null;
+
+    (options.qs.ids) ? options.qs.ids += params.channel : null;
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
-    (options.qs.channelId) ? options.qs.channelId = req.params.channel : null;
+    (options.qs.channelId) ? options.qs.channelId = params.channel : null;
+
     try {
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));
