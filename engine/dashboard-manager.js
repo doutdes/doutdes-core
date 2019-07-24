@@ -393,6 +393,8 @@ exports.getDashboardByID = async function (req, res, next) {
             dataToReturn.push(formatResult(finalResult[i]));
         }
 
+        dataToReturn = dataToReturn.sort((a,b) => a['position'] - b['position']);
+
         return res.status(HttpStatus.OK).send(dataToReturn); // returns chart list
 
     } catch (err) {
@@ -865,8 +867,9 @@ const formatResult = (dashChart) => {
         chart_id: dashChart['dataValues']['chart_id'],
         dashboard_id: dashChart['dataValues']['dashboard_id'],
         format: dashChart['dataValues']['Chart']['dataValues']['format'],
+        type: dashChart['dataValues']['Chart']['dataValues']['type'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
-        type: dashChart['dataValues']['Chart']['dataValues']['type']
+        position: dashChart['dataValues']['position']
     };
 };
