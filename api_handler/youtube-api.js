@@ -80,9 +80,6 @@ async function yt_getData(rt, EP, params, sEP = null) {
 const youtubeQuery = async (token, EP, params, sEP = null) => {
     let result;
     //getting which endpoint should be used
-
-    console.log('EP:',EP ,' sEP:', sEP);
-
     switch (EP) {
         case 0 :
             EP = dataEndPoint;
@@ -113,11 +110,8 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
     (options.qs.channelId) ? options.qs.channelId = params.channel : null;
 
-    console.log (options);
-
     try {
         result = await Request(options);
-        console.log ('result', result);
         result = JSON.parse(JSON.stringify(result));
         return result;
     } catch (err) {

@@ -10,6 +10,7 @@ const D_TYPE = require('../dashboard-manager').D_TYPE;
 const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 const HttpStatus = require('http-status-codes');
+const _ = require('lodash');
 
 const DAYS = {
     yesterday: 1,
@@ -75,7 +76,7 @@ const yt_storeAllData = async (req, res) => {
 
     let user_id;
     let permissionGranted;
-    let users;
+    let users, channel_list, channel;
 
     if (key != auth) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
@@ -84,23 +85,26 @@ const yt_storeAllData = async (req, res) => {
         });
     }
     try {
-        //users = await Users.findAll();
-        // for (const user of users) {
-        //user_id = user.dataValues.id;
-        user_id = 2;
-        try {
-            permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
-
-            if (permissionGranted.granted) {
-                // await yt_getDataInternal(user_id, 0, {'part':'snippet', 'metrics': 'playlists'}, 'playlists');
-                // await yt_getDataInternal(user_id, 0, {'part':'snippet', 'mine':'true', 'type':'video', 'channelId':' ', 'metrics': 'videos'}, 'search');
-                //await yt_getDataInternal(user_id, 1, {'metrics':'views','dimensions':'day','ids':'channel==', 'channel':'UCEnBdX1M3AUUMJzfmBl7_Fg','analytics': true});
-                console.log("Ga Data updated successfully for user n°", user_id);
+        users = await Users.findAll();
+        for (const user of users) {
+            user_id = user.dataValues.id;
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
+                if (permissionGranted.granted) {
+                channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
+                for (channel of channel_list) {
+                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists'}, 'playlists');
+                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'mine': 'true', 'type': 'video',
+                            'channelId': ' ', 'metrics': 'videos'}, 'search');
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'views', 'dimensions': 'day', 'ids': 'channel==',
+                            'channel': channel, 'analytics': true});
+                    }
+                    console.log("Ga Data updated successfully for user n°", user_id);
+                }
+            } catch (e) {
+                console.warn("The user n°", user_id, " have an invalid key");
             }
-        } catch (e) {
-            console.warn("The user n°", user_id, " have an invalid key");
         }
-        // }
         return res.status(HttpStatus.OK).send({
             message: "yt_storeAllData executed successfully"
         });
@@ -113,28 +117,36 @@ const yt_storeAllData = async (req, res) => {
     }
 };
 
+
+const yt_getInternalPages = async (user_id, EP, params, sEP) => {
+    let data, rt;
+    let pages = [];
+
+    rt = await GaToken.findOne({where: {user_id: user_id}});
+    data = await YoutubeApi.yt_getData(rt, EP, params, sEP);
+    for (const el of data['items']) {
+        pages.push({
+            'id': el['id'],
+            'name': el['snippet']['title'],
+            'date': el['snippet']['publishedAt']
+        });
+    }
+    return pages;
+};
+
 const yt_getPages = async (req, res) => {
-    let data;
     let pages = [];
     let userId = req.user.dataValues.id;
 
     try {
-        req.rt = await GaToken.findOne({where: {user_id: userId}});
-        data = await YoutubeApi.yt_getData(req.rt, req.EP, req.params, req.sEP);
-        for (const el of data['items']) {
-            pages.push({
-                'id': el['id'],
-                'name': el['snippet']['title'],
-                'date': el['snippet']['publishedAt']
-            });
-        }
-
+        pages = await yt_getInternalPages(userId, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(pages);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Youtube servers or with our database'
         })
     }
 };
@@ -184,6 +196,7 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
 
 const yt_getData = async (req, res) => {
     let response;
+    console.log ('channel', req.params.channel);
     try {
         response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(response);
