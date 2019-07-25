@@ -30,7 +30,6 @@ const setParams = function (data) {
     }
 };
 
-
 const setEndPoint = (EP, sEP = null) => {
     return function (req, res, next) {
         req.EP = EP;
@@ -91,10 +90,11 @@ const yt_storeAllData = async (req, res) => {
         user_id = 2;
         try {
             permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
+
             if (permissionGranted.granted) {
-                // this.setEndPoint(0, 'playlists');
-                // this.setParams({'params': {'part': 'snippet', 'metrics': 'playlists'}});
-                await yt_getDataInternal(req);
+                // await yt_getDataInternal(user_id, 0, {'part':'snippet', 'metrics': 'playlists'}, 'playlists');
+                // await yt_getDataInternal(user_id, 0, {'part':'snippet', 'mine':'true', 'type':'video', 'channelId':' ', 'metrics': 'videos'}, 'search');
+                //await yt_getDataInternal(user_id, 1, {'metrics':'views','dimensions':'day','ids':'channel==', 'channel':'UCEnBdX1M3AUUMJzfmBl7_Fg','analytics': true});
                 console.log("Ga Data updated successfully for user n°", user_id);
             }
         } catch (e) {
@@ -114,13 +114,13 @@ const yt_storeAllData = async (req, res) => {
 };
 
 const yt_getPages = async (req, res) => {
-    let data, rt;
+    let data;
     let pages = [];
     let userId = req.user.dataValues.id;
 
     try {
         req.rt = await GaToken.findOne({where: {user_id: userId}});
-        data = await YoutubeApi.yt_getData(req);
+        data = await YoutubeApi.yt_getData(req.rt, req.EP, req.params, req.sEP);
         for (const el of data['items']) {
             pages.push({
                 'id': el['id'],
