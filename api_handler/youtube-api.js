@@ -79,7 +79,6 @@ async function yt_getData(rt, EP, params, sEP = null) {
 //TODO check why it is necessary adds and subs in dates
 const youtubeQuery = async (token, EP, params, sEP = null) => {
     let result;
-
     //getting which endpoint should be used
     switch (EP) {
         case 0 :
@@ -107,10 +106,9 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
         options.qs[par] = params[par];
     }
 
-    (options.qs.ids) ? options.qs.ids += params.channel : null;
+    (options.qs['ids']) ? options.qs['ids'] += params.channel : null;
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
-    (options.qs.channelId) ? options.qs.channelId = params.channel : null;
-
+    (options.qs['channelId']) ? options.qs['channelId'] = params.channel : null;
     try {
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));

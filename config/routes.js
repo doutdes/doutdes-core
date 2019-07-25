@@ -254,7 +254,7 @@ module.exports = function (app, passport, config) {
     app.get(ytPath + 'storeAllData/:key*?', YtM.yt_storeAllData);
 
     app.get(ytPath + ':channel/subscribers/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'subscriptions'), YtM.setParams({'params':{'part':'snippet','mySubscribers':true, 'metrics':'subscribers'}}), YtM.yt_getSubs);
-    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet', 'metrics': 'playlists'}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/playlists/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet', 'metrics': 'playlists'}}), YtM.yt_getData);
     app.get(ytPath + ':channel/videos/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'search'), YtM.setParams({'params':{'part':'snippet', 'mine':'true', 'type':'video', 'channelId':' ', 'metrics': 'videos'}}), YtM.yt_getData);
     app.get(ytPath + ':channel/views/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'views','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/comments/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'comments','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);

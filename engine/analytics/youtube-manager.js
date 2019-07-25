@@ -185,7 +185,7 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
 const yt_getData = async (req, res) => {
     let response;
     try {
-        response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP = null);
+        response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
         console.error(err);
