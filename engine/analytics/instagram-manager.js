@@ -63,7 +63,7 @@ const ig_getPages = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
@@ -82,7 +82,7 @@ const ig_getMedia = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
@@ -108,7 +108,7 @@ const ig_getImages = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
@@ -134,7 +134,7 @@ const ig_getVideos = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
@@ -189,7 +189,8 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
             date = getIntervalDate(data);
             await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
-        } else if (old_endDate < today) {
+        } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today)) {
+            console.log ('since', since, 'until', until);
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             date = getIntervalDate(data);
             data = preProcessIGData(data, page_id, metric);
@@ -221,7 +222,7 @@ const ig_getData = async (req, res) => {
 
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         });
     }
 };
@@ -350,7 +351,7 @@ const ig_getStories = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
@@ -367,7 +368,7 @@ const ig_getBusinessInfo = async (req, res) => {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Instagram servers or with our database'
         })
     }
 };
