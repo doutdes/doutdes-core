@@ -39,30 +39,36 @@ const setEndPoint = (EP, sEP = null) => {
     }
 
 };
-const yt_getSubs = async (req, res) => {
-    let data;
+
+const yt_getInternalSubs = async (user_id, EP, params, sEP) => {
+    let data, rt;
     let result = [];
+
+    rt = await GaToken.findOne({where: {user_id: user_id}});
+
+    data = await YoutubeApi.yt_getData(rt, EP, params, sEP);
+
+    for (let el of data.items) {
+        result.push({
+            'value': el.snippet.channelId, //id of the subscriber's channel
+            'date': new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
+        });
+    }
+
+    return result;
+};
+
+const yt_getSubs = async (req, res) => {
+    let result;
     try {
-        req.rt = await GaToken.findOne({where: {user_id: req.user.dataValues.id}});
-        data = await YoutubeApi.yt_getData(req);
-        for (let el of data.items) {
-            result.push({
-                'value': el.snippet.channelId, //id of the subscriber's channel
-                'date': new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
-            });
-
-        }
-        /*result.push({
-            'value' : parseInt(data.pageInfo.totalResults, 10)
-        });*/
-
-
+        result = await yt_getInternalSubs(req.user.dataValues.id, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(result);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
-            message: 'There is a problem either with Facebook servers or with our database'
+            message: 'There is a problem either with Youtube servers or with our database'
         })
     }
 };
@@ -96,14 +102,62 @@ const yt_storeAllData = async (req, res) => {
                     for (channel of channel_list) {
                         console.warn("channel", channel);
                         await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists'}, 'playlists');
-                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'mine': 'true', 'type': 'video', 'channelId': ' ', 'metrics': 'videos'}, 'search');
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'views', 'dimensions': 'day', 'ids': 'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'comments', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'likes', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'dislikes', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'shares', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'averageViewDuration', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'estimatedMinutesWatched', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 0, {
+                            'part': 'snippet',
+                            'mine': 'true',
+                            'type': 'video',
+                            'channelId': ' ',
+                            'metrics': 'videos'
+                        }, 'search');
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'views',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'comments',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'likes',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'dislikes',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'shares',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'averageViewDuration',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
+                        await yt_getDataInternal(user_id, 1, {
+                            'metrics': 'estimatedMinutesWatched',
+                            'dimensions': 'day',
+                            'ids': 'channel==',
+                            'channel': channel,
+                            'analytics': true
+                        });
                     }
                     console.log("Ga Data updated successfully for user n°", user_id);
                 }
@@ -122,7 +176,6 @@ const yt_storeAllData = async (req, res) => {
         });
     }
 };
-
 
 const yt_getInternalPages = async (user_id, EP, params, sEP) => {
     let data, rt;
@@ -202,7 +255,6 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
 
 const yt_getData = async (req, res) => {
     let response;
-    console.log('channel', req.params.channel);
     try {
         response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(response);
