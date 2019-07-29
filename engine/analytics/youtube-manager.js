@@ -91,13 +91,19 @@ const yt_storeAllData = async (req, res) => {
             try {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
                 if (permissionGranted.granted) {
-                channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
-                for (channel of channel_list) {
+                    channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
+                    //console.log("channel list", channel_list);
+                    for (channel of channel_list) {
+                        console.warn("channel", channel);
                         await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists'}, 'playlists');
-                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'mine': 'true', 'type': 'video',
-                            'channelId': ' ', 'metrics': 'videos'}, 'search');
-                        await yt_getDataInternal(user_id, 1, {'metrics': 'views', 'dimensions': 'day', 'ids': 'channel==',
-                            'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'mine': 'true', 'type': 'video', 'channelId': ' ', 'metrics': 'videos'}, 'search');
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'views', 'dimensions': 'day', 'ids': 'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'comments', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'likes', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'dislikes', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'shares', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'averageViewDuration', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'estimatedMinutesWatched', 'dimensions':'day', 'ids':'channel==', 'channel': channel, 'analytics': true});
                     }
                     console.log("Ga Data updated successfully for user n°", user_id);
                 }
@@ -196,7 +202,7 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
 
 const yt_getData = async (req, res) => {
     let response;
-    console.log ('channel', req.params.channel);
+    console.log('channel', req.params.channel);
     try {
         response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP);
         return res.status(HttpStatus.OK).send(response);
