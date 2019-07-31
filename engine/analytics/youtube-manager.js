@@ -7,6 +7,7 @@ const GAn = require('../../api_handler/googleAnalytics-api');
 const DateFns = require('date-fns');
 
 
+
 const HttpStatus = require('http-status-codes');
 
 const DAYS = {
@@ -79,6 +80,8 @@ const yt_getPages = async (req, res) => {
                 'date': el['snippet']['publishedAt']
             });
         }
+
+        console.log(pages);
 
         return res.status(HttpStatus.OK).send(pages);
     } catch (err) {

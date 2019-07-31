@@ -3,7 +3,8 @@
 /** IMPORTS **/
 const Request = require('request-promise');
 const Model = require('../models/index');
-const GaToken = Model.GaToken;
+const {google} = require('googleapis');
+
 
 /** CONSTANTS **/
 const date_preset = 'this_year';
@@ -43,6 +44,7 @@ const DIMENSIONS = {
 
 const getAccessToken = async (rt) => {
     let result;
+
     rt = rt['dataValues']['private_key'];
     const options = {
         method: 'POST',
@@ -119,4 +121,24 @@ const youtubeQuery = async (req) => {
     }
 };
 
-module.exports = {METRICS, DIMENSIONS, config, yt_getData};
+const getViewList = async (private_key) => {
+    const access_token = await getAccessToken(private_key);
+
+    const accountList = await google.analytics('v3').management.accounts.list({
+        'access_token': access_token,
+    });
+
+    const profileList = await google.analytics('v3').management.profiles.list({
+        'access_token': access_token,
+        'accountId': '~all',
+        'webPropertyId': '~all'
+    });
+
+
+    return {
+        accountList: accountList.data.items,
+        profileList: profileList.data.items,
+    };
+};
+
+module.exports = {METRICS, DIMENSIONS, config, yt_getData, getViewList};
