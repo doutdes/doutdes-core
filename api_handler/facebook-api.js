@@ -37,8 +37,6 @@ const METRICS = {
     P_VIDEO_ADS: 'page_daily_video_ad_break_ad_ impressions_by_crosspost_status'
 };
 
-//
-
 /** GLOBAL PARAMETERS **/
 global.GET = 'GET';
 global.POST = 'POST';
@@ -57,6 +55,7 @@ const getPageAccessToken = async (token, pageID) => {
 
     try {
         result = await Request(options);
+        console.log(result);
         return result['access_token'];
     } catch (err) {
         console.error(err['message']);
