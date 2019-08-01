@@ -3,7 +3,8 @@
 /** IMPORTS **/
 const Request = require('request-promise');
 const Model = require('../models/index');
-const GaToken = Model.GaToken;
+const {google} = require('googleapis');
+
 
 /** CONSTANTS **/
 const date_preset = 'this_year';
@@ -43,6 +44,7 @@ const DIMENSIONS = {
 
 const getAccessToken = async (rt) => {
     let result;
+
     rt = rt['dataValues']['private_key'];
     const options = {
         method: 'POST',
@@ -63,6 +65,7 @@ const getAccessToken = async (rt) => {
     }
 };
 
+/*main data request: requires a refresh token an endpoint, misc. params and a subendpoint (additional url part like 'subscription'*/
 async function yt_getData(rt, EP, params, sEP = null) {
     let data, token;
 
@@ -102,10 +105,14 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
         json: true
     };
 
+    /*getting all the metrics, dimensions, part etc...
+    * This is required since YT calls doens't always need all the parameter, and they can't be left empty.
+    * So in order to dynamize the call the parameter are stored as a list of key-value pairs*/
     for (let par of Object.keys(params)) {
         options.qs[par] = params[par];
     }
 
+    /*other miscellaneous params*/
     (options.qs.ids) ? options.qs.ids += params.channel : null;
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
     (options.qs.channelId) ? options.qs.channelId = params.channel : null;

@@ -1,10 +1,7 @@
 'use strict';
-const Request = require('request-promise');
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
 const Users = Model.Users;
-const config = require('../../api_handler/youtube-api').config;
-const GAn = require('../../api_handler/googleAnalytics-api');
 const DateFns = require('date-fns');
 const D_TYPE = require('../dashboard-manager').D_TYPE;
 const TokenManager = require('../token-manager');
@@ -51,7 +48,7 @@ const yt_getInternalSubs = async (user_id, EP, params, sEP) => {
     for (let el of data.items) {
         result.push({
             'value': el.snippet.channelId, //id of the subscriber's channel
-            'date': new Date(el.snippet.publishedAt).toISOString().slice(0, 10)
+            'date': new Date(el.snippet.publishedAt).toISOString().slice(0, 10) //subscription date
         });
     }
 
@@ -148,7 +145,7 @@ const yt_storeAllData = async (req, res) => {
                             'analytics': true
                         });
                     }
-                    console.log("Ga Data updated successfully for user n°", user_id);
+                    console.log("Yt Data updated successfully for user n°", user_id);
                 }
             } catch (e) {
                 console.warn("The user n°", user_id, " have an invalid key");
@@ -166,6 +163,7 @@ const yt_storeAllData = async (req, res) => {
     }
 };
 
+//returns all the channels for the given user
 const yt_getInternalPages = async (user_id, EP, params, sEP) => {
     let data, rt;
     let pages = [];
