@@ -100,7 +100,6 @@ const yt_storeAllData = async (req, res) => {
                     channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
                     //console.log("channel list", channel_list);
                     for (channel of channel_list) {
-                        console.warn("channel", channel);
                         await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists'}, 'playlists');
                         await yt_getDataInternal(user_id, 0, {
                             'part': 'snippet',
