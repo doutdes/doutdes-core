@@ -161,7 +161,6 @@ function getIntervalDate(data) {
 }
 
 const ig_getDataInternal = async (user_id, page_id, metric, period, interval = null, media_id = null) => {
-
     let data;
     let response;
     let since = null;
@@ -185,15 +184,14 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            data = preProcessIGData(data, page_id, metric);
+            data = preProcessIGData(data, metric);
             date = getIntervalDate(data);
             await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today)) {
-            console.log ('since', since, 'until', until);
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             date = getIntervalDate(data);
-            data = preProcessIGData(data, page_id, metric);
+            data = preProcessIGData(data, metric);
             await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
         }
 
@@ -271,7 +269,6 @@ const ig_storeAllData = async (req, res) => {
                     await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH);
                     await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
 
-
                     console.log("Ig Data updated successfully for user n°", user_id);
                 }
             } catch (err) {
@@ -290,9 +287,6 @@ const ig_storeAllData = async (req, res) => {
 const ig_storeAllDataDaily = async (req, res) => {
     let key = req.params.key;
     let auth = process.env.KEY || null;
-
-    console.log("Gianni");
-    console.log(auth);
 
     if (auth == null) {
         console.warn("Scaper executed without a valid key");

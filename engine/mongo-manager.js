@@ -245,6 +245,7 @@ async function getFbMongoData(userid, page_id, metric) {
 //store IG data in mongo db
 async function storeIgMongoData(userid, page_id, metric, start_date, end_date, file) {
     let data;
+    //page_id = page_id.toString();
     try {
         data = await new igMongo({
             userid: userid, page_id: page_id, metric: [metric], start_date: start_date, end_date: end_date, data: file
@@ -261,6 +262,7 @@ async function storeIgMongoData(userid, page_id, metric, start_date, end_date, f
 //return the IG start date of a document in mongo
 async function getIgMongoItemDate(userid, page_id, metric) {
     let result;
+    //page_id = page_id.toString();
     try {
         result = await igMongo.find({
             'userid': userid,
@@ -280,6 +282,7 @@ async function getIgMongoItemDate(userid, page_id, metric) {
 
 //remove a IG mongo document
 async function removeIgMongoData(userid, page_id, metric) {
+    //page_id = page_id.toString();
     try {
         await igMongo.findOneAndDelete({
             'userid': userid,
@@ -295,6 +298,7 @@ async function removeIgMongoData(userid, page_id, metric) {
 
 //update a IG mongo document
 async function updateIgMongoData(userid, page_id, metric, end_date, data) {
+    //page_id = page_id.toString();
     try {
         if (data) {
             await igMongo.findOneAndUpdate({
@@ -325,6 +329,7 @@ async function updateIgMongoData(userid, page_id, metric, end_date, data) {
 //get IG data from mongodb
 async function getIgMongoData(userid, page_id, metric) {
     let result;
+    //page_id = page_id.toString();
     try {
         result = await igMongo.findOne({
             'userid': userid,
