@@ -222,7 +222,7 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
         return result;
     }
 
-    else if (old_startDate > start_date) {
+    else if (DateFns.startOfDay(old_startDate) > DateFns.startOfDay(start_date)) {
         params.startDate = start_date.toISOString().slice(0, 10);
         params.endDate = end_date.toISOString().slice(0, 10);
         result = await getResult(rt, EP, params, sEP);
