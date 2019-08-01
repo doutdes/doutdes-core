@@ -98,23 +98,13 @@ const yt_storeAllData = async (req, res) => {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
                 if (permissionGranted.granted) {
                     channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
-                    //console.log("channel list", channel_list);
                     for (channel of channel_list) {
-                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists'}, 'playlists');
-                        await yt_getDataInternal(user_id, 0, {
-                            'part': 'snippet',
-                            'mine': 'true',
-                            'type': 'video',
-                            'channelId': ' ',
-                            'metrics': 'videos'
-                        }, 'search');
-                        await yt_getDataInternal(user_id, 1, {
-                            'metrics': 'views',
-                            'dimensions': 'day',
-                            'ids': 'channel==',
-                            'channel': channel,
-                            'analytics': true
-                        });
+                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'metrics': 'playlists', 'ids':
+                                'channel==', 'channel': channel}, 'playlists');
+                        await yt_getDataInternal(user_id, 0, {'part': 'snippet', 'mine': 'true', 'type': 'video',
+                            'channelId': ' ', 'metrics': 'videos', 'ids': 'channel==', 'channel': channel}, 'search');
+                        await yt_getDataInternal(user_id, 1, {'metrics': 'views', 'dimensions': 'day', 'ids':
+                                'channel==', 'channel': channel, 'analytics': true});
                         await yt_getDataInternal(user_id, 1, {
                             'metrics': 'comments',
                             'dimensions': 'day',
