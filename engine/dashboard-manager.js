@@ -393,6 +393,8 @@ exports.getDashboardByID = async function (req, res, next) {
             dataToReturn.push(formatResult(finalResult[i]));
         }
 
+        dataToReturn = dataToReturn.sort((a,b) => a['position'] - b['position']);
+
         return res.status(HttpStatus.OK).send(dataToReturn); // returns chart list
 
     } catch (err) {
@@ -650,7 +652,7 @@ exports.updateChartInDashboard = function (req, res, next) {
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
-            dashboard_id: chart.dashboard_id
+            dashboard_id: chart.dashboard_id,
         },
         attributes: {
             exclude: ['DashboardId']
@@ -715,6 +717,54 @@ exports.updateChartInDashboard = function (req, res, next) {
                 error: 'Cannot update the chart from the dashboard'
             });
         });
+};
+
+exports.updateArray = (req, res) => {
+  const arrayReceived = req.body.arrayReceived;
+
+  return res.send({
+      array: arrayReceived
+  });
+};
+
+// It updates charts holded by a dashboard
+exports.updateChartsInDashboard = function (req, res, next) {
+    const chartArray = req.body.chartArray;
+    let promises = [];
+
+    console.warn(req.body);
+
+    Sequelize.Promise.each(chartArray, function (val, index) {
+        return DashboardCharts.update({
+            position: val.position
+        }, {
+             where: {
+                 dashboard_id: val.dashboard_id,
+                 chart_id: val.chart_id
+             },
+            attributes: {
+                exclude: ['DashboardId']
+            },
+        }).then(function (chart) {
+        }, function (err) {
+            console.error(err);
+        });
+    }).then (function (updateAll) {
+        return res.status(HttpStatus.CREATED).send({
+            updated: true,
+            updateCharts: updateAll
+        });
+    }, function (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            updated: false,
+            dashboard_id: chartArray,
+            error: 'Cannot update the chart array from the dashboard'
+        });
+    });
+
+    //console.warn(updateCharts);
+
 };
 
 // It adds a dashboard to a user
@@ -865,8 +915,9 @@ const formatResult = (dashChart) => {
         chart_id: dashChart['dataValues']['chart_id'],
         dashboard_id: dashChart['dataValues']['dashboard_id'],
         format: dashChart['dataValues']['Chart']['dataValues']['format'],
+        type: dashChart['dataValues']['Chart']['dataValues']['type'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
-        type: dashChart['dataValues']['Chart']['dataValues']['type']
+        position: dashChart['dataValues']['position']
     };
 };
