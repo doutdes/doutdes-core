@@ -20,7 +20,8 @@ module.exports = (sequelize, DataType) => {
         user_type:      DataType.STRING(100),
         checksum:       DataType.STRING(100),
         is_verified:    DataType.BOOLEAN,
-        token:          DataType.STRING(50)
+        token:          DataType.STRING(50),
+        lang:           DataType.STRING(2)
     }, {
         freezeTableName: true,
         timestamps: false,

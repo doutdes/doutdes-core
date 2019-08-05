@@ -273,7 +273,7 @@ const getUserById = (req, res) => {
 const updateUser = (req, res) => {
 
     const user = req.body;
-    const password = bcrypt.hashSync(user.password);
+    const password = user.password ? bcrypt.hashSync(user.password) : null;
 
     Model.Users.update({
         username: user.username,
@@ -289,7 +289,8 @@ const updateUser = (req, res) => {
         province: user.province,
         city: user.city,
         zip: user.zip,
-        password: password
+        lang: user. lang,
+        password: user.password ? password : user.password
     }, {
         where: {
             id: req.user.id
