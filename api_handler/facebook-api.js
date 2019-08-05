@@ -171,6 +171,7 @@ const getFacebookData = async (pageID, metric, period, token, start_date, end_da
         throw new Error('getFacebookData -> Error getting the Facebook Data');
     }
 };
+
 const getFacebookPost = async(pageID, token) => {
     let result;
     const options = {

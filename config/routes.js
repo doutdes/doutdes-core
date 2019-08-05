@@ -181,7 +181,7 @@ module.exports = function (app, passport, config) {
     /****************** FACEBOOK MARKETING MANAGER ********************/
     app.get(fbmPath + 'adslist', FbMM.getAdsList);
     app.get(fbmPath + ':act_id/insights', FbMM.getData);  // Retrieves generical data about the ads account
-    app.get(fbmPath + ':act_id/insights/breakdowns', FbMM.getData);
+    app.get(fbmPath + ':act_id/insights/breakdowns/:group', FbMM.getData);
     app.get(fbmPath + ':act_id/campaigns', FbMM.getData); // It gets more generic levels of data
     app.get(fbmPath + ':act_id/adsets', FbMM.getData);
     app.get(fbmPath + ':act_id/ads', FbMM.getData);
