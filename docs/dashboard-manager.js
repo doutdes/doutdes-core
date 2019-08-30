@@ -256,7 +256,6 @@
  *
  **/
 
-
 /**
  * @api {get} /dashboards/getChartsNotAddedByDashboardAndType/:dashboard_id/:type/ Get Charts Not Added By Dashboard Id and Type
  * @apiName Get Charts Not Added By Dashboard Id and Type
@@ -305,7 +304,6 @@
  *          "message": "Cannot get charts not added information"
  *      }
  */
-
 
 /**
  * @api {post} /dashboards/addChartToDashboard/ Add Chart to Dashboard
@@ -527,4 +525,155 @@
  *      }
  */
 
+/**
+ * @api {delete} /dashboards/deleteUserDashboard/ Remove Dashboard from a user
+ * @apiName Remove Dashboard from a user
+ * @apiDescription This request removes a dashboard from a user
+ * @apiGroup Dashboard
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {Number} dashboard_id ID of the dashboard
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *          {
+ *              deleted: true,
+ *              user_id: 2
+ *              dashboard_id: 50
+ *          }
+ *     ]
+ *
+ @apiError (400) noParameters BAD REQUEST
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 OK
+ *     {
+ *              deleted: false,
+ *              user_id: 2
+ *              dashboard_id: 50,
+ *              message: 'Cannot delete the dashboard'
+ *     }
+ *
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot remove the chart from the dashboard
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *              deleted: false,
+ *              user_id: 2
+ *              dashboard_id: 50,
+ *              message: 'Cannot delete the dashboard'
+ *      }
+ */
+
+/**
+ * @api {delete} /dashboards/deleteDashboard/ Remove Dashboard
+ * @apiName Remove Dashboard
+ * @apiDescription This request removes a dashboard
+ * @apiGroup Dashboard
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {Number} dashboard_id ID of the dashboard
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *          {
+ *              deleted: true,
+ *              dashboard_id: 50
+ *          }
+ *     ]
+ *
+ @apiError (400) noParameters BAD REQUEST
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 OK
+ *     {
+ *              deleted: false,
+ *              dashboard_id: 50,
+ *              message: 'Cannot delete the dashboard'
+ *     }
+ *
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot remove the chart from the dashboard
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *              deleted: false,
+ *              dashboard_id: 50,
+ *              message: 'Cannot delete the dashboard'
+ *      }
+ */
+
+/**
+ * @api {post} /dashboards/createDashboard/ Create Dashboard
+ * @apiName Create Dashboard
+ * @apiDescription This request create a new dashboard
+ * @apiGroup Dashboard
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {String} name Name of dashboard
+ * @apiParam {Number} category Category of the dashboard.
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *          {
+ *              created: true,
+ *              dashboard_id: 50,
+ *              name: 'Facebook'
+ *              category: '1',
+ *              message: 'The new dashboard has been created.'
+ *          }
+ *     ]
+ *
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot insert the chart into the dashboard
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *       {
+ *         created: false,
+ *         name: 'Facebook',
+ *         category: 10,
+ *         message: 'Cannot create the dashboard.'
+ *      }
+ */
 
