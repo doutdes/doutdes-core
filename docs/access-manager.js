@@ -29,7 +29,7 @@
  *          "last_name": "Sperti"
  *     }
  *
- * @apiError (400) UserAlreadyExists The username or the email has been alredy used.
+ * @apiError (400) UserAlreadyExists The username or the email has been already used.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 BAD REQUEST
@@ -52,7 +52,7 @@
 /**
  * @api {get} /users/getFromId/ Get From ID
  * @apiName GetFromId
- * @apiDescription The request gives to the user who made the call all his informaations.
+ * @apiDescription The request gives to the user who made the call all his informations.
  * @apiGroup User
  * @apiPermission all
  *
