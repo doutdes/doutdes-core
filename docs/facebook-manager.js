@@ -34,7 +34,6 @@
  *          {
  *              "value": 525,
  *              "end_time": "2019-05-09T07:00:00+0000"
- *              }
  *          }
  *     ]
  * @apiError (400) noParameters Bad Request
@@ -64,7 +63,7 @@
 
 /**
  * @api {get} /fb/:page_id/engageduser/ Get engaged user
- * @apiName Get Dashboards
+ * @apiName Get engaged user
  * @apiGroup Facebook
  * @apiDescription This request returns the total number of people who have interacted with the page (interaction means any click)
  * @apiPermission all
@@ -98,7 +97,131 @@
  *          {
  *              "value": 10,
  *              "end_time": "2019-05-09T07:00:00+0000"
- *              }
+ *          }
+ *     ]
+ * @apiError (400) noParameters Bad Request
+ *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              "name": 'Facebook Bad Request',
+ *              "message": 'Invalid OAuth access token.'
+ *          }
+ *
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot get information from Facebook
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *         {
+ *              "name": 'Internal Server Error',
+ *              "message": 'There is a problem either with Facebook servers or with our database'
+ *         }
+ */
+
+/**
+ * @api {get} /fb/:page_id/pageviewstotal/ Get page views total
+ * @apiName Get page views total
+ * @apiGroup Facebook
+ * @apiDescription This request returns the number of times that the page profile was viewed by people who logged in and people who didn't.
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {String} page_id User page ID
+ * @apiSuccess (200) {Number} value Value of the required metric
+ * @apiSuccess (200) {Date} end_time Date of data collection
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *          {
+ *              "value": 0,
+ *              "end_time": "2019-05-06T07:00:00+0000"
+ *          },
+ *          {
+ *              "value": 2,
+ *              "end_time": "2019-05-07T07:00:00+0000"
+ *          },
+ *          {
+ *              "value": 2,
+ *              "end_time": "2019-05-08T07:00:00+0000"
+ *          },
+ *          {
+ *              "value": 6,
+ *              "end_time": "2019-05-09T07:00:00+0000"
+ *          }
+ *     ]
+ * @apiError (400) noParameters Bad Request
+ *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              "name": 'Facebook Bad Request',
+ *              "message": 'Invalid OAuth access token.'
+ *          }
+ *
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot get information from Facebook
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *         {
+ *              "name": 'Internal Server Error',
+ *              "message": 'There is a problem either with Facebook servers or with our database'
+ *         }
+ */
+
+/**
+ * @api {get} /fb/:page_id/pagereactions/ Get page reactions
+ * @apiName Get page reactions
+ * @apiGroup Facebook
+ * @apiDescription This request returns the total daily number of reactions to a post on a Page, by type.
+ * @apiPermission all
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ * @apiParam {String} page_id User page ID
+ * @apiSuccess (200) {Array} value Value of the required metric
+ * @apiSuccess (200) {Date} end_time Date of data collection
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *          {
+ *              "value": {
+ *                  "like": 2,
+ *                  "wow": 3
+ *              },
+ *              "end_time": "2019-05-06T07:00:00+0000"
+ *          },
+ *          {
+ *              "value": {
+ *                  "like": 2,
+ *                  "love": 5,
+ *                  "sigh": 1
+ *              },
+ *              "end_time": "2019-05-07T07:00:00+0000"
  *          }
  *     ]
  * @apiError (400) noParameters Bad Request
