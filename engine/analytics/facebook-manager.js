@@ -247,6 +247,14 @@ const fb_getPost = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         page_id = req.params.page_id || key.dataValues.fb_page_id;
+
+        if(!page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+               error: true,
+               message: 'You must specify a page id in the request'
+            });
+        }
+
         data = await FacebookApi.getFacebookPost(page_id, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
