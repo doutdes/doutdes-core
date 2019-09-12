@@ -97,61 +97,7 @@ exports.internalCreateDefaultDashboards = async function (user_id) {
     });
 };
 
-/**
- * @api {get} /dashboards/getAllUserDashboards/ Get all by user
- * @apiName Get Dashboards
- * @apiDescription This request takes all the dashboards owned by the user who made the call.
- * @apiGroup Dashboard
- * @apiPermission all
- *
- * @apiHeader {String} Authorization Json Web Token retrieved from login request.
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
- *     }
- *
- * @apiSuccess (200) {Object[]} dashboards List of dashboards.
- * @apiSuccess (200) {Number} dashboards.dashboard_id Identifier of the dashboard.
- * @apiSuccess (200) {Number} dashboards.user_id ID of the user who owns the dashboard.
- * @apiSuccess (200) {Object} dashboards.Dashboard Details about the dashboard.
- * @apiSuccess (200) {Number} dashboards.Dashboard.id  ID of the dashboard.
- * @apiSuccess (200) {String} dashboards.Dashboard.name Name of the dashboard.
- * @apiSuccess (200) {Number} dashboards.Dashboard.category Number that identifies the type of the dashboard
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     [
- *          {
- *              "user_id": 249,
- *              "dashboard_id": 249,
- *              "Dashboard": {
- *                  "id": 229,
- *                  "name": "Facebook",
- *                  "cateogry": 1,
- *              }
- *          }
- *     ]
- *
- * @apiSuccess (204) {NoType} noParameters NO CONTENT
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 204 NO CONTENT
- *
- * @apiError (401) Unauthorized The user is not authorized to do the request.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *          Unauthorized
- *
- * @apiError (500) InternalServerError Cannot get dashboard information
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 INTERNAL SERVER ERROR
- *       {
- *          "error": true,
- *          "message": "Cannot get dashboard information"
- *      }
- */
+
 exports.readUserDashboards = function (req, res, next) {
 
     UserDashboards.findAll({
@@ -177,58 +123,7 @@ exports.readUserDashboards = function (req, res, next) {
         })
 };
 
-/**
- * @api {get} /dashboards/getByType/ Get By Type
- * @apiName Get Dashboards By Type
- * @apiDescription This request takes a single dashboard owned by a user, given its type
- * @apiGroup Dashboard
- * @apiPermission all
- *
- * @apiHeader {String} Authorization Json Web Token retrieved from login request.
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
- *     }
- *
- * @apiSuccess (200) {Number} dashboard_id Identifier of the dashboard.
- * @apiSuccess (200) {Number} user_id ID of the user who owns the dashboard.
- * @apiSuccess (200) {Object} Dashboard Details about the dashboard.
- * @apiSuccess (200) {Number} dashboards.Dashboard.id  ID of the dashboard.
- * @apiSuccess (200) {String} dashboards.Dashboard.name Name of the dashboard.
- * @apiSuccess (200) {Number} dashboards.Dashboard.category Number that identifies the type of the dashboard
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *      {
- *          "user_id": 249,
- *          "dashboard_id": 249,
- *          "Dashboard": {
- *              "id": 229,
- *              "name": "Facebook",
- *              "cateogry": 1,
- *          }
- *      }
- *
- * @apiSuccess (204) {NoType} noParameters NO CONTENT
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 204 NO CONTENT
- *
- * @apiError (401) Unauthorized The user is not authorized to do the request.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *          Unauthorized
- *
- * @apiError (500) InternalServerError Cannot get dashboard information
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 INTERNAL SERVER ERROR
- *       {
- *          "error": true,
- *          "message": "Cannot get dashboard information"
- *      }
- */
+
 exports.getDashboardByType = function (req, res, next) {
 
     UserDashboards.findAll({
@@ -283,54 +178,7 @@ exports.readNotAddedByDashboard = function (req, res, next) {
         })
 };
 
-/**
- * @api {get} /dashboards/getChartsNotAddedByDashboardAndType/:dashboard_id/:type/ Get Charts Not Added By Dashboard Id and Type
- * @apiName Get Charts Not Added By Dashboard Id and Type
- * @apiDescription This request returns the charts not added yet into the dashboard, given a dashboard id and its type
- * @apiGroup Dashboard
- * @apiPermission all
- *
- * @apiHeader {String} Authorization Json Web Token retrieved from login request.
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
- *     }
- *
- * @apiSuccess (200) {Object[]} Charts Array of charts not added yet.
- * @apiSuccess (200) {Number} Charts.id ID of the chart.
- * @apiSuccess (200) {String} Charts.title Title of the chart.
- * @apiSuccess (200) {Number} Charts.type Type of the chart.
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     [
- *          {
- *              "ID": 249,
- *              "title": "Page Impressions",
- *              "type": 1
- *          }
- *     ]
- *
- * @apiSuccess (204) {NoType} noParameters NO CONTENT
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 204 NO CONTENT
- *
- * @apiError (401) Unauthorized The user is not authorized to do the request.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *          Unauthorized
- *
- * @apiError (500) InternalServerError Cannot get charts not added information
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 INTERNAL SERVER ERROR
- *       {
- *          "error": true,
- *          "message": "Cannot get charts not added information"
- *      }
- */
+
 exports.readNotAddedByDashboardAndType = function (req, res, next) {
     Sequelize.query("SELECT * FROM charts WHERE charts.Type = :type AND charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
@@ -652,7 +500,7 @@ exports.updateChartInDashboard = function (req, res, next) {
     UserDashboards.findOne({
         where: {
             user_id: req.user.id,
-            dashboard_id: chart.dashboard_id
+            dashboard_id: chart.dashboard_id,
         },
         attributes: {
             exclude: ['DashboardId']
@@ -717,6 +565,54 @@ exports.updateChartInDashboard = function (req, res, next) {
                 error: 'Cannot update the chart from the dashboard'
             });
         });
+};
+
+exports.updateArray = (req, res) => {
+  const arrayReceived = req.body.arrayReceived;
+
+  return res.send({
+      array: arrayReceived
+  });
+};
+
+// It updates charts holded by a dashboard
+exports.updateChartsInDashboard = function (req, res, next) {
+    const chartArray = req.body.chartArray;
+    let promises = [];
+
+    console.warn(req.body);
+
+    Sequelize.Promise.each(chartArray, function (val, index) {
+        return DashboardCharts.update({
+            position: val.position
+        }, {
+             where: {
+                 dashboard_id: val.dashboard_id,
+                 chart_id: val.chart_id
+             },
+            attributes: {
+                exclude: ['DashboardId']
+            },
+        }).then(function (chart) {
+        }, function (err) {
+            console.error(err);
+        });
+    }).then (function (updateAll) {
+        return res.status(HttpStatus.CREATED).send({
+            updated: true,
+            updateCharts: updateAll
+        });
+    }, function (err) {
+        console.error(err);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            updated: false,
+            dashboard_id: chartArray,
+            error: 'Cannot update the chart array from the dashboard'
+        });
+    });
+
+    //console.warn(updateCharts);
+
 };
 
 // It adds a dashboard to a user

@@ -145,6 +145,8 @@ module.exports = function (app, passport, config) {
     app.post(dashPath + 'addChartToDashboard', reqAuth, AccMan.roleAuth(all), DashMan.addChartToDashboard);
     app.delete(dashPath + 'removeChartFromDashboard', reqAuth, AccMan.roleAuth(all), DashMan.removeChartFromDashboard);
     app.put(dashPath + 'updateChartInDashboard', reqAuth, AccMan.roleAuth(all), DashMan.updateChartInDashboard);
+    app.put(dashPath + 'updateChartsInDashboard', reqAuth, AccMan.roleAuth(all), DashMan.updateChartsInDashboard);
+    app.put(dashPath + 'updateProof', DashMan.updateArray);
     app.delete(dashPath + 'clearDashboard', reqAuth, AccMan.roleAuth(all), DashMan.clearAllDashboard);
     // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuth(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
@@ -260,9 +262,10 @@ module.exports = function (app, passport, config) {
 
     /****************** YOUTUBE MANAGER ********************/
     app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
-    app.get(ytPath + ':channel/subscribers/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'subscriptions'), YtM.setParams({'params':{'part':'snippet','mySubscribers':true}}), YtM.yt_getSubs);
-    app.get(ytPath + ':channel/playlists', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet'}}), YtM.yt_getData);
-    app.get(ytPath + ':channel/videos/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'search'), YtM.setParams({'params':{'part':'snippet','type':'video', 'mine':'true', 'type':'video', 'channelId':' '}}), YtM.yt_getData);
+    app.get(ytPath + 'storeAllData/:key*?', YtM.yt_storeAllData);
+    app.get(ytPath + ':channel/subscribers/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'subscriptions'), YtM.setParams({'params':{'part':'snippet','mySubscribers':true, 'metrics':'subscribers'}}), YtM.yt_getSubs);
+    app.get(ytPath + ':channel/playlists/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet', 'metrics': 'playlists'}}), YtM.yt_getData);
+    app.get(ytPath + ':channel/videos/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'search'), YtM.setParams({'params':{'part':'snippet', 'mine':'true', 'type':'video', 'channelId':' ', 'metrics': 'videos'}}), YtM.yt_getData);
     app.get(ytPath + ':channel/views/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'views','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/comments/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'comments','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/likes/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'likes','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
@@ -270,6 +273,8 @@ module.exports = function (app, passport, config) {
     app.get(ytPath + ':channel/shares/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'shares','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/avgView/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'averageViewDuration','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/estWatch/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'estimatedMinutesWatched','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
+
+    app.get(ytPath + 'getViewList', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
 
 
     /****************** CALENDAR MANAGER ******************/

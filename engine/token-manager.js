@@ -72,6 +72,8 @@ const checkExistence = async (req, res) => {
             joinModel = FbToken;
             break;
         case D_TYPE.GA:
+            joinModel = GaToken;
+            break;
         case D_TYPE.YT:
             joinModel = GaToken;
             break;
@@ -150,7 +152,7 @@ const checkInternalPermission = async (user_id, type) => {
     }
 
     if (!key) { // If a key is not set, return error
-        console.log('KEY IS NOT SET UP');
+        console.warn('KEY IS NOT SET UP');
         return {
             name: DS_TYPE[parseInt(type)],
             type: parseInt(type),
@@ -230,7 +232,7 @@ const revokePermissions = async (req, res) => {
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
                 await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
-                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 
@@ -288,6 +290,7 @@ const insertKey = (req, res) => {
         case D_TYPE.FB: // fb
             return insertFbKey(req, res);
         case D_TYPE.GA: // google
+        case D_TYPE.YT:
             return insertGaData(req, res);
         default:
             console.log('ERROR TOKEN-MANAGER. Unrecognized service type: ' + service_id);
@@ -298,13 +301,15 @@ const insertKey = (req, res) => {
     }
 };
 const update = (req, res) => { // TODO sistemare
-    console.log(req.body);
+    console.log('aaaa',req.body);
     const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
         case D_TYPE.FB: //fb
             return updateFbKey(req, res);
         case D_TYPE.GA: //google
             return updateGaData(req, res);
+        case D_TYPE.YT:
+            return updateYTData(req, res);
         default:
             return res.status(HttpStatus.BAD_REQUEST).send({
                 created: false,
@@ -427,6 +432,7 @@ const updateFbKey = (req, res) => {
         })
     })
 };
+
 const updateGaData = (req, res) => {
     GaToken.update({
         client_email: req.body.api.client_email,
@@ -451,6 +457,38 @@ const updateGaData = (req, res) => {
             client_email: req.body.api.client_email,
             private_key: req.body.api.private_key,
             view_id: req.body.api.ga_view_id,
+            error: 'Cannot update the Google Analytics credentials'
+        })
+    })
+};
+
+const updateYTData = (req, res) => {
+    console.log(req);
+    let channel = (req.body.api.channel_id) ? req.body.api.channel_id : null;
+
+    GaToken.update({
+        client_email: req.body.api.client_email,
+        private_key: req.body.api.private_key,
+        channel_id : channel
+    }, {
+        where: {
+            user_id: req.user.id
+        }
+    }).then(up_key => {
+        return res.status(HttpStatus.OK).send({
+            updated: true,
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            channel_id : channel
+    })
+    }).catch(err => {
+        console.error(err);
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            updated: false,
+            client_email: req.body.api.client_email,
+            private_key: req.body.api.private_key,
+            channel_id : channel,
             error: 'Cannot update the Google Analytics credentials'
         })
     })

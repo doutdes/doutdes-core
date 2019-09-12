@@ -3,7 +3,8 @@
 /** IMPORTS **/
 const Request = require('request-promise');
 const Model = require('../models/index');
-const GaToken = Model.GaToken;
+const {google} = require('googleapis');
+
 
 /** CONSTANTS **/
 const date_preset = 'this_year';
@@ -43,6 +44,7 @@ const DIMENSIONS = {
 
 const getAccessToken = async (rt) => {
     let result;
+
     rt = rt['dataValues']['private_key'];
     const options = {
         method: 'POST',
@@ -63,12 +65,13 @@ const getAccessToken = async (rt) => {
     }
 };
 
-async function yt_getData(req) {
-    let data;
+/*main data request: requires a refresh token an endpoint, misc. params and a subendpoint (additional url part like 'subscription'*/
+async function yt_getData(rt, EP, params, sEP = null) {
+    let data, token;
 
     try {
-        req.token = await getAccessToken(req.rt);
-        data = await youtubeQuery(req);
+        token = await getAccessToken(rt);
+        data = await youtubeQuery(token, EP, params, sEP);
     } catch (e) {
         console.error(e);
     }
@@ -77,12 +80,10 @@ async function yt_getData(req) {
 }
 
 //TODO check why it is necessary adds and subs in dates
-const youtubeQuery = async (req) => {
+const youtubeQuery = async (token, EP, params, sEP = null) => {
     let result;
-    let EP;
-
     //getting which endpoint should be used
-    switch (req.EP) {
+    switch (EP) {
         case 0 :
             EP = dataEndPoint;
             break;
@@ -94,21 +95,28 @@ const youtubeQuery = async (req) => {
     }
 
     //adding the sub-endpoint if avaiable
-    EP += (req.sEP) ? req.sEP : '';
+    EP += (sEP) ? sEP : '';
     const options = {
         method: GET,
         uri: EP,
         qs: {
-            access_token: req.token
+            access_token: token
         },
         json: true
     };
-    for (let par of Object.keys(req.params)) {
-        options.qs[par] = req.params[par];
+
+    /*getting all the metrics, dimensions, part etc...
+    * This is required since YT calls doens't always need all the parameter, and they can't be left empty.
+    * So in order to dynamize the call the parameter are stored as a list of key-value pairs*/
+    for (let par of Object.keys(params)) {
+        options.qs[par] = params[par];
     }
-    (options.qs.ids) ? options.qs.ids += req.params.channel : null;
+
+    /*other miscellaneous params*/
+    (options.qs.ids) ? options.qs.ids += params.channel : null;
     (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
-    (options.qs.channelId) ? options.qs.channelId = req.params.channel : null;
+    (options.qs.channelId) ? options.qs.channelId = params.channel : null;
+
     try {
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));
