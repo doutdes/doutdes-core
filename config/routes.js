@@ -2,6 +2,7 @@ const AccMan = require('../engine/access-manager');
 const TokenManager = require('../engine/token-manager');
 const DashMan = require('../engine/dashboard-manager');
 const CalMan = require('../engine/calendar-manager');
+const MessMan = require('../engine/message-manager');
 
 const FbM = require('../engine/analytics/facebook-manager');
 const IgM = require('../engine/analytics/instagram-manager');
@@ -20,6 +21,7 @@ module.exports = function (app, passport, config) {
     let keysPath  = indexPath + 'keys/';
     let dashPath  = indexPath + 'dashboards/';
     let calPath   = indexPath + 'calendar/';
+    let messPath  = indexPath + 'message/'
 
 
     let gaPath = indexPath + 'ga/';
@@ -151,6 +153,9 @@ module.exports = function (app, passport, config) {
     app.delete(dashPath + 'deleteUserDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
     app.post(dashPath + 'createDashboard', reqAuth, AccMan.roleAuth(all), DashMan.createDashboard);
     app.delete(dashPath + 'deleteDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteDashboard);
+
+    /****************** CRUD MESSAGES ********************/
+    app.post(messPath + 'createMessage', reqAuth, AccMan.roleAuth(admin),MessMan.createMessage);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
