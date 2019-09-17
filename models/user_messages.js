@@ -11,7 +11,7 @@ module.exports = (sequelize, DataType) => {
             primaryKey: true
         },
         is_read: {
-            type: DataType.TINYINT(1)
+            type: DataType.BOOLEAN
         }
     }, {
         freezeTableName: true,
