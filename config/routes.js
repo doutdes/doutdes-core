@@ -140,6 +140,7 @@ module.exports = function (app, passport, config) {
     app.get(dashPath + 'getDashboardByType/:type', reqAuth, AccMan.roleAuth(all), DashMan.getDashboardByType);
     app.get(dashPath + 'getDashboardByID/:id', reqAuth, AccMan.roleAuth(all), DashMan.getDashboardByID);
     app.get(dashPath + 'getChart/:dashboard_id/:chart_id', reqAuth, AccMan.roleAuth(all), DashMan.readChart);
+    app.get(dashPath + 'getChartsByFormat/:format', reqAuth, AccMan.roleAuth(all), DashMan.getByFormat);
     app.get(dashPath + 'getChartsNotAddedByDashboard/:dashboard_id/', reqAuth, AccMan.roleAuth(all), DashMan.readNotAddedByDashboard);
     app.get(dashPath + 'getChartsNotAddedByDashboardAndType/:dashboard_id/:type', reqAuth, AccMan.roleAuth(all), DashMan.readNotAddedByDashboardAndType);
     app.post(dashPath + 'addChartToDashboard', reqAuth, AccMan.roleAuth(all), DashMan.addChartToDashboard);
@@ -148,7 +149,6 @@ module.exports = function (app, passport, config) {
     app.put(dashPath + 'updateChartsInDashboard', reqAuth, AccMan.roleAuth(all), DashMan.updateChartsInDashboard);
     app.put(dashPath + 'updateProof', DashMan.updateArray);
     app.delete(dashPath + 'clearDashboard', reqAuth, AccMan.roleAuth(all), DashMan.clearAllDashboard);
-    // app.post(dashPath   + 'assignDashboardToUser', requireAuth, AccessManager.roleAuth(all),DashboardsManager.assignDashboardToUser);
     app.delete(dashPath + 'deleteUserDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
     app.post(dashPath + 'createDashboard', reqAuth, AccMan.roleAuth(all), DashMan.createDashboard);
     app.delete(dashPath + 'deleteDashboard', reqAuth, AccMan.roleAuth(all), DashMan.deleteDashboard);
