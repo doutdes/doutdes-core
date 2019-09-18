@@ -158,6 +158,7 @@ module.exports = function (app, passport, config) {
     app.post(messPath + 'createMessage', reqAuth, AccMan.roleAuth(admin),MessMan.createMessage);
     app.get(messPath + 'getMessageByID/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.readMessageByID);
     app.get(messPath + 'getMessagesForUser', reqAuth, AccMan.roleAuth(all),MessMan.getMessagesForUser);
+    app.post(messPath + 'sendMessageToUser', reqAuth, AccMan.roleAuth(admin),MessMan.sendMessageToUser);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
