@@ -13,33 +13,6 @@ const Request = require('request-promise');
 const fbInsightURI = 'https://graph.facebook.com/';
 const config       = require('../app').config;
 
-/** METRIC COSTANT **/
-const METRICS = {
-    P_ENGAGED_USERS: 'page_engaged_users',
-    P_IMPRESSIONS_UNIQUE: 'page_impressions_unique',
-    P_IMPRESSIONS_BY_CITY_UNIQUE: 'page_impressions_by_city_unique',
-    P_IMPRESSIONS_BY_COUNTRY_UNIQUE: 'page_impressions_by_country_unique',
-    P_ACTION_POST_REACTIONS_TOTAL: 'page_actions_post_reactions_total',
-    P_FANS: 'page_fans',
-    P_FANS_CITY: 'page_fans_city',
-    P_FANS_COUNTRY: 'page_fans_country',
-    P_FANS_ADDS: 'page_fan_adds',
-    P_FANS_REMOVES: 'page_fan_removes',
-    P_VIEWS_EXT_REFERRALS: 'page_views_external_referrals',
-    P_VIEWS_TOTAL: 'page_views_total',
-    P_CONSUMPTIONS: 'page_consumptions',
-    P_PLACES_CHECKIN_TOTAL: 'page_places_checkin_total',
-    P_NEGATIVE_FEEDBACK: 'page_negative_feedback',
-    P_FANS_ONLINE_DAY: 'page_fans_online_per_day',
-    P_IMPRESSIONS_PAID: 'page_impressions_paid',
-    P_VIDEO_VIEWS: 'page_video_views',
-    POST_IMPRESSIONS: 'post_impressions',
-    P_VIDEO_ADS: 'page_daily_video_ad_break_ad_impressions_by_crosspost_status'
-};
-
-/** GLOBAL PARAMETERS **/
-global.GET = 'GET';
-global.POST = 'POST';
 
 /** GET pageID from facebook token **/
 const getPageAccessToken = async (token, pageID) => {
@@ -158,7 +131,6 @@ const facebookQuery = async (method, metric, period, pageID, token, start_date, 
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
 const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
     let access_token, data;
 
@@ -212,8 +184,6 @@ const getAccountInfo = async (token) => {
         throw new Error('getAccountInfo -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
-
 const getTokenInfo = async (token) => {
     let result, accountInfo;
     const options = {
@@ -238,4 +208,4 @@ const getTokenInfo = async (token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getFacebookPost, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};
+module.exports = {getFacebookData, getFacebookPost, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission};

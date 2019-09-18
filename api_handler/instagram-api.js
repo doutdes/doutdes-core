@@ -5,7 +5,6 @@ const Request = require('request-promise');
 
 /** CONSTANTS **/
 const igInsightURI = 'https://graph.facebook.com/';
-const date_preset = 'this_year';
 
 /** METRIC COSTANT **/
 const METRICS = {
@@ -31,26 +30,6 @@ const METRICS = {
     TAPS_F: 'taps_forward',
     TAPS_B: 'taps_back'
 };
-const PERIOD = {
-    DAY: 'day',
-    LIFETIME: 'lifetime',
-    WEEK: 'week',
-    D_28: 'days_28',
-};
-
-const INTERVAL = {
-    MONTH: 29,
-    FOUR_WEEKS: 28
-};
-
-
-/** GLOBAL PARAMETERS **/
-global.GET = 'GET';
-global.POST = 'POST';
-global.DAYS_28 = 'days_28';
-global.WEEK = 'week';
-global.DAY = 'day';
-global.LIFETIME = 'lifetime';
 
 async function getPageAccessToken(token, pageID) {
     let result;
@@ -239,4 +218,4 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
     }
 };
 
-module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission, METRICS, PERIOD, INTERVAL};
+module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission, METRICS};

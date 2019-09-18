@@ -90,8 +90,6 @@ module.exports = function (app, passport, config) {
 
     /* SERVICE METRICS*/
     const IGM = require('../api_handler/instagram-api').METRICS;
-    const IGP = require('../api_handler/instagram-api').PERIOD;
-    const IGI = require('../api_handler/instagram-api').INTERVAL;
 
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccMan.basicLogin);

@@ -4,42 +4,6 @@ const Request = require('request-promise');
 
 const config = require('../config/config').production;
 
-const METRICS = {
-    SESSIONS: 'ga:sessions',
-    PAGE_VIEWS: 'ga:pageviews',
-    BOUNCE_RATE: 'ga:bounceRate',
-    AVG_SESSION_DURATION: 'ga:avgSessionDuration',
-    USERS: 'ga:users',
-    NEW_USERS: 'ga:newUsers',
-    PAGE_LOAD_TIME: 'ga:pageLoadTime',
-    PERCENT_NEW_SESSIONS: 'ga:percentNewSessions'
-};
-const DIMENSIONS = {
-    DATE: 'ga:date',
-    COUNTRY: 'ga:country',
-    BROWSER: 'ga:browser',
-    MEDIUM: 'ga:medium',
-    PAGE_PATH: 'ga:pagePath',
-    MEDIUM_DATE: 'ga:date, ga:medium',
-    BROWSER_DATE: 'ga:date, ga:browser',
-    PAGE_DATE: 'ga:date, ga:pagePath',
-    COUNTRY_DATE: 'ga:date, ga:country',
-    MOBILE_DEVICE_DATE: 'ga:date, ga:mobileDeviceMarketingName',
-    DATE_HOUR: 'ga:date, ga:hour',
-    DEVICE_CAT_DATE: 'ga:date, ga:deviceCategory',
-    INTEREST_DATE: 'ga:date, ga:interestAffinityCategory',
-    AUD_GENDER_AGE_DATE: 'ga:date, ga:userGender, ga:userAgeBracket'
-};
-const SORT = {
-    PAGE_VIEWS_DESC: '-ga:pageviews'
-};
-const FILTER = {
-    SESSIONS_GT_0: 'ga:sessions>0',
-    SESSIONS_GT_1: 'ga:sessions>1',
-    SESSIONS_GT_5: 'ga:sessions>5',
-    PAGE_LOAD_TIME_GT_0: 'ga:pageLoadTime>0'
-};
-
 const getAccessToken = async (refresh_token) => {
     let result;
 
@@ -87,19 +51,6 @@ const getTokenInfo = async (private_key) => {
 
     return result;//['scope'].split(' ');
 };
-
-const getViewID = async (private_key) => {
-    const access_token = await getAccessToken(private_key);
-
-    const result = await google.analytics('v3').management.profiles.list({
-        'access_token': access_token,
-        'accountId': '~all',
-        'webPropertyId': '~all'
-    });
-
-    return result.data.items;
-};
-
 const getViewList = async (private_key) => {
     const access_token = await getAccessToken(private_key);
 
@@ -119,7 +70,6 @@ const getViewList = async (private_key) => {
         profileList: profileList.data.items,
     };
 };
-
 const getData = async (private_key, view_id, start_date, end_date, metrics, dimensions, sort = null, filters = null) => {
 
     const access_token = await getAccessToken(private_key);
@@ -164,4 +114,4 @@ const revokePermissions = async (private_key) => {
 };
 
 /** EXPORTS **/
-module.exports = {getAccessToken, getData, getTokenInfo, revokePermissions, getViewList, METRICS, DIMENSIONS, SORT, FILTER};
+module.exports = {getData, getTokenInfo, revokePermissions, getViewList};
