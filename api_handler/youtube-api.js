@@ -94,7 +94,7 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
             EP = tokenEndPoint;
     }
 
-    //adding the sub-endpoint if avaiable
+    //adding the sub-endpoint if available
     EP += (sEP) ? sEP : '';
     const options = {
         method: GET,
@@ -106,8 +106,8 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
     };
 
     /*getting all the metrics, dimensions, part etc...
-    * This is required since YT calls doens't always need all the parameter, and they can't be left empty.
-    * So in order to dynamize the call the parameter are stored as a list of key-value pairs*/
+    * This is required since YT calls doesn't always need all the parameter, and they can't be left empty.
+    * So in order to dynamize the call the parameters are stored as a list of key-value pairs*/
     for (let par of Object.keys(params)) {
         options.qs[par] = params[par];
     }

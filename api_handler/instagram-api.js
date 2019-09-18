@@ -227,24 +227,12 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
 
 const getInstagramData = async (channelId, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
-    let final = [], temp = [];
 
     try {
         access_token = await getPageAccessToken(token, channelId);
+        result = JSON.parse(await instagramQuery(GET, metric, channelId, access_token, period, since, until, null, mediaID));
 
-        for(let index in metric) {
-            temp.push(JSON.parse(await instagramQuery(GET, metric[index], channelId, access_token, period, since, until, null, mediaID))['data'][0]['values']);
-            //every data carries on its metric
-            for(let i in temp[temp.length-1]) {
-                temp[temp.length-1][i].metric = metric[index];
-            }
-        }
-        for(let index in temp) {
-            final = final.concat(temp[index]);
-            //final = final.concat('-');
-        }
-        result = final;
-        return result;//['data'][0]['values'];
+        return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
         throw new Error("Bad Instagram Request");

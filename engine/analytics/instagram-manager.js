@@ -185,6 +185,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric);
+            console.warn('daaate', data);
             date = getIntervalDate(data);
             await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
@@ -204,9 +205,36 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 };
 
 const ig_getData = async (req, res) => {
+    const page_id = req.query.page_id;
+    const metric = req.query.metric;
+    const period = req.query.period;
+    const interval = req.query.interval;
     let response;
+
     try {
-        response = await ig_getDataInternal(req.user.id, req.params.page_id, req.metric, req.period, req.interval, req.params.media_id);
+
+        if(!page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a page ID for the Facebook data request.'
+            })
+        }
+
+        if(!metric) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a metric for the Facebook data request.'
+            })
+        }
+
+        if(!period) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a period for the Facebook data request.'
+            })
+        }
+
+        response = await ig_getDataInternal(req.user.id, page_id, metric, period, interval, req.params.media_id);
 
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {

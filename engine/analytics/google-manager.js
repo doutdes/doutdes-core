@@ -121,7 +121,7 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
 
     //get the start date of the mongo document if exists
     key = await GaToken.findOne({where: {user_id: user_id}});
-    old_date = await MongoManager.getGaMongoItemDate(user_id, key.view_id, metrics, dimensions);
+    old_date = await MongoManager.getGaMongoItemDate(user_id, key.view_id, metrics, dimensions); // TODO bug with view ID
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
@@ -156,8 +156,14 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
 };
 
 const ga_getData = async (req, res) => {
+
+    const metric = req.query.metric;
+    const dimensions = req.query.dimensions;
+    const sort = req.query.sort;
+    const filter = req.query.filter;
+
     try {
-        let response = await ga_getDataInternal(req.user.id, req.metrics, req.dimensions, req.sort, req.filters);
+        let response = await ga_getDataInternal(req.user.id, metric, dimensions, sort, filter);
         return res.status(HttpStatus.OK).send(response);
     }
     catch (err) {

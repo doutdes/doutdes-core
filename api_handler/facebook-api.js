@@ -34,7 +34,7 @@ const METRICS = {
     P_IMPRESSIONS_PAID: 'page_impressions_paid',
     P_VIDEO_VIEWS: 'page_video_views',
     POST_IMPRESSIONS: 'post_impressions',
-    P_VIDEO_ADS: 'page_daily_video_ad_break_ad_ impressions_by_crosspost_status'
+    P_VIDEO_ADS: 'page_daily_video_ad_break_ad_impressions_by_crosspost_status'
 };
 
 /** GLOBAL PARAMETERS **/

@@ -150,12 +150,27 @@ const fb_storeAllData = async (req, res) => {
 };
 
 const fb_getData = async (req, res) => {
-    let response;
-    let page_id;
+    const metric = req.query.metric;
+    let response, page_id;
 
     try {
-        page_id = req.params.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
-        response = await fb_getDataInternal(req.user.id, req.metric, page_id);
+        page_id = req.query.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
+
+        if(!page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a page ID for the Facebook data request.'
+            })
+        }
+
+        if(!metric) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a metric for the Facebook data request.'
+            })
+        }
+
+        response = await fb_getDataInternal(req.user.id, metric, page_id);
 
         return res.status(HttpStatus.OK).send(response);
     }
