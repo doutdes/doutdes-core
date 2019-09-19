@@ -289,7 +289,7 @@ const updateUser = (req, res) => {
         province: user.province,
         city: user.city,
         zip: user.zip,
-        lang: user. lang,
+        lang: user.lang,
         password: user.password ? password : user.password
     }, {
         where: {
