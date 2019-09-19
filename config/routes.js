@@ -88,9 +88,6 @@ module.exports = function (app, passport, config) {
 
     // TODO gestire le delete bene: se il risultato restituito dalla query è 0, allora non ha eliminato niente
 
-    /* SERVICE METRICS*/
-    const IGM = require('../api_handler/instagram-api').METRICS;
-
     /****************** ACCESS MANAGER ********************/
     app.post('/login', AccMan.basicLogin);
 
@@ -180,6 +177,7 @@ module.exports = function (app, passport, config) {
     app.get(igPath + 'storeAllDataDaily/:key*?', IgM.ig_storeAllDataDaily);
 
     app.get(igPath + 'data', reqAuth, AccMan.roleAuth(all), IgM.ig_getData);
+    app.get(igPath + 'media', reqAuth, AccMan.roleAuth(all), IgM.ig_getData);  // includes stories
 
     /****************** INSTAGRAM MEDIA MANAGER ********************/
     app.get(igPath + ':page_id/media/:n*?', reqAuth, AccMan.roleAuth(all), IgM.ig_getMedia);
@@ -187,25 +185,13 @@ module.exports = function (app, passport, config) {
     app.get(igPath + ':page_id/images/:n*?', reqAuth, AccMan.roleAuth(all), IgM.ig_getImages);
     app.get(igPath + ':page_id/stories/:n*?', reqAuth, AccMan.roleAuth(all), IgM.ig_getStories);
 
-    //media insights
-    app.get(igPath + ':page_id/engagement/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.ENGAGEMENT]), IgM.ig_getData);
-    app.get(igPath + ':page_id/saved/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.SAVED]), IgM.ig_getData);
-    app.get(igPath + ':page_id/vid_views/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.VIDEO_VIEWS]), IgM.ig_getData);
-
-    //stories insights
-    app.get(igPath + ':page_id/impressions/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.IMPRESSIONS]), IgM.ig_getData);
-    app.get(igPath + ':page_id/reach/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REACH]), IgM.ig_getData);
-    app.get(igPath + ':page_id/exits/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.EXITS]), IgM.ig_getData);
-    app.get(igPath + ':page_id/replies/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.REPLIES]), IgM.ig_getData);
-    app.get(igPath + ':page_id/taps_f/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.TAPS_F]), IgM.ig_getData);
-    app.get(igPath + ':page_id/taps_b/:media_id', reqAuth, AccMan.roleAuth(all), IgM.setMetric([IGM.TAPS_B]), IgM.ig_getData);
-
     /****************** YOUTUBE MANAGER ********************/
+    app.get(ytPath + 'data', reqAuth, AccMan.roleAuth(all), YtM.yt_getData);
     app.get(ytPath + 'channels', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
     app.get(ytPath + 'storeAllData/:key*?', YtM.yt_storeAllData);
 
     /** TODO DELETE setEndpoint, delete setParams and leave only metric **/
-    app.get(ytPath + 'getViewList', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
+/*    app.get(ytPath + 'getViewList', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'channels'), YtM.setParams({'params':{'part':'snippet, id'}}), YtM.yt_getPages);
     app.get(ytPath + ':channel/subscribers/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'subscriptions'), YtM.setParams({'params':{'part':'snippet','mySubscribers':true, 'metrics':'subscribers'}}), YtM.yt_getSubs);
     app.get(ytPath + ':channel/playlists/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'playlists'), YtM.setParams({'params':{'part':'snippet', 'metrics': 'playlists'}}), YtM.yt_getData);
     app.get(ytPath + ':channel/videos/', reqAuth, AccMan.roleAuth(all), YtM.setEndPoint(0, 'search'), YtM.setParams({'params':{'part':'snippet', 'mine':'true', 'type':'video', 'channelId':' ', 'metrics': 'videos'}}), YtM.yt_getData);
@@ -217,7 +203,7 @@ module.exports = function (app, passport, config) {
     app.get(ytPath + ':channel/shares/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'shares','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/avgView/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'averageViewDuration','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
     app.get(ytPath + ':channel/estWatch/', reqAuth, AccMan.roleAuth(all),YtM.setEndPoint(1 ), YtM.setParams({'params':{'metrics':'estimatedMinutesWatched','dimensions':'day','ids':'channel==', 'analytics': true}}), YtM.yt_getData);
-
+*/
 
     /****************** CALENDAR MANAGER ******************/
     app.get(calPath + 'getEvents', reqAuth, AccMan.roleAuth(all), CalMan.getEvents);

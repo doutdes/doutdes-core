@@ -18,7 +18,7 @@ const config       = require('../app').config;
 const getPageAccessToken = async (token, pageID) => {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID + '/?fields=access_token',
         qs: {
             access_token: token
@@ -43,7 +43,7 @@ const getLongLiveAccessToken = async (token) => {
 
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI + 'oauth/access_token',
         qs: {
             grant_type: 'fb_exchange_token',
@@ -89,7 +89,7 @@ const revokePermission = async (token) => {
 const getPagesID = async (token) =>  {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token
@@ -108,10 +108,10 @@ const getPagesID = async (token) =>  {
 
 /** Facebook Page/Insight query **/
 //TODO check why it is necessary adds and subs in dates
-const facebookQuery = async (method, metric, period, pageID, token, start_date, end_date) => {
+const facebookQuery = async (metric, period, pageID, token, start_date, end_date) => {
     let result;
     const options = {
-        method: method,
+        method: 'GET',
         uri: fbInsightURI + pageID + '/insights',
         qs: {
             access_token: token,
@@ -136,7 +136,7 @@ const getFacebookData = async (pageID, metric, period, token, start_date, end_da
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        data = (await facebookQuery(GET, metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
+        data = (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
         return data;
     } catch (e) {
         console.error(e);

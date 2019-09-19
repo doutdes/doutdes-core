@@ -241,9 +241,26 @@ const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
 };
 
 const yt_getData = async (req, res) => {
-    let response;
+    let response, key;
+
+    if(!req.query.metric) {
+        return res.status(HttpStatus.BAD_REQUEST).send({
+            error: true,
+            message: 'You have not provided a metric for the Youtube data request.'
+        })
+    }
+
+    if(!req.query.channel_id) {
+        return res.status(HttpStatus.BAD_REQUEST).send({
+            error: true,
+            message: 'You have not provided a channel ID for the Youtube data request.'
+        })
+    }
+
     try {
-        response = await yt_getDataInternal(req.user.dataValues.id, req.EP, req.params, req.sEP);
+        key = await GaToken.findOne({where: {user_id: req.user.id}});
+        // console.warn(key.dataValues.private_key);
+        response = await YoutubeApi.yt_getData(key.dataValues.private_key, req.query); // TODO ripristinare mongo
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
         console.error(err);

@@ -205,36 +205,38 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 };
 
 const ig_getData = async (req, res) => {
-    const page_id = req.query.page_id;
-    const metric = req.query.metric;
-    const period = req.query.period;
-    const interval = req.query.interval;
     let response;
 
     try {
-
-        if(!page_id) {
+        if(!req.query.page_id) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 error: true,
-                message: 'You have not provided a page ID for the Facebook data request.'
+                message: 'You have not provided a page ID for the Instagram data request.'
             })
         }
 
-        if(!metric) {
+        if(!req.query.metric) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 error: true,
-                message: 'You have not provided a metric for the Facebook data request.'
+                message: 'You have not provided a metric for the Instagram data request.'
             })
         }
 
-        if(!period) {
+        if(!req.query.period && !req.query.media_id) { // Period is not necessary in the media query
             return res.status(HttpStatus.BAD_REQUEST).send({
                 error: true,
-                message: 'You have not provided a period for the Facebook data request.'
+                message: 'You have not provided a period for the Instagram data request.'
             })
         }
 
-        response = await ig_getDataInternal(req.user.id, page_id, metric, period, interval, req.params.media_id);
+        if(req.url.includes('media') && !req.query.media_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a media ID for the Instagram media request.'
+            })
+        }
+
+        response = await ig_getDataInternal(req.user.id, req.query.page_id, req.query.metric, req.query.period, req.query.interval, req.query.media_id);
 
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
