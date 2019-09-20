@@ -10,7 +10,7 @@ const DateFns = require('date-fns');
 const Request = require('request-promise');
 
 /** CONSTANTS **/
-const fbInsightURI = 'https://graph.facebook.com/';
+const fbInsightURI = 'https://graph.facebook.com/v4.0/';
 const config       = require('../app').config;
 
 
@@ -112,10 +112,9 @@ const facebookQuery = async (metric, period, pageID, token, start_date, end_date
     let result;
     const options = {
         method: 'GET',
-        uri: fbInsightURI + pageID + '/insights',
+        uri: `${fbInsightURI}${pageID}/insights/${metric}`,
         qs: {
             access_token: token,
-            metric: metric,
             period: period,
             since: DateFns.subDays(start_date,1),
             until: DateFns.addDays(end_date,1)
@@ -132,14 +131,13 @@ const facebookQuery = async (metric, period, pageID, token, start_date, end_date
     }
 };
 const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
-    let access_token, data;
+    let access_token;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        data = (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
-        return data;
+        return (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
     } catch (e) {
-        console.error(e);
+        console.error(e['message']);
         throw new Error('getFacebookData -> Error getting the Facebook Data');
     }
 };
@@ -169,7 +167,7 @@ const getFacebookPost = async(pageID, token) => {
 const getAccountInfo = async (token) => {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI + 'me',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -187,7 +185,7 @@ const getAccountInfo = async (token) => {
 const getTokenInfo = async (token) => {
     let result, accountInfo;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI,// + '/' + id + '/permissions',
         headers: {
             'Authorization': 'Bearer ' + token

@@ -781,10 +781,16 @@ const formatResult = (dashChart) => {
     return {
         chart_id: dashChart['dataValues']['chart_id'],
         dashboard_id: dashChart['dataValues']['dashboard_id'],
-        format: dashChart['dataValues']['Chart']['dataValues']['format'],
-        type: dashChart['dataValues']['Chart']['dataValues']['type'],
-        originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
+        type: dashChart['dataValues']['Chart']['dataValues']['type'],
+        metric: dashChart['dataValues']['Chart']['dataValues']['metric'],
+        dimensions: dashChart['dataValues']['Chart']['dataValues']['dimensions'],
+        sort: dashChart['dataValues']['Chart']['dataValues']['sort'],
+        filter: dashChart['dataValues']['Chart']['dataValues']['filter'],
+        period: dashChart['dataValues']['Chart']['dataValues']['period'],
+        interval: dashChart['dataValues']['Chart']['dataValues']['interval'],
+        format: dashChart['dataValues']['Chart']['dataValues']['format'],
+        originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         position: dashChart['dataValues']['position']
     };
 };

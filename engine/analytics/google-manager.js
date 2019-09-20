@@ -1,5 +1,6 @@
 'use strict';
 const DateFns = require('date-fns');
+const querystring = require('querystring');
 
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
@@ -159,8 +160,8 @@ const ga_getData = async (req, res) => {
 
     const metric = req.query.metric;
     const dimensions = req.query.dimensions;
-    const sort = req.query.sort;
-    const filter = req.query.filter;
+    const sort = querystring.decode(req.query.sort);
+    const filter = querystring.decode(req.query.filter);
 
     try {
         let response = await ga_getDataInternal(req.user.id, metric, dimensions, sort, filter);

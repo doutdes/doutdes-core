@@ -33,7 +33,7 @@ module.exports = function (app, passport, config) {
 
     const fbReqAuth = (req, res, next) => {
         passport.authenticate('facebook', {
-            scope: ['manage_pages', 'read_insights', 'ads_read'],
+            scope: ['manage_pages', 'read_insights', 'ads_read', ''],
             state: req.query.user_id,
         })(req, res, next)
     };
@@ -149,7 +149,7 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + 'storeAllData/:key*?', FbM.fb_storeAllData);
 
     app.get(fbPath + 'data', reqAuth, AccMan.roleAuth(all), FbM.fb_getData);
-    // app.get(fbPath + ':page_id*?/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost); todo edit
+    app.get(fbPath + ':page_id*?/posts/', reqAuth, AccMan.roleAuth(all), FbM.fb_getPost); // todo edit
 
     /****************** GOOGLE MANAGER ********************/
     /** Data response is always an array of arrays as follows:

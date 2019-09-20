@@ -26,7 +26,7 @@ const revokePermission = require('./facebook-api').revokePermission;
 async function getPageAccessToken(token, pageID) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token,
@@ -59,7 +59,7 @@ async function getPageAccessToken(token, pageID) {
 async function getPagesID(token) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token,
@@ -79,7 +79,7 @@ async function getPagesID(token) {
 async function getUsernameFromId(pageID, token) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID,
         qs: {
             access_token: token,
@@ -99,7 +99,7 @@ async function getUsernameFromId(pageID, token) {
 async function getMedia(pageID, token, n=20) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/media',
         qs: {
             access_token: token,
@@ -120,7 +120,7 @@ async function getMedia(pageID, token, n=20) {
 async function getStories(pageID, token, n=20) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/stories',
         qs: {
             access_token: token,
@@ -141,7 +141,7 @@ async function getStories(pageID, token, n=20) {
 async function getBusinessDiscoveryInfo(pageID, token) {
     let result, username;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID,
         qs: {
             access_token: token,
@@ -199,7 +199,7 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
 
     try {
         access_token = await getPageAccessToken(token, channelId);
-        result = JSON.parse(await instagramQuery(GET, metric, channelId, access_token, period, since, until, null, mediaID));
+        result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
 
         return result['data'][0]['values'];
     } catch (e) {

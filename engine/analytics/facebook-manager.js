@@ -305,16 +305,8 @@ const fb_login_success = async (req, res) => {
 };
 
 async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
-    let key;
-    let data;
-    try {
-        key = await FbToken.findOne({where: {user_id: user_id}});
-        data = await FacebookApi.getFacebookData(page_id, metric, DAY, key.api_key, start_date, end_date);
-        return data;
-    }
-    catch (e) {
-        console.error("error retrieving data from facebook insights")
-    }
+    const key = await FbToken.findOne({where: {user_id: user_id}});
+    return await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
 }
 
 /** EXPORTS **/
