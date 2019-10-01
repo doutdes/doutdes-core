@@ -118,6 +118,7 @@ const youtubeQuery = async (token, EP, params, sEP = null) => {
     (options.qs.channelId) ? options.qs.channelId = params.channel : null;
 
     try {
+        console.log(options);
         result = await Request(options);
         result = JSON.parse(JSON.stringify(result));
         return result;
