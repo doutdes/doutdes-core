@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+
 const DashboardManager = require('./dashboard-manager');
 const Model = require('../models');
 const User = require('../models/index').Users;
@@ -7,7 +9,13 @@ const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const crypto = require('crypto-random-string');
 const jwt = require('jsonwebtoken');
-const sendmail = require('sendmail')();
+const sendmail = require('sendmail')({
+    silent: true,
+    dkim: {
+        privateKey: fs.readFileSync('dkim-private.pem', 'utf8'),
+        keySelector: 'mydomainkey'
+    }
+});
 
 const HttpStatus = require('http-status-codes');
 
