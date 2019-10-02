@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+
 const DashboardManager = require('./dashboard-manager');
 const Model = require('../models');
 const User = require('../models/index').Users;
@@ -7,7 +9,41 @@ const passport = require('../app').passport;
 const bcrypt = require('bcrypt-nodejs');
 const crypto = require('crypto-random-string');
 const jwt = require('jsonwebtoken');
-const sendmail = require('sendmail')();
+const sendmail = require('sendmail')({
+    /*
+    logger: {
+        debug: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error
+    },
+    silent: false,
+    dkim: {
+        //domainName: 'gmail.com',
+        //keySelector: '2019',
+        privateKey: '-----BEGIN RSA PRIVATE KEY-----\n' +
+            'MIICXgIBAAKBgQCsCxHs9mCwRJmYz1gAiGeFXeeqTdJQ1zFbsj2AuCZcwesgHo1e\n' +
+            'CmHahRXPYnXejTs/tUMQjhdO5KyKv1OGWOJVufGVp/2KVZ25Wx228XEX4yI7l16v\n' +
+            'Vr/82ZIZFWyFRDhLlRtw0Hm6WNz0YHWZQtN9ggCAdwieByq3pvrONNEdOQIDAQAB\n' +
+            'AoGBAIrwDbPubLstS1Wq7QjRH7kG0xYn7tc2UjgZQ632CZUTTg0MX2I4xDmzDKAE\n' +
+            'hegK6nRSsCxoc85UwjrytENk+LKqkKkV8+toAv61EW1DpZFC6LiHJ76oXM8yn6r5\n' +
+            'b/5Uzv9ee4X1Kk2BXQOE7KOWTdpqEOkD7ZddDOzOToEfGqbhAkEA4syXNOIjPvow\n' +
+            't6basJauVCNXNwCsaKuRJTM9UTYQgVl6nF6yU08KSMgCEhSYjtQL8dIUwdatP3zp\n' +
+            's7DQZnUd5QJBAMIxsoudpTHyPKtRn7ztJ+tBbooZW1bP00kcq/Po8zbfiAOCeeXT\n' +
+            'xjowkiNtFTx4UzKAsR+fzPRZ/ZuM3C567MUCQQDSD2RNGtZCUkAlGWmb/TPhwgnZ\n' +
+            'a8pD+AQrTFYSjdyjsVia1Cqedqqz1mv0ixbx0vxtMYMANfGox+08/RtIiljxAkEA\n' +
+            'wd1/U2ZUDqK38ogQIjnXykKOKgvaZbYgRjL7bwq2E6fgTzCopMpgcKMgoYE63B17\n' +
+            'YUWcjeeoYqCcT/e1sClDyQJAS4vwcbA3fwZ+yiHbxsS6nZ42Ouah7jV1Fvmdm4dR\n' +
+            'Pe1T1ZGXs2emyRZEHqu4OCZFAjp5nwqGQ98M3dvI3Y3qug==\n' +
+            '-----END RSA PRIVATE KEY-----',
+        keySelector: '1570031675.gmail'
+        },
+        //devPort: 8080,
+        //devHost: 'localhost',
+        smtpPort: 465,
+        smtpHost: 'smtp.gmail.com'
+    */
+});
 
 const HttpStatus = require('http-status-codes');
 
