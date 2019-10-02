@@ -189,9 +189,60 @@ const setMessageRead = async (req, res) => {
 
 
     } catch (e) {
-
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'The message selected doesn\'t exists'
+        });
     }
 
 };
 
-module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, setMessageRead};
+const deleteMessageByUser = async (req, res) => {
+    let message_id = req.body.message_id;
+    let user_id = req.user.id;
+
+    let message, usermessage;
+
+    try {
+        //check if the message is the db
+        message = await Message.findById(message_id);
+        if (message) {
+            //check if there the message can be read from the user
+            usermessage = await UserMessages.findAll({
+                where: {
+                    message_id: message_id,
+                    user_id: user_id
+                }
+            });
+            if (usermessage.length > 0) {
+                await UserMessages.destroy({
+                        where: {
+                            message_id: message_id,
+                            user_id: user_id
+                        }
+                    });
+                return res.status(HttpStatus.OK).send({message: 'message deleted successfully'});
+            }
+            else {
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    error: 'the message cannot be deleted from the user '
+                });
+            }
+        }
+        else {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: 'there isn\'t message for the given id'
+            });
+        }
+
+
+    } catch (e) {
+        console.log (e);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'The message selected doesn\'t exists'
+        });
+    }
+
+
+};
+
+module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, setMessageRead, deleteMessageByUser};

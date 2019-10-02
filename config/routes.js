@@ -160,6 +160,7 @@ module.exports = function (app, passport, config) {
     app.get(messPath + 'getMessagesForUser', reqAuth, AccMan.roleAuth(all),MessMan.getMessagesForUser);
     app.post(messPath + 'sendMessageToUser', reqAuth, AccMan.roleAuth(admin),MessMan.sendMessageToUser);
     app.put(messPath + 'setMessageRead', reqAuth, AccMan.roleAuth(all),MessMan.setMessageRead);
+    app.delete(messPath + 'deleteMessageByUser', reqAuth, AccMan.roleAuth(all),MessMan.deleteMessageByUser);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
