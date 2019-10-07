@@ -17,7 +17,7 @@ module.exports = (sequelize, DataType) => {
         freezeTableName: true,
         timestamps: false,
         underscored: true,
-        tableName: 'user_messages'
+        tableName: 'user_messages',
     });
 
     UserMessages.removeAttribute('id');
@@ -25,7 +25,8 @@ module.exports = (sequelize, DataType) => {
     UserMessages.associate = function (models) {
         UserMessages.belongsTo(models.Messages, {
             foreignKey: 'message_id',
-            sourceKey: models.Messages.id
+            sourceKey: models.Messages.id,
+            onDelete: 'cascade'
         });
 
         UserMessages.belongsTo(models.Users, {

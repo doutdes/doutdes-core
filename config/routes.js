@@ -160,7 +160,8 @@ module.exports = function (app, passport, config) {
     app.get(messPath + 'getMessagesForUser', reqAuth, AccMan.roleAuth(all),MessMan.getMessagesForUser);
     app.post(messPath + 'sendMessageToUser', reqAuth, AccMan.roleAuth(admin),MessMan.sendMessageToUser);
     app.put(messPath + 'setMessageRead', reqAuth, AccMan.roleAuth(all),MessMan.setMessageRead);
-    app.delete(messPath + 'deleteMessageByUser', reqAuth, AccMan.roleAuth(all),MessMan.deleteMessageByUser);
+    app.delete(messPath + 'deleteMessageForUser/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.deleteMessageForUser);
+    app.delete(messPath + 'deleteMessageByID', reqAuth, AccMan.roleAuth(admin),MessMan.deleteMessageByID);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(fbPath + 'pages', reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);

@@ -55,7 +55,7 @@ const readMessageByID = async (req, res) => {
             }
         }
         else {
-            return res.status(HttpStatus.BAD_REQUEST).send({
+            return res.status(HttpStatus.NO_CONTENT).send({
                 error: 'there isn\'t message for the given id'
             });
         }
@@ -80,9 +80,7 @@ const getMessagesForUser = async (req, res) => {
             return res.status(HttpStatus.OK).send(usermessages);
         }
         else {
-            return res.status(HttpStatus.BAD_REQUEST).send({
-                error: 'there isn\'t message for the given user'
-            });
+            return res.status(HttpStatus.NO_CONTENT).send({});
         }
     } catch (e) {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
@@ -196,8 +194,8 @@ const setMessageRead = async (req, res) => {
 
 };
 
-const deleteMessageByUser = async (req, res) => {
-    let message_id = req.body.message_id;
+const deleteMessageForUser = async (req, res) => {
+    let message_id = req.params.message_id;
     let user_id = req.user.id;
 
     let message, usermessage;
@@ -229,14 +227,11 @@ const deleteMessageByUser = async (req, res) => {
             }
         }
         else {
-            return res.status(HttpStatus.BAD_REQUEST).send({
-                error: 'there isn\'t message for the given id'
-            });
+            return res.status(HttpStatus.NO_CONTENT).send({});
         }
 
 
     } catch (e) {
-        console.log (e);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             error: 'The message selected doesn\'t exists'
         });
@@ -245,4 +240,31 @@ const deleteMessageByUser = async (req, res) => {
 
 };
 
-module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, setMessageRead, deleteMessageByUser};
+const deleteMessageByID = async (req, res) => {
+    const message_id = req.body.message_id;
+    let message;
+    try {
+        //check if the message is the db
+        message = await Message.findById(message_id);
+        if (message) {
+            //delete the message
+            await Message.destroy({
+                where : {id: message_id}
+            });
+            return res.status(HttpStatus.OK).send({
+                message: 'message deleted successfully'
+            });
+        }
+        else {
+            return res.status(HttpStatus.NO_CONTENT).send({});
+        }
+    } catch (e) {
+        console.log (e);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Cannot retrieve the message for the given id',
+        });
+    }
+};
+
+module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, setMessageRead,
+    deleteMessageForUser, deleteMessageByID};
