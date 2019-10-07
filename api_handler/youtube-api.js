@@ -43,7 +43,7 @@ const getAccessToken = async (refreshToken) => {
 const getChannels = async (refresh_token) => {
   const access_token = await getAccessToken(refresh_token);
   const endPoint = `${dataEndPoint}/channels`;
-  const params = {part: 'snippet,id'};
+  const params = {part: 'snippet,id', mine: true};
 
   const result = await youtubeQuery(access_token, endPoint, params);
 
