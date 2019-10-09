@@ -179,12 +179,14 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + ':page_id*?/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
 
     /****************** FACEBOOK MARKETING MANAGER ********************/
+    app.get(fbmPath + 'pages', reqAuth, AccMan.roleAuth(all), FbMM.fbm_getPages);
+
     app.get(fbmPath + 'adslist', FbMM.getAdsList);
-    app.get(fbmPath + ':act_id/insights', FbMM.getData);  // Retrieves generical data about the ads account
-    app.get(fbmPath + ':act_id/insights/breakdowns/:group', FbMM.getData);
-    app.get(fbmPath + ':act_id/campaigns', FbMM.getData); // It gets more generic levels of data
-    app.get(fbmPath + ':act_id/adsets', FbMM.getData);
-    app.get(fbmPath + ':act_id/ads', FbMM.getData);
+    app.get(fbmPath + ':act_id/insights', reqAuth, AccMan.roleAuth(all),FbMM.getData);  // Retrieves generical data about the ads account
+    app.get(fbmPath + ':act_id/insights/breakdowns/:group', reqAuth, AccMan.roleAuth(all), FbMM.getData);
+    app.get(fbmPath + ':act_id/campaigns', reqAuth, AccMan.roleAuth(all), FbMM.getData); // It gets more generic levels of data
+    app.get(fbmPath + ':act_id/adsets', reqAuth, AccMan.roleAuth(all), FbMM.getData);
+    app.get(fbmPath + ':act_id/ads', reqAuth, AccMan.roleAuth(all), FbMM.getData);
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);

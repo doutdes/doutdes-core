@@ -14,7 +14,8 @@ const D_TYPE = {
     FB: 1,
     GA: 2,
     IG: 3,
-    YT: 4
+    YT: 4,
+    FBM: 5
 };
 
 const DS_TYPE = {
@@ -239,7 +240,7 @@ exports.getDashboardByType = function (req, res, next) {
         .then(userDashboards => {
 
             if (userDashboards.length === 0) {
-                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                return res.status(HttpStatus.NO_CONTENT).send({
                     error: true,
                     message: 'Cannot get dashboard information'
                 })

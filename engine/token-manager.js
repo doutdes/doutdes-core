@@ -67,6 +67,7 @@ const checkExistence = async (req, res) => {
     let joinModel;
 
     switch (parseInt(req.params.type)) {
+        case D_TYPE.FBM:
         case D_TYPE.FB:
         case D_TYPE.IG:
             joinModel = FbToken;
@@ -143,7 +144,7 @@ const checkInternalPermission = async (user_id, type) => {
     let scopes = [];
     let hasPermission, key;
 
-    if (parseInt(type) === D_TYPE.FB || parseInt(type) === D_TYPE.IG) { // Facebook or Instagram
+    if (parseInt(type) === D_TYPE.FB || parseInt(type) === D_TYPE.IG || parseInt(type) === D_TYPE.FBM) { // Facebook or Instagram
         key = await FbToken.findOne({where: {user_id: user_id}});
     } else {
         key = await GaToken.findOne({where: {user_id: user_id}});
@@ -180,6 +181,11 @@ const checkInternalPermission = async (user_id, type) => {
             scopes = (await GaAPI.getTokenInfo(key['private_key']))['scope'].split(' ');
             hasPermission = checkYTContains(scopes);
             scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
+            break;
+        case D_TYPE.FBM: // Instagram
+            scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
+            hasPermission = checkFBContains(scopes);
+            scopes = scopes.filter(el => !el.includes('instagram'));
             break;
         default:
             return {

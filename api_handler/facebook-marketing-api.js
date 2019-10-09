@@ -42,12 +42,33 @@ const getPageAdsIds = async (token) => {
     }
 };
 
+const getPagesID = async (token) =>  {
+    let result;
+    const options = {
+        method: GET,
+        uri: 'https://graph.facebook.com/me/accounts',
+        qs: {
+            access_token: token
+        },
+        json: true
+    };
+
+    try {
+        result = await Request(options);
+        return result;
+    } catch (err) {
+        console.error(err['message']);
+        throw new Error('getPagesID -> Error during the Facebook query -> ' + err['message']);
+    }
+};
+
+
 // See how to generalize it
 // SET a start_date and end_date period
 // Try to use the most fields possible for each query
 const facebookQuery = async (pageID, token, level, startDate, endDate, group) => {
     let result;
-
+    console.log(token);
     const options = {
         uri: fbInsightURI + pageID + '/' + level,
         qs: {
@@ -70,4 +91,4 @@ const facebookQuery = async (pageID, token, level, startDate, endDate, group) =>
     }
 };
 
-module.exports = {getPageAdsIds, facebookQuery};
+module.exports = {getPageAdsIds, facebookQuery, getPagesID};
