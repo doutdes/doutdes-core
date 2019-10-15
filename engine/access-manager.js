@@ -162,7 +162,7 @@ const updateUser = (req, res) => {
         city: user.city,
         zip: user.zip,
         lang: user.lang,
-        password: user.password ? password : user.password
+        password: password || req.user.password
     }, {
         where: {
             id: req.user.id
