@@ -13,21 +13,20 @@ const getData = async (req, res) => {
     let response;
     let page_id;
 
-    const type_level = ['insights', 'campaigns', 'adsets', 'ads'];
-    let level = '';
-    req.url.split("/").forEach(lvl => type_level.includes(lvl) ? level = lvl : level);
+    req.url.includes('insights') ? 1 : 0;
 
     let startDate = '2019-09-02';
     let endDate =  '2019-09-30';
-    console.log(req.params);
+
+    let level = req.params.level;
     let group = req.params.group;
+    let id = req.params.id || null;
 
     try {
         let key = await FbToken.findOne({where: {user_id: req.user.id}});
         page_id = req.params.act_id;
-        console.log(page_id);
-        response = await FacebookMApi.facebookQuery(page_id, key.api_key,level, startDate, endDate, group);
-console.log(response);
+
+        response = await FacebookMApi.facebookQuery(page_id, key.api_key,level, startDate, endDate, group, id);
         return res.status(HttpStatus.OK).send(response);
     }
     catch (err) {

@@ -8,9 +8,9 @@ const fbInsightURI = 'https://graph.facebook.com/v3.3/';
 
 const level_params = {
     'insights':'reach, impressions, spend, inline_link_clicks, clicks, cpc, cpp, ctr',
-    'campaigns': 'name, effective_status, daily_budget, bid_strategy, budget_remaining, objective, buying_type',
-    'adsets':'name, effective_status, bid_amount , billing_event, optimization_goal, insights{campaign_name}',
-    'ads':'name, effective_status, insights{campaign_name, adset_name}'};
+    'campaigns': 'id, name, effective_status, daily_budget, bid_strategy, budget_remaining, objective, buying_type, insights{reach, impressions, spend, inline_link_clicks, clicks, cpc, cpp, ctr}',
+    'adsets':'id, name, effective_status, bid_amount , billing_event, optimization_goal, campaign{name}, insights{reach, impressions, spend, inline_link_clicks, clicks, cpc, cpp, ctr}',
+    'ads':'id, name, effective_status, campaign{name}, adset{name}, insights{reach, impressions, spend, inline_link_clicks, clicks, cpc, cpp, ctr}'};
 
 const breakdownsParams = {
     age: 'age',
@@ -62,13 +62,9 @@ const getPagesID = async (token) =>  {
     }
 };
 
-
-// See how to generalize it
-// SET a start_date and end_date period
-// Try to use the most fields possible for each query
-const facebookQuery = async (pageID, token, level, startDate, endDate, group) => {
+const facebookQuery = async (pageID, token, level, startDate, endDate, group, id) => {
     let result;
-    console.log(token);
+
     const options = {
         uri: fbInsightURI + pageID + '/' + level,
         qs: {
@@ -76,11 +72,18 @@ const facebookQuery = async (pageID, token, level, startDate, endDate, group) =>
             //period: period,
             fields: level_params[level],
             time_range: {since: startDate, until: endDate},
-            breakdowns: breakdownsParams[group]
+            breakdowns: breakdownsParams[group],
+            limit: 1000
         },
         json: true
     };
 
+    if (id && level === 'adsets') {
+        options.qs.filtering = [{"field":"campaign.id","operator":"EQUAL", "value":id}];
+    }
+    else if(id && level === 'ads') {
+        options.qs.filtering = [{"field":"adset.id","operator":"EQUAL", "value":id}];
+    }
 
     try {
         result = await Request(options);
