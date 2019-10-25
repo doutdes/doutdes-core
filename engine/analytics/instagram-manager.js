@@ -381,7 +381,7 @@ const ig_getStories = async (req, res) => {
 
 const ig_getBusinessInfo = async (req, res) => {
     let data, key;
-    let pageID = req.params.page_id;
+    let pageID = req.query.page_id;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});

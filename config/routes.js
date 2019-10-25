@@ -149,6 +149,14 @@ module.exports = function (app, passport, config) {
     app.get(`${fbPath}/data`, reqAuth, AccMan.roleAuth(all), FbM.fb_getData);
     app.get(`${fbPath}/posts`, reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
 
+    /****************** FACEBOOK MARKETING MANAGER ********************/
+    app.get(`${fbmPath}/adslist`, FbMM.getAdsList);
+    app.get(`${fbmPath}/:act_id/insights`, FbMM.getData);  // Retrieves generic data about the ads account
+    app.get(`${fbmPath}/:act_id/insights/breakdowns`, FbMM.getData);
+    app.get(`${fbmPath}/:act_id/campaigns`, FbMM.getData); // It gets more generic levels of data
+    app.get(`${fbmPath}/:act_id/adsets`, FbMM.getData);
+    app.get(`${fbmPath}/:act_id/ads`, FbMM.getData);
+
     /****************** GOOGLE MANAGER ********************/
     /** Data response is always an array of arrays as follows:
      * 0 - data
@@ -159,17 +167,10 @@ module.exports = function (app, passport, config) {
     app.get(`${gaPath}/getViewList`, reqAuth, AccMan.roleAuth(all), GaM.ga_viewList);
     app.get(`${gaPath}/storeAllData/:key*?`, GaM.ga_storeAllData);
 
-    /****************** FACEBOOK MARKETING MANAGER ********************/
-    app.get(`${fbmPath}/adslist`, FbMM.getAdsList);
-    app.get(`${fbmPath}/:act_id/insights`, FbMM.getData);  // Retrieves generic data about the ads account
-    app.get(`${fbmPath}/:act_id/insights/breakdowns`, FbMM.getData);
-    app.get(`${fbmPath}/:act_id/campaigns`, FbMM.getData); // It gets more generic levels of data
-    app.get(`${fbmPath}/:act_id/adsets`, FbMM.getData);
-    app.get(`${fbmPath}/:act_id/ads`, FbMM.getData);
-
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(`${igPath}/pages`, reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
-    app.get(`${igPath}/:page_id/businessInfo`, reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
+    app.get(`${igPath}/businessInfo`, reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
+
     app.get(`${igPath}/storeAllData/:key*?`, IgM.ig_storeAllData);
     app.get(`${igPath}/storeAllDataDaily/:key*?`, IgM.ig_storeAllDataDaily);
 
