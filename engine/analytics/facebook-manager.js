@@ -18,17 +18,11 @@ const DAYS = {
     yesterday: 1,
     min_date: 90
 };
+
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
 
 // TODO change the response if there are no data
-const setMetric = (metric) => {
-    return (req, res, next) => {
-        req.metric = metric;
-        next();
-    }
-};
-
 const fb_getScopes = async (req, res) => {
     let key, data;
 
@@ -261,7 +255,7 @@ const fb_getPost = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        page_id = req.params.page_id || key.dataValues.fb_page_id;
+        page_id = req.query.page_id || key.dataValues.fb_page_id;
 
         if(!page_id) {
             return res.status(HttpStatus.BAD_REQUEST).send({
@@ -310,4 +304,4 @@ async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
 }
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};
+module.exports = {fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};

@@ -145,11 +145,11 @@ const getFacebookPost = async(pageID, token) => {
     let result;
     const options = {
         method: 'GET',
-        uri: fbInsightURI + pageID + '/posts',
+        uri: `${fbInsightURI}${pageID}/posts`,
         qs: {
             access_token: token,
             limit: 100,
-            fields: 'id,name,created_time'
+            fields: 'id,created_time'
         },
         json: true
     };
