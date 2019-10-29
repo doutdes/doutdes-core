@@ -2,6 +2,7 @@ const AccMan = require('../engine/access-manager');
 const TokenManager = require('../engine/token-manager');
 const DashMan = require('../engine/dashboard-manager');
 const CalMan = require('../engine/calendar-manager');
+const MessMan = require('../engine/message-manager');
 
 const FbM  = require('../engine/analytics/facebook-manager');
 const FbMM = require('../engine/analytics/facebook-marketing-manager');
@@ -20,6 +21,7 @@ module.exports = function (app, passport, config) {
     const keysPath  = '/keys';
     const dashPath  = '/dashboards';
     const calPath   = '/calendar';
+    const messPath  = '/message';
 
     const gaPath = '/ga';
     const igPath = '/ig';
@@ -140,6 +142,15 @@ module.exports = function (app, passport, config) {
     app.delete(`${dashPath}/clearDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.clearAllDashboard);
     app.delete(`${dashPath}/deleteUserDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.deleteUserDashboard);
     app.delete(`${dashPath}/deleteDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.deleteDashboard);
+
+    /****************** CRUD MESSAGES ********************/
+    app.post(messPath + 'createMessage', reqAuth, AccMan.roleAuth(admin),MessMan.createMessage);
+    app.get(messPath + 'getMessageByID/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.readMessageByID);
+    app.get(messPath + 'getMessagesForUser', reqAuth, AccMan.roleAuth(all),MessMan.getMessagesForUser);
+    app.post(messPath + 'sendMessageToUser', reqAuth, AccMan.roleAuth(admin),MessMan.sendMessageToUser);
+    app.put(messPath + 'setMessageRead', reqAuth, AccMan.roleAuth(all),MessMan.setMessageRead);
+    app.delete(messPath + 'deleteMessageForUser/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.deleteMessageForUser);
+    app.delete(messPath + 'deleteMessageByID', reqAuth, AccMan.roleAuth(admin),MessMan.deleteMessageByID);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(`${fbPath}/pages`, reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
