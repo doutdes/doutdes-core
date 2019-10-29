@@ -569,7 +569,8 @@ const upsertGaKey = async (user_id, token) => {
     }
 };
 
-const getPageToken = async (token) => { // TODO edit
+const getPageToken = async (token) => { //
+    // TODO edit
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me/accounts',

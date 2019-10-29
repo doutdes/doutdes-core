@@ -4,11 +4,11 @@ const DashMan = require('../engine/dashboard-manager');
 const CalMan = require('../engine/calendar-manager');
 const MessMan = require('../engine/message-manager');
 
-const FbM  = require('../engine/analytics/facebook-manager');
+const FbM = require('../engine/analytics/facebook-manager');
 const FbMM = require('../engine/analytics/facebook-marketing-manager');
-const IgM  = require('../engine/analytics/instagram-manager');
-const GaM  = require('../engine/analytics/google-manager');
-const YtM  = require('../engine/analytics/youtube-manager');
+const IgM = require('../engine/analytics/instagram-manager');
+const GaM = require('../engine/analytics/google-manager');
+const YtM = require('../engine/analytics/youtube-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -17,11 +17,11 @@ module.exports = function (app, passport, config) {
     const site_URL = (config['site_URL'].includes('localhost') ? 'http://localhost:4200' : 'https://www.doutdes-cluster.it/beta') + '/#/preferences/api-keys?err=true';
 
     /* PATHs */
-    const amPath    = '/users';
-    const keysPath  = '/keys';
-    const dashPath  = '/dashboards';
-    const calPath   = '/calendar';
-    const messPath  = '/message';
+    const amPath   = '/users';
+    const keysPath = '/keys';
+    const dashPath = '/dashboards';
+    const calPath  = '/calendar';
+    const messPath = '/message';
 
     const gaPath = '/ga';
     const igPath = '/ig';
@@ -44,7 +44,7 @@ module.exports = function (app, passport, config) {
             state: req.query.user_id,
         })(req, res, next)
     };
-    const fbAuth = passport.authenticate('facebook', { failureRedirect: site_URL});
+    const fbAuth = passport.authenticate('facebook', {failureRedirect: site_URL});
 
     const gaOnlyReqAuth = (req, res, next) => {
         passport.authenticate('google', {
@@ -79,7 +79,7 @@ module.exports = function (app, passport, config) {
         })(req, res, next)
     };
 
-    const gaAuth = passport.authenticate('google', { failureRedirect: site_URL});
+    const gaAuth = passport.authenticate('google', {failureRedirect: site_URL});
 
     const admin = '0';
     const user = '1';
@@ -144,13 +144,13 @@ module.exports = function (app, passport, config) {
     app.delete(`${dashPath}/deleteDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.deleteDashboard);
 
     /****************** CRUD MESSAGES ********************/
-    app.post(messPath + 'createMessage', reqAuth, AccMan.roleAuth(admin),MessMan.createMessage);
-    app.get(messPath + 'getMessageByID/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.readMessageByID);
-    app.get(messPath + 'getMessagesForUser', reqAuth, AccMan.roleAuth(all),MessMan.getMessagesForUser);
-    app.post(messPath + 'sendMessageToUser', reqAuth, AccMan.roleAuth(admin),MessMan.sendMessageToUser);
-    app.put(messPath + 'setMessageRead', reqAuth, AccMan.roleAuth(all),MessMan.setMessageRead);
-    app.delete(messPath + 'deleteMessageForUser/:message_id', reqAuth, AccMan.roleAuth(all),MessMan.deleteMessageForUser);
-    app.delete(messPath + 'deleteMessageByID', reqAuth, AccMan.roleAuth(admin),MessMan.deleteMessageByID);
+    app.post(`${messPath}/createMessage`, reqAuth, AccMan.roleAuth(admin), MessMan.createMessage);
+    app.get(`${messPath}/getMessageByID/:message_id`, reqAuth, AccMan.roleAuth(all), MessMan.readMessageByID);
+    app.get(`${messPath}/getMessagesForUser`, reqAuth, AccMan.roleAuth(all), MessMan.getMessagesForUser);
+    app.post(`${messPath}/sendMessageToUser`, reqAuth, AccMan.roleAuth(admin), MessMan.sendMessageToUser);
+    app.put(`${messPath}/setMessageRead`, reqAuth, AccMan.roleAuth(all), MessMan.setMessageRead);
+    app.delete(`${messPath}/deleteMessageForUser/:message_id`, reqAuth, AccMan.roleAuth(all), MessMan.deleteMessageForUser);
+    app.delete(`${messPath}/deleteMessageByID`, reqAuth, AccMan.roleAuth(admin), MessMan.deleteMessageByID);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(`${fbPath}/pages`, reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
@@ -201,7 +201,7 @@ module.exports = function (app, passport, config) {
 
     /****************** CALENDAR MANAGER ******************/
     app.get(`${calPath}/getEvents`, reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
-    app.post(`${calPath}/addEvent`,reqAuth, AccMan.roleAuth(all), CalMan.addEvent);
+    app.post(`${calPath}/addEvent`, reqAuth, AccMan.roleAuth(all), CalMan.addEvent);
     app.put(`${calPath}/updateEvent`, reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
     app.delete(`${calPath}/deleteEvent`, reqAuth, AccMan.roleAuth(all), CalMan.deleteEvent);
 
