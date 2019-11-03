@@ -7,13 +7,8 @@ const FacebookMApi = require('../../api_handler/facebook-marketing-api');
 
 // This method will call Facebook Marketing API
 const getData = async (req, res) => {
-    // GET URL of the call
-    console.warn(req.url);
-
     let response;
     let page_id;
-
-    req.url.includes('insights') ? 1 : 0;
 
     let startDate = '2019-09-02';
     let endDate =  '2019-09-30';

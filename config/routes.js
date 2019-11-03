@@ -185,13 +185,6 @@ module.exports = function (app, passport, config) {
     app.get(fbmPath + ':act_id/:level/breakdowns/:group', reqAuth, AccMan.roleAuth(all), FbMM.getData);
     app.get(fbmPath + ':act_id/:level/:id*?', reqAuth, AccMan.roleAuth(all),FbMM.getData);  // Retrieves generical data about the ads account
 
-    /*  app.get(fbmPath + ':act_id/insights', reqAuth, AccMan.roleAuth(all),FbMM.getData);  // Retrieves generical data about the ads account
-        app.get(fbmPath + ':act_id/campaigns', reqAuth, AccMan.roleAuth(all), FbMM.getData); // It gets more generic levels of data
-        app.get(fbmPath + ':act_id/adsets/:id', reqAuth, AccMan.roleAuth(all), FbMM.getData);
-        app.get(fbmPath + ':act_id/ads/:id', reqAuth, AccMan.roleAuth(all), FbMM.getData);
-        app.get(fbmPath + ':act_id/insights/breakdowns/:group', reqAuth, AccMan.roleAuth(all), FbMM.getData);*/
-
-
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
     app.get(igPath + ':page_id/businessInfo', reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
