@@ -3,10 +3,11 @@ const TokenManager = require('../engine/token-manager');
 const DashMan = require('../engine/dashboard-manager');
 const CalMan = require('../engine/calendar-manager');
 
-const FbM = require('../engine/analytics/facebook-manager');
-const IgM = require('../engine/analytics/instagram-manager');
-const GaM = require('../engine/analytics/google-manager');
-const YtM = require('../engine/analytics/youtube-manager');
+const FbM  = require('../engine/analytics/facebook-manager');
+const FbMM = require('../engine/analytics/facebook-marketing-manager');
+const IgM  = require('../engine/analytics/instagram-manager');
+const GaM  = require('../engine/analytics/google-manager');
+const YtM  = require('../engine/analytics/youtube-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -21,11 +22,11 @@ module.exports = function (app, passport, config) {
     let dashPath  = indexPath + 'dashboards/';
     let calPath   = indexPath + 'calendar/';
 
-
     let gaPath = indexPath + 'ga/';
-    let fbPath = indexPath + 'fb/';
     let igPath = indexPath + 'ig/';
     let ytPath = indexPath + 'yt/';
+    let fbPath = indexPath + 'fb/';
+    let fbmPath = indexPath + 'fbm/';
 
     /* AUTH */
     const reqAuth = passport.authenticate('jwt', {session: false});
@@ -178,6 +179,13 @@ module.exports = function (app, passport, config) {
     app.get(fbPath + ':page_id*?/videoviews', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_VIEWS), FbM.fb_getData);
     app.get(fbPath + ':page_id*?/postimpressions', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.POST_IMPRESSIONS), FbM.fb_getData);
     app.get(fbPath + ':page_id*?/videoads', reqAuth, AccMan.roleAuth(all), FbM.setMetric(FBM.P_VIDEO_ADS), FbM.fb_getData);
+
+    /****************** FACEBOOK MARKETING MANAGER ********************/
+    app.get(fbmPath + 'pages', reqAuth, AccMan.roleAuth(all), FbMM.fbm_getPages);
+
+    app.get(fbmPath + 'adslist', FbMM.getAdsList);
+    app.get(fbmPath + ':act_id/:level/breakdowns/:group', reqAuth, AccMan.roleAuth(all), FbMM.getData);
+    app.get(fbmPath + ':act_id/:level/:id*?', reqAuth, AccMan.roleAuth(all),FbMM.getData);  // Retrieves generical data about the ads account
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(igPath + 'pages', reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
