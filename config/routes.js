@@ -34,7 +34,7 @@ module.exports = function (app, passport, config) {
 
     const fbReqAuth = (req, res, next) => {
         passport.authenticate('facebook', {
-            scope: ['manage_pages', 'read_insights', 'ads_read', ''],
+            scope: ['manage_pages', 'read_insights', 'ads_read'],
             state: req.query.user_id,
         })(req, res, next)
     };
