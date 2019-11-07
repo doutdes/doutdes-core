@@ -69,9 +69,10 @@ const facebookQuery = async (pageID, token, level, startDate, endDate, group, id
         uri: fbInsightURI + pageID + '/' + level,
         qs: {
             access_token: token,
-            //period: period,
             fields: level_params[level],
-            time_range: {since: startDate, until: endDate},
+            //time_range: {since: startDate, until: endDate},
+            date_preset: 'last_90d',
+            time_increment: 1,
             breakdowns: breakdownsParams[group],
             limit: 1000
         },

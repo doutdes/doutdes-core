@@ -7,9 +7,7 @@ module.exports = (sequelize, DataType) => {
             primaryKey: true,
         },
         private_key: DataType.STRING(2000),
-        view_id: DataType.STRING(40),
-        channel_id: DataType.STRING(40)
-
+        view_id: DataType.STRING(15)
     }, {
         freezeTableName: true,
         timestamps: false,

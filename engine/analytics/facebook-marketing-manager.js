@@ -10,8 +10,8 @@ const getData = async (req, res) => {
     let response;
     let page_id;
 
-    let startDate = '2019-09-02';
-    let endDate =  '2019-09-30';
+    let startDate = '2019-08-01';
+    let endDate =  '2019-11-04';
 
     let level = req.params.level;
     let group = req.params.group;
