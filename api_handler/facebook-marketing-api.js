@@ -74,7 +74,7 @@ const facebookQuery = async (pageID, token, level, startDate, endDate, group, id
             date_preset: 'last_90d',
             time_increment: 1,
             breakdowns: breakdownsParams[group],
-            limit: 1000
+            limit: 10000
         },
         json: true
     };
