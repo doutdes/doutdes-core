@@ -95,7 +95,7 @@ const getData = async (private_key, view_id, start_date, end_date, metrics, dime
 const revokePermissions = async (private_key) => {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://accounts.google.com/o/oauth2/revoke',
         qs: {
             token: private_key
