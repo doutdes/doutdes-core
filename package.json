@@ -24,7 +24,7 @@
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.2.2",
     "lodash": "^4.17.15",
-    "mongoose": "^5.4.16",
+    "mongoose": "^5.7.5",
     "morgan": "^1.9.1",
     "mysql2": "^1.5.3",
     "passport": "^0.4.0",
