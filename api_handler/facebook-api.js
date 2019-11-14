@@ -130,11 +130,15 @@ const facebookQuery = async (metric, period, pageID, token, start_date, end_date
     }
 };
 const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
-    let access_token;
+    let access_token, data;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        return (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
+        // data = await facebookQuery(metric, period, pageID, access_token, start_date, end_date)['data'] !== undefined
+        // ?  await facebookQuery(metric, period, pageID, access_token, start_date, end_date)['data'][0]['values'] : [];
+        data = (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'];
+        data = data [0]!== undefined ? data [0]['values'] : [];
+        return data;
     } catch (e) {
         console.error(e['message']);
         throw new Error('getFacebookData -> Error getting the Facebook Data');
