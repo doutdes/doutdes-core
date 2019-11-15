@@ -72,9 +72,6 @@ const createUser = async (req, res) => {
                     error: 'Username or email already exists',
                 });
             } else {
-                // A new user can be created
-
-
                 User.create({
                     username: user.username,
                     email: user.email,
@@ -101,7 +98,20 @@ const createUser = async (req, res) => {
                         DashboardManager.internalCreateDefaultDashboards(user_id)
                             .then(() => {
                                 //if (!is_verified)
-                                sendMail(res, user.email, token);
+                                try {
+                                    // TODO FIX: ripristinare sendmail
+                                    //sendMail(res, user.email, token);
+                                }
+                                catch (err) {
+                                    console.error("Cannot send the email. Probably, the SMTP server is not active in this machine.");
+                                    //console.log(err);
+                                }
+
+                                return res.status(HttpStatus.CREATED).send({
+                                    created: true,
+                                    first_name: newUser.get('first_name'),
+                                    last_name: newUser.get('last_name')
+                                });
                             })
                             .catch(err => {
                                 User.destroy({where: {id: user_id}}); // Deletes the new db row
@@ -231,6 +241,7 @@ const sendMail = (res, email, token) => {
     });
 
 };
+
 const verifyEmail = (req, res) => {
     const email = req.query.email;
     const token = req.query.token;
