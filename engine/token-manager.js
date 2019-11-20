@@ -279,7 +279,8 @@ const readAllKeysById = (req, res) => {
                 fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
                 ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
                 ga_view_id: (ga == null) ? null : ga.dataValues.view_id,   // GA View_id
-                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id
+                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id,
+                fbm_page_id: (fb == null) ? null : fb.dataValues.fbm_page_id
             });
         })
         .catch(err => {
@@ -310,6 +311,7 @@ const update = (req, res) => { // TODO sistemare
     console.log('aaaa',req.body);
     const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
+        case D_TYPE.FBM:
         case D_TYPE.FB: //fb
             return updateFbKey(req, res);
         case D_TYPE.GA: //google
@@ -420,7 +422,8 @@ const insertGaData = (req, res) => {
 const updateFbKey = (req, res) => {
     FbToken.update({
         api_key: req.body.api.api_key,
-        fb_page_id: req.body.api.fb_page_id
+        fb_page_id: req.body.api.fb_page_id,
+        fbm_page_id: req.body.api.fbm_page_id,
     }, {
         where: {
             user_id: req.user.id

@@ -19,7 +19,7 @@ const getData = async (req, res) => {
 
     try {
         let key = await FbToken.findOne({where: {user_id: req.user.id}});
-        page_id = req.params.act_id;
+        page_id = req.params.act_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fbm_page_id'];;
 
         response = await FacebookMApi.facebookQuery(page_id, key.api_key,level, startDate, endDate, group, id);
         return res.status(HttpStatus.OK).send(response);
@@ -70,7 +70,6 @@ const getAdsList = async (req, res) => {
 const fbm_getPages = async (req, res) => {
     let data, key;
     let pages = [];
-
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await FacebookMApi.getPagesID(key.api_key))['data'];

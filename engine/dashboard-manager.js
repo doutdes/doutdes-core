@@ -767,6 +767,7 @@ const formatResult = (dashChart) => {
         type: dashChart['dataValues']['Chart']['dataValues']['type'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
-        position: dashChart['dataValues']['position']
+        position: dashChart['dataValues']['position'],
+        description: dashChart['dataValues']['Chart']['dataValues']['description']
     };
 };

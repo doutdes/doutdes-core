@@ -46,9 +46,10 @@ const getPagesID = async (token) =>  {
     let result;
     const options = {
         method: GET,
-        uri: 'https://graph.facebook.com/me/accounts',
+        uri: 'https://graph.facebook.com/v3.3/me/adaccounts',
         qs: {
-            access_token: token
+            access_token: token,
+            fields: 'name',
         },
         json: true
     };
