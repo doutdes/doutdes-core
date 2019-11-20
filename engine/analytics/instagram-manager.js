@@ -140,7 +140,7 @@ const ig_getVideos = async (req, res) => {
 };
 
 // Replace some special chars in API JSONs, which are not allowed by Mongoose
-function preProcessIGData(data, metric) {
+function preProcessIGData(data, metric, period) {
 
     let stringified;
 
@@ -150,10 +150,13 @@ function preProcessIGData(data, metric) {
         data = JSON.parse(stringified);
     }
 
+    if (period !== "lifetime")
+        data = data.slice(0,-1);
     return data;
 }
 
 function getIntervalDate(data) {
+    //console.log ("getIntervalDate -> ", data);
     return {
         start_date: data[0].end_time,
         end_date: data[data.length - 1].end_time
@@ -174,24 +177,30 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
     }
 
     let old_date, old_startDate, old_endDate;
-    let date, today;
+    let date, today, yesterday;
     try {
         old_date = await MongoManager.getIgMongoItemDate(user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
         today = new Date();
+        yesterday = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), 1));
 
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            data = preProcessIGData(data, metric);
+            data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
             await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
-        } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today)) {
+        } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today) && period === "lifetime") {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
+            data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
-            data = preProcessIGData(data, metric);
+            await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
+        }   else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(yesterday)){
+            data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
+            data = preProcessIGData(data, metric, period);
+            date = getIntervalDate(data);
             await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
         }
 
@@ -413,7 +422,7 @@ async function getAPIdata(user_id, page_id, metric, period, start_date = null, e
         data = //(start_date && end_date)
             //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
             await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
-        console.warn('data', data);
+        //console.warn('data', data);
         return data;
     } catch (e) {
         console.error("Error retrieving Instagram data");
