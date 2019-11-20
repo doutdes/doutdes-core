@@ -10,42 +10,15 @@ const DateFns = require('date-fns');
 const Request = require('request-promise');
 
 /** CONSTANTS **/
-const fbInsightURI = 'https://graph.facebook.com/';
+const fbInsightURI = 'https://graph.facebook.com/v4.0/';
 const config       = require('../app').config;
 
-/** METRIC COSTANT **/
-const METRICS = {
-    P_ENGAGED_USERS: 'page_engaged_users',
-    P_IMPRESSIONS_UNIQUE: 'page_impressions_unique',
-    P_IMPRESSIONS_BY_CITY_UNIQUE: 'page_impressions_by_city_unique',
-    P_IMPRESSIONS_BY_COUNTRY_UNIQUE: 'page_impressions_by_country_unique',
-    P_ACTION_POST_REACTIONS_TOTAL: 'page_actions_post_reactions_total',
-    P_FANS: 'page_fans',
-    P_FANS_CITY: 'page_fans_city',
-    P_FANS_COUNTRY: 'page_fans_country',
-    P_FANS_ADDS: 'page_fan_adds',
-    P_FANS_REMOVES: 'page_fan_removes',
-    P_VIEWS_EXT_REFERRALS: 'page_views_external_referrals',
-    P_VIEWS_TOTAL: 'page_views_total',
-    P_CONSUMPTIONS: 'page_consumptions',
-    P_PLACES_CHECKIN_TOTAL: 'page_places_checkin_total',
-    P_NEGATIVE_FEEDBACK: 'page_negative_feedback',
-    P_FANS_ONLINE_DAY: 'page_fans_online_per_day',
-    P_IMPRESSIONS_PAID: 'page_impressions_paid',
-    P_VIDEO_VIEWS: 'page_video_views',
-    POST_IMPRESSIONS: 'post_impressions',
-    P_VIDEO_ADS: 'page_daily_video_ad_break_ad_ impressions_by_crosspost_status'
-};
-
-/** GLOBAL PARAMETERS **/
-global.GET = 'GET';
-global.POST = 'POST';
 
 /** GET pageID from facebook token **/
 const getPageAccessToken = async (token, pageID) => {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID + '/?fields=access_token',
         qs: {
             access_token: token
@@ -55,7 +28,6 @@ const getPageAccessToken = async (token, pageID) => {
 
     try {
         result = await Request(options);
-        console.log(result);
         return result['access_token'];
     } catch (err) {
         console.error(err['message']);
@@ -70,7 +42,7 @@ const getLongLiveAccessToken = async (token) => {
 
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI + 'oauth/access_token',
         qs: {
             grant_type: 'fb_exchange_token',
@@ -116,7 +88,7 @@ const revokePermission = async (token) => {
 const getPagesID = async (token) =>  {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token
@@ -135,14 +107,13 @@ const getPagesID = async (token) =>  {
 
 /** Facebook Page/Insight query **/
 //TODO check why it is necessary adds and subs in dates
-const facebookQuery = async (method, metric, period, pageID, token, start_date, end_date) => {
+const facebookQuery = async (metric, period, pageID, token, start_date, end_date) => {
     let result;
     const options = {
-        method: method,
-        uri: fbInsightURI + pageID + '/insights',
+        method: 'GET',
+        uri: `${fbInsightURI}${pageID}/insights/${metric}`,
         qs: {
             access_token: token,
-            metric: metric,
             period: period,
             since: DateFns.subDays(start_date,1),
             until: DateFns.addDays(end_date,1)
@@ -158,16 +129,18 @@ const facebookQuery = async (method, metric, period, pageID, token, start_date, 
         throw new Error('facebookQuery -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
 const getFacebookData = async (pageID, metric, period, token, start_date, end_date) => {
     let access_token, data;
 
     try {
         access_token = await getPageAccessToken(token, pageID);
-        data = (await facebookQuery(GET, metric, period, pageID, access_token, start_date, end_date))['data'][0]['values'];
+        // data = await facebookQuery(metric, period, pageID, access_token, start_date, end_date)['data'] !== undefined
+        // ?  await facebookQuery(metric, period, pageID, access_token, start_date, end_date)['data'][0]['values'] : [];
+        data = (await facebookQuery(metric, period, pageID, access_token, start_date, end_date))['data'];
+        data = data [0]!== undefined ? data [0]['values'] : [];
         return data;
     } catch (e) {
-        console.error(e);
+        console.error(e['message']);
         throw new Error('getFacebookData -> Error getting the Facebook Data');
     }
 };
@@ -176,11 +149,11 @@ const getFacebookPost = async(pageID, token) => {
     let result;
     const options = {
         method: 'GET',
-        uri: fbInsightURI + pageID + '/posts',
+        uri: `${fbInsightURI}${pageID}/posts`,
         qs: {
             access_token: token,
             limit: 100,
-            fields: 'id,name,created_time'
+            fields: 'id,created_time'
         },
         json: true
     };
@@ -198,7 +171,7 @@ const getFacebookPost = async(pageID, token) => {
 const getAccountInfo = async (token) => {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI + 'me',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -213,12 +186,10 @@ const getAccountInfo = async (token) => {
         throw new Error('getAccountInfo -> Error during the Facebook query -> ' + err['message']);
     }
 };
-
-
 const getTokenInfo = async (token) => {
     let result, accountInfo;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: fbInsightURI,// + '/' + id + '/permissions',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -239,4 +210,4 @@ const getTokenInfo = async (token) => {
 };
 
 /** EXPORTS **/
-module.exports = {getFacebookData, getFacebookPost, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission, METRICS};
+module.exports = {getFacebookData, getFacebookPost, getPagesID, getLongLiveAccessToken, getTokenInfo, revokePermission};

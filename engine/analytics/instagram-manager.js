@@ -144,7 +144,7 @@ function preProcessIGData(data, metric) {
 
     let stringified;
 
-    if (metric.toString() === "audience_gender_age") {// This metric has dots in keys, which are not allowed
+    if (metric.toString() === "audience_gender_age" && data) {// This metric has dots in keys, which are not allowed
         stringified = JSON.stringify(data);
         stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
         data = JSON.parse(stringified);
@@ -205,8 +205,37 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 
 const ig_getData = async (req, res) => {
     let response;
+
     try {
-        response = await ig_getDataInternal(req.user.id, req.params.page_id, req.metric, req.period, req.interval, req.params.media_id);
+        if (!req.query.page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a page ID for the Instagram data request.'
+            })
+        }
+
+        if (!req.query.metric) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a metric for the Instagram data request.'
+            })
+        }
+
+        if (!req.query.period && !req.query.media_id) { // Period is not necessary in the media query
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a period for the Instagram data request.'
+            })
+        }
+
+        if (req.url.includes('media') && !req.query.media_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a media ID for the Instagram media request.'
+            })
+        }
+
+        response = await ig_getDataInternal(req.user.id, req.query.page_id, req.query.metric, req.query.period, parseInt(req.query.interval), req.query.media_id);
 
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
@@ -352,7 +381,7 @@ const ig_getStories = async (req, res) => {
 
 const ig_getBusinessInfo = async (req, res) => {
     let data, key;
-    let pageID = req.params.page_id;
+    let pageID = req.query.page_id;
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
@@ -369,17 +398,27 @@ const ig_getBusinessInfo = async (req, res) => {
 
 //get data from Instagram insights
 async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
-    let data, key;
-    key = await FbToken.findOne({where: {user_id: user_id}});
+    const key = await FbToken.findOne({where: {user_id: user_id}});
+    let data;
+
+    if(start_date) {
+        start_date = new Date(start_date)
+    }
+
+    if(end_date) {
+        end_date = new Date(end_date);
+    }
 
     try {
-        (start_date && end_date) ? data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
-            data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key);
+        data = //(start_date && end_date)
+            //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
+            await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
+        console.warn('data', data);
+        return data;
     } catch (e) {
         console.error("Error retrieving Instagram data");
     }
 
-    return data;
 }
 
 /** EXPORTS **/

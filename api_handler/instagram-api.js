@@ -5,57 +5,28 @@ const Request = require('request-promise');
 
 /** CONSTANTS **/
 const igInsightURI = 'https://graph.facebook.com/';
-const date_preset = 'this_year';
 
-/** METRIC COSTANT **/
-const METRICS = {
-    AUDIENCE_CITY: 'audience_city',
-    AUDIENCE_COUNTRY: 'audience_country',
-    AUDIENCE_GENDER_AGE: 'audience_gender_age',
-    AUDIENCE_LOCALE: 'audience_locale',
-    EMAIL_CONTACTS: 'email_contacts',
-    FOLLOWER_COUNT: 'follower_count',
-    GET_DIRECTIONS_CLICKS: 'get_directions_clicks',
-    IMPRESSIONS: 'impressions',
-    ONLINE_FOLLOWERS: 'online_followers',
-    PHONE_CALL_CLICKS: 'phone_call_clicks',
-    PROFILE_VIEWS: 'profile_views',
-    REACH: 'reach',
-    TEXT_MESSAGE_CLICKS: 'text_message_clicks',
-    WEBSITE_CLICKS: 'website_clicks',
-    ENGAGEMENT: 'engagement',
-    SAVED: 'saved',
-    VIDEO_VIEWS: 'video_views',
-    EXITS: 'exits',
-    REPLIES: 'replies',
-    TAPS_F: 'taps_forward',
-    TAPS_B: 'taps_back'
-};
-const PERIOD = {
-    DAY: 'day',
-    LIFETIME: 'lifetime',
-    WEEK: 'week',
-    D_28: 'days_28',
-};
+/** Metrics available for media:
+ * engagement
+ * saved
+ * video_views
+ */
 
-const INTERVAL = {
-    MONTH: 29,
-    FOUR_WEEKS: 28
-};
+/** Metrics available for stories:
+ * impressions
+ * reach
+ * exits
+ * replies
+ * taps_forward
+ * taps_back
+ */
 
-
-/** GLOBAL PARAMETERS **/
-global.GET = 'GET';
-global.POST = 'POST';
-global.DAYS_28 = 'days_28';
-global.WEEK = 'week';
-global.DAY = 'day';
-global.LIFETIME = 'lifetime';
+const revokePermission = require('./facebook-api').revokePermission;
 
 async function getPageAccessToken(token, pageID) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token,
@@ -84,13 +55,11 @@ async function getPageAccessToken(token, pageID) {
     }
 };
 
-const revokePermission = require('./facebook-api').revokePermission;
-
 /** GET pageID from instagram token**/
 async function getPagesID(token) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/me/accounts',
         qs: {
             access_token: token,
@@ -110,7 +79,7 @@ async function getPagesID(token) {
 async function getUsernameFromId(pageID, token) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID,
         qs: {
             access_token: token,
@@ -130,7 +99,7 @@ async function getUsernameFromId(pageID, token) {
 async function getMedia(pageID, token, n=20) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/media',
         qs: {
             access_token: token,
@@ -151,7 +120,7 @@ async function getMedia(pageID, token, n=20) {
 async function getStories(pageID, token, n=20) {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/stories',
         qs: {
             access_token: token,
@@ -172,7 +141,7 @@ async function getStories(pageID, token, n=20) {
 async function getBusinessDiscoveryInfo(pageID, token) {
     let result, username;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/' + pageID,
         qs: {
             access_token: token,
@@ -227,28 +196,16 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
 
 const getInstagramData = async (channelId, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
-    let final = [], temp = [];
 
     try {
         access_token = await getPageAccessToken(token, channelId);
+        result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
 
-        for(let index in metric) {
-            temp.push(JSON.parse(await instagramQuery(GET, metric[index], channelId, access_token, period, since, until, null, mediaID))['data'][0]['values']);
-            //every data carries on its metric
-            for(let i in temp[temp.length-1]) {
-                temp[temp.length-1][i].metric = metric[index];
-            }
-        }
-        for(let index in temp) {
-            final = final.concat(temp[index]);
-            //final = final.concat('-');
-        }
-        result = final;
-        return result;//['data'][0]['values'];
+        return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
         throw new Error("Bad Instagram Request");
     }
 };
 
-module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission, METRICS, PERIOD, INTERVAL};
+module.exports = {getInstagramData, getPagesID, getMedia, getStories, getBusinessDiscoveryInfo, revokePermission};

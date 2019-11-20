@@ -18,17 +18,11 @@ const DAYS = {
     yesterday: 1,
     min_date: 90
 };
+
 /***************** FACEBOOK *****************/
 const FacebookApi = require('../../api_handler/facebook-api');
 
 // TODO change the response if there are no data
-const setMetric = (metric) => {
-    return (req, res, next) => {
-        req.metric = metric;
-        next();
-    }
-};
-
 const fb_getScopes = async (req, res) => {
     let key, data;
 
@@ -150,12 +144,27 @@ const fb_storeAllData = async (req, res) => {
 };
 
 const fb_getData = async (req, res) => {
-    let response;
-    let page_id;
+    const metric = req.query.metric;
+    let response, page_id;
 
     try {
-        page_id = req.params.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
-        response = await fb_getDataInternal(req.user.id, req.metric, page_id);
+        page_id = req.query.page_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fb_page_id'];
+
+        if(!page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a page ID for the Facebook data request.'
+            })
+        }
+
+        if(!metric) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a metric for the Facebook data request.'
+            })
+        }
+
+        response = await fb_getDataInternal(req.user.id, metric, page_id);
 
         return res.status(HttpStatus.OK).send(response);
     }
@@ -246,7 +255,15 @@ const fb_getPost = async (req, res) => {
 
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
-        page_id = req.params.page_id || key.dataValues.fb_page_id;
+        page_id = req.query.page_id || key.dataValues.fb_page_id;
+
+        if(!page_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+               error: true,
+               message: 'You must specify a page id in the request'
+            });
+        }
+
         data = await FacebookApi.getFacebookPost(page_id, key.api_key);
 
         return res.status(HttpStatus.OK).send(data);
@@ -282,17 +299,9 @@ const fb_login_success = async (req, res) => {
 };
 
 async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
-    let key;
-    let data;
-    try {
-        key = await FbToken.findOne({where: {user_id: user_id}});
-        data = await FacebookApi.getFacebookData(page_id, metric, DAY, key.api_key, start_date, end_date);
-        return data;
-    }
-    catch (e) {
-        console.error("error retrieving data from facebook insights")
-    }
+    const key = await FbToken.findOne({where: {user_id: user_id}});
+    return await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
 }
 
 /** EXPORTS **/
-module.exports = {setMetric, fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};
+module.exports = {fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};

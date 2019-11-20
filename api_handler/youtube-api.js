@@ -1,130 +1,133 @@
-/** INSTAGRAM API HANDLER **/
+/** YOUTUBE API HANDLER **/
 
 /** IMPORTS **/
 const Request = require('request-promise');
-const Model = require('../models/index');
-const {google} = require('googleapis');
-
+const DateFns = require('date-fns');
 
 /** CONSTANTS **/
-const date_preset = 'this_year';
 const config = require('../config/config').production;
+const DAYS = {
+  yesterday: 1,
+  min_date: 90
+};
 
-const dataEndPoint = 'https://www.googleapis.com/youtube/v3/';
+/** ENDPOINTS **/
+const dataEndPoint = 'https://www.googleapis.com/youtube/v3';
 const analyticsEndPoint = 'https://youtubeanalytics.googleapis.com/v2/reports';
 const tokenEndPoint = 'https://www.googleapis.com/oauth2/v4/token';
 
+// Given a refresh token, it retrieves the access token
+const getAccessToken = async (refreshToken) => {
+  let result;
 
-/** METRIC COSTANT **/
-const METRICS = {
-    COMMENTS: 'comments',
-    LIKES: 'likes',
-    DISLIKES: 'dislikes',
-    SHARES: 'shares',
-    SUBGAIN: 'subscribersGained',
-    SUBLOSS: 'subscribersLost',
-    VIEWS: 'views',
-    RED_VIEWS: 'redViews',
-    VIEWERPERC: 'viewerPercentage ',
-    ESTMINWATCH: 'estimatedMinutesWatched ',
-    ESTREDMINWATCH: 'estimatedRedMinutesWatched',
-    AVGVIEWDUR: 'averageViewDuration ',
-    AVGVIEWPERC: 'averageViewPercentage',
+  const options = {
+    method: 'POST',
+    uri: tokenEndPoint,
+    qs: {
+      client_id: config.ga_client_id,
+      client_secret: config.ga_client_secret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token'
+    }
+  };
 
-};
-const DIMENSIONS = {
-    DAY7: '7DayTotals',
-    DAY30: '30DayTotals',
-    AGEGROUP: 'ageGroup',
-    COUNTRY: 'country',
-    GENDER: 'gender',
-    DAY: 'day',
-    MONTH: 'month'
+  try {
+    result = JSON.parse(await Request(options));
+    return result['access_token'];
+  } catch (e) {
+    console.error(e);
+  }
 };
 
-const getAccessToken = async (rt) => {
-    let result;
+// It retrieves the list of the channels
+const getChannels = async (refresh_token) => {
+  const access_token = await getAccessToken(refresh_token);
+  const endPoint = `${dataEndPoint}/channels`;
+  const params = {part: 'snippet,id', mine: true};
 
-    rt = rt['dataValues']['private_key'];
-    const options = {
-        method: 'POST',
-        uri: tokenEndPoint,
-        qs: {
-            client_id: config.ga_client_id,
-            client_secret: config.ga_client_secret,
-            refresh_token: rt,//await GaToken.findOne({where: {user_id: req.user.id}})['dataValues']['private_key'],
-            grant_type: 'refresh_token'
+  const result = await youtubeQuery(access_token, endPoint, params);
+
+  return result.items.map(item => {
+    return {id: item.id, title: item.snippet.title, thumbnails: item.snippet.thumbnails}
+  });
+};
+
+// Main data request: requires a refresh token and the params for the call request
+const yt_getData = async (refreshToken, queryParams) => {
+  const {endPoint, params} = getParams(queryParams.metric, queryParams.channel_id);
+  const token =  await getAccessToken(refreshToken);
+
+  return (await youtubeQuery(token, endPoint, params));
+};
+
+// Generic Youtube query
+const youtubeQuery = async (token, endPoint, params) => {
+  const options = {
+    method: 'GET',
+    uri: endPoint,
+    qs: {
+      ...params,
+      access_token: token,
+    },
+    json: true
+  };
+
+  try {
+    return (await Request(options));
+  } catch (err) {
+    console.error(err);
+    throw new Error('youtubeQuery -> Error during the YouTube query -> ' + err['message']);
+  }
+};
+
+// This method handle some critical cases (different endpoint, different params, ecc)
+const getParams = (metric, channelId) => {
+  let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date)).toISOString().slice(0, 10);
+  let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)).toISOString().slice(0, 10); // yesterday
+
+  switch (metric) {
+    case 'playlists':
+      return {
+        endPoint: `${dataEndPoint}/playlists`,
+        params: {
+          part: 'snippet',
+          channelId: channelId
         }
-    };
+      };
+    case 'videos':
+      return {
+        endPoint: `${dataEndPoint}/search`,
+        params: {
+          part: 'snippet',
+          type: 'video',
+          metrics: 'videos',
+          channelId: channelId,
+          mine: 'true'
+        }
+      };
+    case 'info':
+      return {
+        endPoint: `${dataEndPoint}/channels`,
+        params: {
+          part: 'statistics',
+          id: channelId,
+        }
+      };
+    default:
+      return {
+        endPoint: analyticsEndPoint,
+        params: {
+          channel: channelId,
+          metrics: metric,
+          dimensions: 'day',
+          ids: `channel==MINE`,
+          startDate: start_date,
+          endDate: end_date,
+          mine: true
+        }
+      };
+  }
 
-    try {
-        result = JSON.parse(await Request(options));
-        return result['access_token'];
-    } catch (e) {
-        console.error(e);
-    }
 };
 
-/*main data request: requires a refresh token an endpoint, misc. params and a subendpoint (additional url part like 'subscription'*/
-async function yt_getData(rt, EP, params, sEP = null) {
-    let data, token;
-
-    try {
-        token = await getAccessToken(rt);
-        data = await youtubeQuery(token, EP, params, sEP);
-    } catch (e) {
-        console.error(e);
-    }
-
-    return data;
-}
-
-//TODO check why it is necessary adds and subs in dates
-const youtubeQuery = async (token, EP, params, sEP = null) => {
-    let result;
-    //getting which endpoint should be used
-    switch (EP) {
-        case 0 :
-            EP = dataEndPoint;
-            break;
-        case 1:
-            EP = analyticsEndPoint;
-            break;
-        case 2:
-            EP = tokenEndPoint;
-    }
-
-    //adding the sub-endpoint if avaiable
-    EP += (sEP) ? sEP : '';
-    const options = {
-        method: GET,
-        uri: EP,
-        qs: {
-            access_token: token
-        },
-        json: true
-    };
-
-    /*getting all the metrics, dimensions, part etc...
-    * This is required since YT calls doens't always need all the parameter, and they can't be left empty.
-    * So in order to dynamize the call the parameter are stored as a list of key-value pairs*/
-    for (let par of Object.keys(params)) {
-        options.qs[par] = params[par];
-    }
-
-    /*other miscellaneous params*/
-    (options.qs.ids) ? options.qs.ids += params.channel : null;
-    (!options.qs['mySubscribers']) ? options.qs.mine = true : null;
-    (options.qs.channelId) ? options.qs.channelId = params.channel : null;
-
-    try {
-        result = await Request(options);
-        result = JSON.parse(JSON.stringify(result));
-        return result;
-    } catch (err) {
-        console.error(err['message']);
-        throw new Error('youtubeQuery -> Error during the YouTube query -> ' + err['message']);
-    }
-};
-
-module.exports = {METRICS, DIMENSIONS, config, yt_getData};
+module.exports = {config, yt_getData, getChannels};

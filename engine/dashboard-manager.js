@@ -29,75 +29,31 @@ const DS_TYPE = {
 exports.D_TYPE = D_TYPE;
 exports.DS_TYPE = DS_TYPE;
 
-exports.internalAssignDashboardToUser = async function (dashboard_id, user_id) {
+/** EXTERNAL METHODS **/
 
-    return new Promise(resolve => {
-        UserDashboards.findOne({
-            where: {dashboard_id: dashboard_id},
-            attributes: {exclude: ['DashboardId']}
-        }).then(() => {
+exports.getByFormat = async (req, res) => {
+    let charts;
 
-            UserDashboards.create({user_id: user_id, dashboard_id: dashboard_id})
-                .then(() => {
-                    resolve(true);
-                }).catch(err => {
-                console.error(err);
-                resolve(false);
+    try {
+        charts = await Charts.findAll({where: {format: req.params.format}});
+
+        if(!charts) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'Either there are no charts with this format or it doens\'t exist'
             })
-        }).catch(err => {
-            console.error(err);
-            resolve(false);
-        });
-    });
-};
-
-exports.internalCreateDashboard = async function (name, category) {
-
-    const newDashboard = {name: name, category: category};
-
-    return new Promise(resolve => {
-        Dashboard.create(newDashboard)
-            .then(dashboard => {
-                return resolve(dashboard.id);
-            })
-            .catch(err => {
-                console.error(err);
-                return resolve(null);
-            })
-    });
-};
-
-exports.internalCreateDefaultDashboards = async function (user_id) {
-
-    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
-    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
-    const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
-    const INSTAGRAM_DASHBOARD = {category: 3, name: 'Instagram'};
-    const YOUTUBE_DASHBOARD = {category: 4, name: 'YouTube'};
-
-    const dash1 = await this.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
-    const dash2 = await this.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
-    const dash3 = await this.internalCreateDashboard(ANALYTICS_DASHBOARD.name, ANALYTICS_DASHBOARD.category);
-    const dash4 = await this.internalCreateDashboard(INSTAGRAM_DASHBOARD.name, INSTAGRAM_DASHBOARD.category);
-    const dash5 = await this.internalCreateDashboard(YOUTUBE_DASHBOARD.name, YOUTUBE_DASHBOARD.category);
-
-    let check1 = (dash1 == null) ? false : await this.internalAssignDashboardToUser(dash1, user_id); // Recall that this function returns true or false (doesn't fail)
-    let check2 = (dash2 == null) ? false : await this.internalAssignDashboardToUser(dash2, user_id);
-    let check3 = (dash3 == null) ? false : await this.internalAssignDashboardToUser(dash3, user_id);
-    let check4 = (dash4 == null) ? false : await this.internalAssignDashboardToUser(dash4, user_id);
-    let check5 = (dash5 == null) ? false : await this.internalAssignDashboardToUser(dash5, user_id);
-
-    return new Promise((resolve, reject) => {
-
-        if (!check1 || !check2 || !check3 || !check4 || !check5) { // At least one dashboard has not been created
-            reject('One of the default dashboards as not been created.');
         }
-        else {
-            resolve();
-        }
-    });
-};
 
+        return res.status(HttpStatus.OK).send(charts);
+
+    } catch (e) {
+        console.warn(e);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: true,
+            message: 'An error occurred while getting the list of charts for type and format'
+        })
+    }
+};
 
 exports.readUserDashboards = function (req, res, next) {
 
@@ -123,8 +79,6 @@ exports.readUserDashboards = function (req, res, next) {
             })
         })
 };
-
-
 exports.getDashboardByType = function (req, res, next) {
 
     UserDashboards.findAll({
@@ -135,7 +89,7 @@ exports.getDashboardByType = function (req, res, next) {
         .then(userDashboards => {
 
             if (userDashboards.length === 0) {
-                return res.status(HttpStatus.NO_CONTENT).send({
+                return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
                     error: true,
                     message: 'Cannot get dashboard information'
                 })
@@ -178,8 +132,6 @@ exports.readNotAddedByDashboard = function (req, res, next) {
             })
         })
 };
-
-
 exports.readNotAddedByDashboardAndType = function (req, res, next) {
     Sequelize.query("SELECT * FROM charts WHERE charts.Type = :type AND charts.ID NOT IN (" +
         "SELECT charts.ID FROM `user_dashboards` NATURAL JOIN dashboard_charts JOIN charts ON charts.ID = dashboard_charts.chart_id " +
@@ -472,8 +424,8 @@ exports.clearAllDashboard = async function(req, res, next) {
         if (finalResult === 0) {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR
             ).send({
-                error: true,
-                message: 'Dashboard is empty'
+                    error: true,
+                    message: 'Dashboard is empty'
                 }
             )
         }
@@ -569,11 +521,11 @@ exports.updateChartInDashboard = function (req, res, next) {
 };
 
 exports.updateArray = (req, res) => {
-  const arrayReceived = req.body.arrayReceived;
+    const arrayReceived = req.body.arrayReceived;
 
-  return res.send({
-      array: arrayReceived
-  });
+    return res.send({
+        array: arrayReceived
+    });
 };
 
 // It updates charts holded by a dashboard
@@ -587,10 +539,10 @@ exports.updateChartsInDashboard = function (req, res, next) {
         return DashboardCharts.update({
             position: val.position
         }, {
-             where: {
-                 dashboard_id: val.dashboard_id,
-                 chart_id: val.chart_id
-             },
+            where: {
+                dashboard_id: val.dashboard_id,
+                chart_id: val.chart_id
+            },
             attributes: {
                 exclude: ['DashboardId']
             },
@@ -720,6 +672,73 @@ exports.deleteDashboard = function (req, res, next) {
         })
 };
 
+/** INTERNAL METHODS **/
+exports.internalAssignDashboardToUser = async function (dashboard_id, user_id) {
+
+    return new Promise(resolve => {
+        UserDashboards.findOne({
+            where: {dashboard_id: dashboard_id},
+            attributes: {exclude: ['DashboardId']}
+        }).then(() => {
+
+            UserDashboards.create({user_id: user_id, dashboard_id: dashboard_id})
+                .then(() => {
+                    resolve(true);
+                }).catch(err => {
+                console.error(err);
+                resolve(false);
+            })
+        }).catch(err => {
+            console.error(err);
+            resolve(false);
+        });
+    });
+};
+exports.internalCreateDashboard = async function (name, category) {
+
+    const newDashboard = {name: name, category: category};
+
+    return new Promise(resolve => {
+        Dashboard.create(newDashboard)
+            .then(dashboard => {
+                return resolve(dashboard.id);
+            })
+            .catch(err => {
+                console.error(err);
+                return resolve(null);
+            })
+    });
+};
+exports.internalCreateDefaultDashboards = async function (user_id) {
+
+    const CUSTOM_DASHBOARD = {category: 0, name: 'Custom'};
+    const FACEBOOK_DASHBOARD = {category: 1, name: 'Facebook'};
+    const ANALYTICS_DASHBOARD = {category: 2, name: 'Analytics'};
+    const INSTAGRAM_DASHBOARD = {category: 3, name: 'Instagram'};
+    const YOUTUBE_DASHBOARD = {category: 4, name: 'YouTube'};
+
+    const dash1 = await this.internalCreateDashboard(CUSTOM_DASHBOARD.name, CUSTOM_DASHBOARD.category);
+    const dash2 = await this.internalCreateDashboard(FACEBOOK_DASHBOARD.name, FACEBOOK_DASHBOARD.category);
+    const dash3 = await this.internalCreateDashboard(ANALYTICS_DASHBOARD.name, ANALYTICS_DASHBOARD.category);
+    const dash4 = await this.internalCreateDashboard(INSTAGRAM_DASHBOARD.name, INSTAGRAM_DASHBOARD.category);
+    const dash5 = await this.internalCreateDashboard(YOUTUBE_DASHBOARD.name, YOUTUBE_DASHBOARD.category);
+
+    let check1 = (dash1 == null) ? false : await this.internalAssignDashboardToUser(dash1, user_id); // Recall that this function returns true or false (doesn't fail)
+    let check2 = (dash2 == null) ? false : await this.internalAssignDashboardToUser(dash2, user_id);
+    let check3 = (dash3 == null) ? false : await this.internalAssignDashboardToUser(dash3, user_id);
+    let check4 = (dash4 == null) ? false : await this.internalAssignDashboardToUser(dash4, user_id);
+    let check5 = (dash5 == null) ? false : await this.internalAssignDashboardToUser(dash5, user_id);
+
+    return new Promise((resolve, reject) => {
+
+        if (!check1 || !check2 || !check3 || !check4 || !check5) { // At least one dashboard has not been created
+            reject('One of the default dashboards as not been created.');
+        }
+        else {
+            resolve();
+        }
+    });
+};
 exports.deleteChartsFromDashboardByType = async (user_id, dashboard_type) => {
     let dashboard_id, deletion, deletion_custom;
 
@@ -763,10 +782,16 @@ const formatResult = (dashChart) => {
     return {
         chart_id: dashChart['dataValues']['chart_id'],
         dashboard_id: dashChart['dataValues']['dashboard_id'],
-        format: dashChart['dataValues']['Chart']['dataValues']['format'],
-        type: dashChart['dataValues']['Chart']['dataValues']['type'],
-        originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         title: dashChart['dataValues']['title'],
+        type: dashChart['dataValues']['Chart']['dataValues']['type'],
+        metric: dashChart['dataValues']['Chart']['dataValues']['metric'],
+        dimensions: dashChart['dataValues']['Chart']['dataValues']['dimensions'],
+        sort: dashChart['dataValues']['Chart']['dataValues']['sort'],
+        filter: dashChart['dataValues']['Chart']['dataValues']['filter'],
+        period: dashChart['dataValues']['Chart']['dataValues']['period'],
+        interval: dashChart['dataValues']['Chart']['dataValues']['interval'],
+        format: dashChart['dataValues']['Chart']['dataValues']['format'],
+        originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         position: dashChart['dataValues']['position'],
         description: dashChart['dataValues']['Chart']['dataValues']['description']
     };

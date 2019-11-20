@@ -224,8 +224,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
-                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
-                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
+                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
+                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);
@@ -237,8 +237,8 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
-                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
-                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
+                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
+                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 
@@ -578,7 +578,8 @@ const upsertGaKey = async (user_id, token) => {
     }
 };
 
-const getPageToken = async (token) => { // TODO edit
+const getPageToken = async (token) => { //
+    // TODO edit
     const options = {
         method: GET,
         uri: 'https://graph.facebook.com/me/accounts',
