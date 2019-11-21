@@ -179,7 +179,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
     let old_date, old_startDate, old_endDate;
     let date, today, yesterday;
     try {
-        old_date = await MongoManager.getIgMongoItemDate(user_id, page_id, metric);
+        old_date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -190,21 +190,21 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
-            await MongoManager.storeIgMongoData(user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
+            await MongoManager.storeMongoData(D_TYPE.IG, user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today) && period === "lifetime") {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
-            await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
+            await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, date.end_date.slice(0, 10), data);
         }   else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(yesterday)){
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
-            await MongoManager.updateIgMongoData(user_id, page_id, metric, date.end_date.slice(0, 10), data);
+            await MongoManager.updateMongoData(D_TYPE.IG,user_id, page_id, metric, date.end_date.slice(0, 10), data);
         }
 
-        response = await MongoManager.getIgMongoData(user_id, page_id, metric);
+        response = await MongoManager.getMongoData(D_TYPE.IG, user_id, page_id, metric);
         return response;
     } catch (err) {
         throw err;

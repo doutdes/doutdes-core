@@ -122,7 +122,7 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
 
     //get the start date of the mongo document if exists
     key = await GaToken.findOne({where: {user_id: user_id}});
-    old_date = await MongoManager.getGaMongoItemDate(user_id, key.view_id, metrics, dimensions); // TODO bug with view ID
+    old_date = await MongoManager.getMongoItemDate(D_TYPE.GA, user_id, key.view_id, metrics, dimensions); // TODO bug with view ID
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
@@ -130,8 +130,8 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-        await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-            end_date.toISOString().slice(0, 10), data);
+        await MongoManager.storeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data, dimensions);
 
         return data;
     }
@@ -139,19 +139,19 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
     else if (old_startDate > start_date) {
         //chiedere dati a Google e accertarmi che risponda
         data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-        await MongoManager.removeGaMongoData(user_id, key.view_id, metrics, dimensions);
-        await MongoManager.storeGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-            end_date.toISOString().slice(0, 10), data);
+        await MongoManager.removeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, dimensions);
+        await MongoManager.storeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data, dimensions);
 
         return data;
     }
     else if (old_endDate < end_date) {
         data = await getAPIData(user_id, metrics, dimensions, new Date(DateFns.addDays(old_endDate, 1)), end_date, sort, filters);
-        await MongoManager.updateGaMongoData(user_id, key.view_id, metrics, dimensions, start_date.toISOString().slice(0, 10),
-            end_date.toISOString().slice(0, 10), data);
+        await MongoManager.updateMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), data, dimensions);
     }
 
-    response = await MongoManager.getGaMongoData(user_id, key.view_id, metrics, dimensions);
+    response = await MongoManager.getMongoData(D_TYPE.GA, user_id, key.view_id, metrics, dimensions);
     return response;
 
 };
