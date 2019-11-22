@@ -5,6 +5,7 @@ const querystring = require('querystring');
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
 const Users = Model.Users;
+const Chart = Model.Charts;
 
 const GAM = require('../../api_handler/googleAnalytics-api').METRICS;
 const GAD = require('../../api_handler/googleAnalytics-api').DIMENSIONS;
@@ -69,29 +70,35 @@ const ga_storeAllData = async (req, res) => {
     let user_id;
     let permissionGranted;
     let users;
+    let charts;
+    let page_list;
 
     try {
         users = await Users.findAll();
+        charts = await Chart.findAll({
+            where: {
+                type: D_TYPE.GA
+            }
+        });
         for (const user of users) {
             user_id = user.dataValues.id;
 
             try {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
                 if (permissionGranted.granted) {
-                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.PAGE_DATE, GAS.PAGE_VIEWS_DESC);
-                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MEDIUM_DATE, null, GAF.SESSIONS_GT_5);
-                    await ga_getDataInternal(user_id, GAM.PAGE_VIEWS, GAD.COUNTRY_DATE);
-                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.BROWSER_DATE);
-                    await ga_getDataInternal(user_id, GAM.BOUNCE_RATE, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.AVG_SESSION_DURATION, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.USERS, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.NEW_USERS, GAD.DATE);
-                    await ga_getDataInternal(user_id, GAM.SESSIONS, GAD.MOBILE_DEVICE_DATE, null, GAF.SESSIONS_GT_1);
-                    await ga_getDataInternal(user_id, GAM.PAGE_LOAD_TIME, GAD.PAGE_DATE, null, GAF.PAGE_LOAD_TIME_GT_0);
-                    await ga_getDataInternal(user_id, GAM.PERCENT_NEW_SESSIONS, GAD.DATE);
 
+                    // let key = await GaToken.findOne({where: {user_id: user_id}});
+                    // let list = await GoogleApi.getViewList(key.private_key);
+                    //
+                    // console.log (list);
+                    //
+                    // page_list = _.map((await GoogleApi.getViewList(key.private_key)),'id');
+
+                    // console.log("pagelist ", page_list);
+
+                    for (const chart of charts){
+                        await ga_getDataInternal(user_id, chart.metric, chart.dimensions, chart.sort, chart.filter)
+                    }
                     console.log("Ga Data updated successfully for user n°", user_id);
                 }
             } catch (e) {

@@ -114,7 +114,6 @@ const fb_storeAllData = async (req, res) => {
                     for (page_id of page_list) {
 
                         for (const chart of charts) {
-                            console.log ("Chart.metric", chart.metric);
                             await fb_getDataInternal(user_id, chart.metric, page_id)
                         }
                     }
