@@ -2,10 +2,12 @@
 
 'use strict';
 const DateFns = require('date-fns');
+const _ = require('lodash');
 
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
 const Users = Model.Users;
+const Chart = Model.Charts;
 const IGM = require('../../api_handler/instagram-api').METRICS;
 const IGP = require('../../api_handler/instagram-api').PERIOD;
 const IGI = require('../../api_handler/instagram-api').INTERVAL;
@@ -38,26 +40,11 @@ const setMetric = (metric, period, interval = null) => {
 };
 
 const ig_getPages = async (req, res) => {
-    let data, key;
+
     let pages = [];
 
     try {
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = (await InstagramApi.getPagesID(key.api_key))['data'];
-
-        for (const index in data) {
-            if (data[index]['instagram_business_account']) {
-
-                const page = {
-                    id: data[index]['instagram_business_account']['id'],
-                    username: data[index]['instagram_business_account']['username'],
-                    name: data[index]['instagram_business_account']['name'],
-                };
-
-                pages.push(page);
-            }
-        }
-
+        pages = await ig_getInternalPages(req.user.id);
         return res.status(HttpStatus.OK).send(pages);
     } catch (err) {
         console.error(err);
@@ -67,6 +54,28 @@ const ig_getPages = async (req, res) => {
         })
     }
 };
+
+async function ig_getInternalPages (user_id){
+    let data, key;
+    let pages = [];
+
+    key = await FbToken.findOne({where: {user_id: user_id}});
+    data = (await InstagramApi.getPagesID(key.api_key))['data'];
+
+    for (const index in data) {
+        if (data[index]['instagram_business_account']) {
+
+            const page = {
+                id: data[index]['instagram_business_account']['id'],
+                username: data[index]['instagram_business_account']['username'],
+                name: data[index]['instagram_business_account']['name'],
+            };
+
+            pages.push(page);
+        }
+    }
+    return pages;
+}
 
 /*Fetches the latest n media objects in profile (IMG/VID, stories excluded, use direct method instead)*/
 const ig_getMedia = async (req, res) => {
@@ -281,31 +290,29 @@ const ig_storeAllData = async (req, res) => {
     let user_id;
     let permissionGranted;
     let users;
+    let charts;
     try {
         users = await Users.findAll();
+        charts = await Chart.findAll({
+            where: {
+                type: D_TYPE.IG
+            }
+        });
         for (const user of users) {
             user_id = user.dataValues.id;
             try {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.IG);
                 if (permissionGranted.granted) {
-                    let key = await FbToken.findOne({where: {user_id: user_id}});
-                    let page_id = (await InstagramApi.getPagesID(key.api_key))['data'][0]['instagram_business_account']['id'];
+                    let pages = await ig_getInternalPages(user_id);
 
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_CITY], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_COUNTRY], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_LOCALE], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.EMAIL_CONTACTS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.FOLLOWER_COUNT], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.IMPRESSIONS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.ONLINE_FOLLOWERS], IGP.LIFETIME, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.PHONE_CALL_CLICKS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.PROFILE_VIEWS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.REACH], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.TEXT_MESSAGE_CLICKS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS], IGP.DAY, IGI.MONTH);
-                    await ig_getDataInternal(user_id, page_id, [IGM.WEBSITE_CLICKS, IGM.TEXT_MESSAGE_CLICKS, IGM.PHONE_CALL_CLICKS, IGM.GET_DIRECTIONS_CLICKS], IGP.DAY, IGI.MONTH);
+                    pages = _.map(pages,"id");
+
+                    for (const page_id of pages) {
+
+                        for (const chart of charts) {
+                            await ig_getDataInternal(user_id, page_id, chart.metric, chart.period, chart.interval)
+                        }
+                    }
 
                     console.log("Ig Data updated successfully for user n°", user_id);
                 }
@@ -339,20 +346,32 @@ const ig_storeAllDataDaily = async (req, res) => {
     let user_id;
     let permissionGranted;
     let users;
+    let charts;
     try {
         users = await Users.findAll();
         for (const user of users) {
             user_id = user.dataValues.id;
+
+            charts = await Chart.findAll({
+                where: {
+                    type: D_TYPE.IG,
+                    period: "lifetime"
+                }
+            });
             try {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.IG);
                 if (permissionGranted.granted) {
-                    let key = await FbToken.findOne({where: {user_id: user_id}});
-                    let page_id = (await InstagramApi.getPagesID(key.api_key))['data'][0]['instagram_business_account']['id'];
 
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_CITY], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_COUNTRY], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_GENDER_AGE], IGP.LIFETIME);
-                    await ig_getDataInternal(user_id, page_id, [IGM.AUDIENCE_LOCALE], IGP.LIFETIME);
+                    let pages = await ig_getInternalPages(user_id);
+
+                    pages = _.map(pages,"id");
+
+                    for (const page_id of pages) {
+
+                        for (const chart of charts) {
+                            await ig_getDataInternal(user_id, page_id, chart.metric, chart.period)
+                        }
+                    }
 
                     console.log("Ig Data Daily updated successfully for user n°", user_id);
                 }
