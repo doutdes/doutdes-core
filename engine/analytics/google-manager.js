@@ -1,6 +1,7 @@
 'use strict';
 const DateFns = require('date-fns');
 const querystring = require('querystring');
+const _ = require('lodash');
 
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
@@ -87,17 +88,12 @@ const ga_storeAllData = async (req, res) => {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.GA);
                 if (permissionGranted.granted) {
 
-                    // let key = await GaToken.findOne({where: {user_id: user_id}});
-                    // let list = await GoogleApi.getViewList(key.private_key);
-                    //
-                    // console.log (list);
-                    //
-                    // page_list = _.map((await GoogleApi.getViewList(key.private_key)),'id');
+                    page_list = _.map(await ga_viewListInternal(user_id), 'id');
 
-                    // console.log("pagelist ", page_list);
-
-                    for (const chart of charts){
-                        await ga_getDataInternal(user_id, chart.metric, chart.dimensions, chart.sort, chart.filter)
+                    for (const chart of charts) {
+                        for (const view_id of page_list) {
+                            await ga_getDataInternal(user_id, view_id, chart.metric, chart.dimensions, chart.sort, chart.filter)
+                        }
                     }
                     console.log("Ga Data updated successfully for user n°", user_id);
                 }
@@ -117,7 +113,7 @@ const ga_storeAllData = async (req, res) => {
     }
 };
 
-const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, filters = null) => {
+const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = null, filters = null) => {
     let key;
     let response;
     let data;
@@ -129,15 +125,15 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
 
     //get the start date of the mongo document if exists
     key = await GaToken.findOne({where: {user_id: user_id}});
-    old_date = await MongoManager.getMongoItemDate(D_TYPE.GA, user_id, key.view_id, metrics, dimensions); // TODO bug with view ID
+    old_date = await MongoManager.getMongoItemDate(D_TYPE.GA, user_id, view_id, metrics, dimensions); // TODO bug with view ID
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
 
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
-        data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-        await MongoManager.storeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+        data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
+        await MongoManager.storeMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), data, dimensions);
 
         return data;
@@ -145,20 +141,20 @@ const ga_getDataInternal = async (user_id, metrics, dimensions, sort = null, fil
     //check if the start date is below our start date. If yes, delete the previous document and create a new one.
     else if (old_startDate > start_date) {
         //chiedere dati a Google e accertarmi che risponda
-        data = await getAPIData(user_id, metrics, dimensions, start_date, end_date, sort, filters);
-        await MongoManager.removeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, dimensions);
-        await MongoManager.storeMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+        data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
+        await MongoManager.removeMongoData(D_TYPE.GA, user_id, view_id, metrics, dimensions);
+        await MongoManager.storeMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), data, dimensions);
 
         return data;
     }
     else if (old_endDate < end_date) {
-        data = await getAPIData(user_id, metrics, dimensions, new Date(DateFns.addDays(old_endDate, 1)), end_date, sort, filters);
-        await MongoManager.updateMongoData(D_TYPE.GA, user_id, key.view_id, metrics, start_date.toISOString().slice(0, 10),
+        data = await getAPIData(user_id, view_id, metrics, dimensions, new Date(DateFns.addDays(old_endDate, 1)), end_date, sort, filters);
+        await MongoManager.updateMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), data, dimensions);
     }
 
-    response = await MongoManager.getMongoData(D_TYPE.GA, user_id, key.view_id, metrics, dimensions);
+    response = await MongoManager.getMongoData(D_TYPE.GA, user_id, view_id, metrics, dimensions);
     return response;
 
 };
@@ -171,7 +167,17 @@ const ga_getData = async (req, res) => {
     const filter = querystring.decode(req.query.filter);
 
     try {
-        let response = await ga_getDataInternal(req.user.id, metric, dimensions, sort, filter);
+        const query = await GaToken.findOne({where: {user_id: req.user.id}});
+        const view_id = req.query.view_id || query.dataValues.view_id;
+
+        if (!view_id) {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: true,
+                message: 'You have not provided a view ID for the Google Analytics data request.'
+            })
+        }
+
+        let response = await ga_getDataInternal(req.user.id, view_id, metric, dimensions, sort, filter);
         return res.status(HttpStatus.OK).send(response);
     }
     catch (err) {
@@ -226,22 +232,9 @@ const ga_getScopes = async (req, res) => {
 };
 
 const ga_viewList = async (req, res) => {
-    let key, data, index, view_id, result = [];
-
+        let result;
     try {
-        key = await GaToken.findOne({where: {user_id: req.user.id}});
-        data = await GoogleApi.getViewList(key.private_key);
-
-        for (const i in data.accountList) {
-
-            index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id']);
-            view_id = data.profileList[index]['id'];
-
-            result.push({
-                id: view_id,
-                name: data.accountList[i]['name']
-            });
-        }
+        result = await ga_viewListInternal(req.user.id);
 
         return res.status(HttpStatus.OK).send(result);
     } catch (err) {
@@ -260,13 +253,32 @@ const ga_viewList = async (req, res) => {
     }
 };
 
+async function ga_viewListInternal(user_id) {
+    let key, data, index, view_id, result = [];
+
+    key = await GaToken.findOne({where: {user_id: user_id}});
+    data = await GoogleApi.getViewList(key.private_key);
+
+    for (const i in data.accountList) {
+
+        index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id']);
+        view_id = data.profileList[index]['id'];
+
+        result.push({
+            id: view_id,
+            name: data.accountList[i]['name']
+        });
+    }
+    return result;
+};
+
 //get the data from the google analytics API
-async function getAPIData(userid, metric, dimensions, start_date, end_date, sort, filters) {
+async function getAPIData(userid, view_id, metric, dimensions, start_date, end_date, sort, filters) {
     let key;
     let data;
     try {
         key = await GaToken.findOne({where: {user_id: userid}});
-        data = await GoogleApi.getData(key.private_key, key.view_id, start_date.toISOString().slice(0, 10),
+        data = await GoogleApi.getData(key.private_key, view_id, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), metric, dimensions, sort, filters);
     }
     catch (e) {
