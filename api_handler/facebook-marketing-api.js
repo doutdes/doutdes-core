@@ -45,7 +45,7 @@ const getPageAdsIds = async (token) => {
 const getPagesID = async (token) =>  {
     let result;
     const options = {
-        method: GET,
+        method: 'GET',
         uri: 'https://graph.facebook.com/v3.3/me/adaccounts',
         qs: {
             access_token: token,
@@ -63,27 +63,30 @@ const getPagesID = async (token) =>  {
     }
 };
 
-const facebookQuery = async (pageID, token, level, startDate, endDate, group, id) => {
+const facebookQuery = async (pageID, token, domain, breakdown, metric, startDate, endDate, id) => {
     let result;
 
+    metric = metric !== 'null' ? metric : level_params[domain];
+    breakdown = breakdown !== 'null' ? breakdown : '';
+
     const options = {
-        uri: fbInsightURI + pageID + '/' + level,
+        uri: fbInsightURI + pageID + '/' + domain,
         qs: {
             access_token: token,
-            fields: level_params[level],
+            fields: metric,
             //time_range: {since: startDate, until: endDate},
             date_preset: 'last_90d',
             time_increment: 1,
-            breakdowns: breakdownsParams[group],
+            breakdowns: breakdown,
             limit: 10000
         },
         json: true
     };
 
-    if (id && level === 'adsets') {
+    if (id && domain === 'adsets') {
         options.qs.filtering = [{"field":"campaign.id","operator":"EQUAL", "value":id}];
     }
-    else if(id && level === 'ads') {
+    else if(id && domain === 'ads') {
         options.qs.filtering = [{"field":"adset.id","operator":"EQUAL", "value":id}];
     }
 

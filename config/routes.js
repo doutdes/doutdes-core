@@ -164,6 +164,9 @@ module.exports = function (app, passport, config) {
     app.get(`${fbmPath}/pages`, reqAuth, AccMan.roleAuth(all), FbMM.fbm_getPages);
 
     app.get(`${fbmPath}/adslist`, FbMM.getAdsList);
+
+    app.get(`${fbmPath}/data`, reqAuth, AccMan.roleAuth(all), FbMM.getData);
+
     app.get(`${fbmPath}/:act_id/:level/breakdowns/:group`, reqAuth, AccMan.roleAuth(all), FbMM.getData);
     app.get(`${fbmPath}/:act_id/:level/:id*?`, reqAuth, AccMan.roleAuth(all),FbMM.getData);
 

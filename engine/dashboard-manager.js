@@ -793,6 +793,8 @@ const formatResult = (dashChart) => {
         format: dashChart['dataValues']['Chart']['dataValues']['format'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
         position: dashChart['dataValues']['position'],
-        description: dashChart['dataValues']['Chart']['dataValues']['description']
+        description: dashChart['dataValues']['Chart']['dataValues']['description'],
+        domain: dashChart['dataValues']['Chart']['dataValues']['domain'],
+        breakdowns: dashChart['dataValues']['Chart']['dataValues']['breakdowns'],
     };
 };
