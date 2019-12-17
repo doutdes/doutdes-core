@@ -8,6 +8,7 @@ const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 const HttpStatus = require('http-status-codes');
 const _ = require('lodash');
+const day = 86400000;
 
 const DAYS = {
     yesterday: 1,
@@ -137,68 +138,121 @@ const yt_getChannels = async (req, res) => {
     }
 };
 
-const yt_getDataInternal = async (user_id, EP, params, sEP = null) => {
-    let data, old_date, old_startDate, old_endDate, old_lastDate;
-    let result = [];
-    let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
-    let end_date = (DateFns.subDays(new Date(), DAYS.yesterday)); // yesterday
+const yt_getDataInternal = async (user_id, metric, channel_id) => {
 
-    let rt = await GaToken.findOne({where: {user_id: user_id}});
-    old_date = await MongoManager.getYtMongoItemDate(user_id, params.channel, params.metrics);
+    let response, key, result, old_date, old_startDate, old_endDate, old_lastDate;
+
+    if (!metric) {
+        console.warn("Missing YT metric");
+        return;
+    }
+
+    if (!channel_id) {
+        console.warn("Missing YT channel ID");
+        return;
+    }
+
+    let start_date = (DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday), DAYS.min_date));
+    let end_date = (DateFns.subDays(new Date(), DAYS.yesterday));
+
+    old_date = await MongoManager.getMongoItemDate(D_TYPE.YT, user_id, channel_id, metric);
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
     old_lastDate = old_date.last_date;
 
-    //check if the previous document exist and create a new one
+
+    key = await GaToken.findOne({where: {user_id: user_id}});
+
     if (old_startDate == null) {
-        params.startDate = start_date.toISOString().slice(0, 10);
-        params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(rt, EP, params, sEP);
-        await MongoManager.storeYtMongoData(user_id, params.channel, params.metrics,
-            start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
-        return result;
+        //mettere startDate e endDate
+        response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
+        //applicare nuovo metodo per riempire i dati
+        result = getResult(response, metric);
+        if (result) {
+            result = preProcessYTData(result, metric, start_date, end_date);
+        }
+        await MongoManager.storeMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), result);
     } else if (DateFns.startOfDay(old_startDate) > DateFns.startOfDay(start_date)) {
-        params.startDate = start_date.toISOString().slice(0, 10);
-        params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(rt, EP, params, sEP);
-        await MongoManager.removeYtMongoData(user_id, params.channel, params.metrics);
-        await MongoManager.storeYtMongoData(user_id, params.channel, params.metrics,
-            start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
-        return result;
+
+        response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
+        result = getResult(response, metric);
+        if (result) {
+            result = preProcessYTData(result, metric, start_date, end_date);
+        }
+        await MongoManager.removeMongoData(D_TYPE.YT, user_id, channel_id, metric);
+        await MongoManager.storeMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10),
+            end_date.toISOString().slice(0, 10), result);
+
     } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(end_date)) {
-        params.startDate = (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10);
-        params.endDate = end_date.toISOString().slice(0, 10);
-        result = await getResult(rt, EP, params, sEP);
-        await MongoManager.updateYtMongoData(user_id, params.channel, params.metrics,
-            params.endDate, result);
+        // inserire nuovo start Date pari a un giorno dopo l'end date del documento
+
+        response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
+        result = getResult(response, metric);
+        if (result) {
+            result = preProcessYTData(result, metric, start_date, end_date);
+        }
+        await MongoManager.updateMongoData(D_TYPE.YT, user_id, channel_id, metric, end_date.toISOString().slice(0, 10), result);
     }
-    result = await MongoManager.getYtMongoData(user_id, params.channel, params.metrics);
+    result = await MongoManager.getMongoData(D_TYPE.YT, user_id, channel_id, metric);
     return result;
 };
 
+function preProcessYTData(data, metric, start_date, end_date) {
+    if (metric !== 'playlists' && metric !== 'videos' && metric !== 'info') {
+        let rows = data;
+        let tStart = new Date(start_date.toISOString().slice(0, 10));
+        let tEnd = new Date(end_date.toISOString().slice(0, 10));
+        let newValue = [];
+        if (tStart.toISOString().slice(0, 10) === rows[0].date.toISOString().slice(0, 10)) {
+            newValue.push({'date': rows[0].date, 'value': rows[0].value});
+        } else {
+            newValue.push({'date': tStart, 'value': 0});
+        }
+
+        for (let row of rows) {
+
+            let tDate = new Date(row.date.toISOString().slice(0, 10));
+            let dif = tDate.valueOf() - tStart.valueOf();
+
+            if (dif > 0) {
+                let range = (dif / day);
+
+                for (let j = 0; j < range; j++) {
+                    tStart = new Date(tStart.valueOf() + day);
+
+                    if (tStart.toISOString().slice(0, 10) != row.date.toISOString().slice(0, 10)) {
+                        //console.warn("primo if");
+                        newValue.push({'date': tStart, 'value': 0});
+                    } else {
+                        //console.warn("else");
+                        newValue.push({'date': row.date, 'value': row.value});
+                    }
+                }
+            }
+            tStart = new Date(row.date);
+        }
+        if (tEnd.toISOString().slice(0, 10) != newValue[newValue.length - 1].date.toISOString().slice(0, 10)) {
+            let dif = tEnd.valueOf() - newValue[newValue.length - 1].date.valueOf();
+            let range = dif / day;
+            tStart = new Date(newValue[newValue.length - 1].date.toISOString().slice(0, 10));
+            for (let j = 0; j < range; j++) {
+                tStart = new Date(tStart.valueOf() + day);
+                newValue.push({'date': tStart, 'value': 0});
+            }
+        }
+        return newValue;
+    }
+    return data;
+};
+
 const yt_getData = async (req, res) => {
-    let response, key;
-
-    if (!req.query.metric) {
-        return res.status(HttpStatus.BAD_REQUEST).send({
-            error: true,
-            message: 'You have not provided a metric for the Youtube data request.'
-        })
-    }
-
-    if (!req.query.channel_id) {
-        return res.status(HttpStatus.BAD_REQUEST).send({
-            error: true,
-            message: 'You have not provided a channel ID for the Youtube data request.'
-        })
-    }
+    let response;
 
     try {
-        key = await GaToken.findOne({where: {user_id: req.user.id}});
-        // console.warn(key.dataValues.private_key);
-        response = await YoutubeApi.yt_getData(key.dataValues.private_key, req.query); // TODO ripristinare mongo
-        return res.status(HttpStatus.OK).send(getResult(response, req.query.metric));
+        response = await yt_getDataInternal(req.user.id, req.query.metric, req.query.channel_id);
+        return res.status(HttpStatus.OK).send(response);
     } catch (err) {
         console.error(err);
         if (err.statusCode === 400) {
