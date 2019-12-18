@@ -237,8 +237,8 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
-                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 
