@@ -169,18 +169,18 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
         response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
         //applicare nuovo metodo per riempire i dati
         result = getResult(response, metric);
-        if (result) {
-            result = preProcessYTData(result, metric, start_date, end_date);
-        }
+
+        result = preProcessYTData(result, metric, start_date, end_date);
+
         await MongoManager.storeMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), result);
     } else if (DateFns.startOfDay(old_startDate) > DateFns.startOfDay(start_date)) {
 
         response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
         result = getResult(response, metric);
-        if (result) {
-            result = preProcessYTData(result, metric, start_date, end_date);
-        }
+
+        result = preProcessYTData(result, metric, start_date, end_date);
+
         await MongoManager.removeMongoData(D_TYPE.YT, user_id, channel_id, metric);
         await MongoManager.storeMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), result);
@@ -190,10 +190,8 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
 
         response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
         result = getResult(response, metric);
-        if (result) {
-            result = preProcessYTData(result, metric, start_date, end_date);
-        }
-        await MongoManager.updateMongoData(D_TYPE.YT, user_id, channel_id, metric, end_date.toISOString().slice(0, 10), result);
+        result = preProcessYTData(result, metric, DateFns.addDays(old_lastDate, 1), end_date);
+        await MongoManager.updateMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
     }
     result = await MongoManager.getMongoData(D_TYPE.YT, user_id, channel_id, metric);
     return result;
@@ -202,47 +200,60 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
 function preProcessYTData(data, metric, start_date, end_date) {
     if (metric !== 'playlists' && metric !== 'videos' && metric !== 'info') {
         let rows = data;
+
         let tStart = new Date(start_date.toISOString().slice(0, 10));
         let tEnd = new Date(end_date.toISOString().slice(0, 10));
         let newValue = [];
-        if (tStart.toISOString().slice(0, 10) === rows[0].date.toISOString().slice(0, 10)) {
-            newValue.push({'date': rows[0].date, 'value': rows[0].value});
-        } else {
-            newValue.push({'date': tStart, 'value': 0});
-        }
+        if (rows.length > 0) {
+            if (tStart.toISOString().slice(0, 10) === rows[0].date.toISOString().slice(0, 10)) {
+                newValue.push({'date': rows[0].date, 'value': rows[0].value});
+            } else {
+                newValue.push({'date': tStart, 'value': 0});
+            }
 
-        for (let row of rows) {
+            for (let row of rows) {
 
-            let tDate = new Date(row.date.toISOString().slice(0, 10));
-            let dif = tDate.valueOf() - tStart.valueOf();
+                let tDate = new Date(row.date.toISOString().slice(0, 10));
+                let dif = tDate.valueOf() - tStart.valueOf();
 
-            if (dif > 0) {
-                let range = (dif / day);
+                if (dif > 0) {
+                    let range = (dif / day);
 
-                for (let j = 0; j < range; j++) {
-                    tStart = new Date(tStart.valueOf() + day);
+                    for (let j = 0; j < range; j++) {
+                        tStart = new Date(tStart.valueOf() + day);
 
-                    if (tStart.toISOString().slice(0, 10) != row.date.toISOString().slice(0, 10)) {
-                        //console.warn("primo if");
-                        newValue.push({'date': tStart, 'value': 0});
-                    } else {
-                        //console.warn("else");
-                        newValue.push({'date': row.date, 'value': row.value});
+                        if (tStart.toISOString().slice(0, 10) != row.date.toISOString().slice(0, 10)) {
+                            //console.warn("primo if");
+                            newValue.push({'date': tStart, 'value': 0});
+                        } else {
+                            //console.warn("else");
+                            newValue.push({'date': row.date, 'value': row.value});
+                        }
                     }
                 }
+                tStart = new Date(row.date);
             }
-            tStart = new Date(row.date);
+            if (tEnd.toISOString().slice(0, 10) != newValue[newValue.length - 1].date.toISOString().slice(0, 10)) {
+                let dif = tEnd.valueOf() - newValue[newValue.length - 1].date.valueOf();
+                let range = dif / day;
+                tStart = new Date(newValue[newValue.length - 1].date.toISOString().slice(0, 10));
+                for (let j = 0; j < range; j++) {
+                    tStart = new Date(tStart.valueOf() + day);
+                    newValue.push({'date': tStart, 'value': 0});
+                }
+            }
+            return newValue;
         }
-        if (tEnd.toISOString().slice(0, 10) != newValue[newValue.length - 1].date.toISOString().slice(0, 10)) {
-            let dif = tEnd.valueOf() - newValue[newValue.length - 1].date.valueOf();
-            let range = dif / day;
-            tStart = new Date(newValue[newValue.length - 1].date.toISOString().slice(0, 10));
+        else {
+            let dif = tEnd.valueOf() - tStart.valueOf();
+            let range = (dif / day);
+            newValue.push({'date': tStart, 'value': 0});
             for (let j = 0; j < range; j++) {
                 tStart = new Date(tStart.valueOf() + day);
                 newValue.push({'date': tStart, 'value': 0});
             }
+            return newValue;
         }
-        return newValue;
     }
     return data;
 };

@@ -205,7 +205,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
-            await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, date.end_date.slice(0, 10), data);
+            await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
         }   else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(yesterday)){
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
