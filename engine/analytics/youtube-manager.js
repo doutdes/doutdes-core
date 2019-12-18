@@ -8,7 +8,7 @@ const TokenManager = require('../token-manager');
 const MongoManager = require('../mongo-manager');
 const HttpStatus = require('http-status-codes');
 const _ = require('lodash');
-const day = 86400000;
+const DAY = 86400000;
 
 const DAYS = {
     yesterday: 1,
@@ -21,103 +21,59 @@ const YoutubeApi = require('../../api_handler/youtube-api');
 // TODO change the response if there are no data
 
 const yt_storeAllData = async (req, res) => {
-    /*let key = req.params.key;
+    let key = req.params.key;
     let auth = process.env.KEY || null;
     if (auth == null) {
-      console.warn("Scaper executed without a valid key");
+        console.warn("Scaper executed without a valid key");
     }
 
-    let user_id;
+    let user_id, charts;
     let permissionGranted;
     let users, channel_list, channel;
 
     if (key != auth) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-        error: 'Internal Server Error',
-        message: 'There is a problem with MongoDB'
-      });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
     }
+
     try {
-      users = await Users.findAll();
-      for (const user of users) {
-        user_id = user.dataValues.id;
-        try {
-          permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
-          if (permissionGranted.granted) {
-            channel_list = _.map((await yt_getInternalPages(user_id, 0, {'part': 'snippet, id'}, 'channels')), 'id');
-            for (channel of channel_list) {
-              await yt_getDataInternal(user_id, 0, {
-                'part': 'snippet', 'metrics': 'playlists', 'ids':
-                  'channel==', 'channel': channel
-              }, 'playlists');
-              await yt_getDataInternal(user_id, 0, {
-                'part': 'snippet', 'mine': 'true', 'type': 'video',
-                'channelId': ' ', 'metrics': 'videos', 'ids': 'channel==', 'channel': channel
-              }, 'search');
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'views', 'dimensions': 'day', 'ids':
-                  'channel==', 'channel': channel, 'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'comments',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'likes',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'dislikes',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'shares',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'averageViewDuration',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
-              await yt_getDataInternal(user_id, 1, {
-                'metrics': 'estimatedMinutesWatched',
-                'dimensions': 'day',
-                'ids': 'channel==',
-                'channel': channel,
-                'analytics': true
-              });
+        users = await Users.findAll();
+        charts = await Chart.findAll({
+            where: {
+                type: D_TYPE.YT
             }
-            console.log("Yt Data updated successfully for user n°", user_id);
-          }
-        } catch (e) {
-          console.warn("The user n°", user_id, " have an invalid key");
+        });
+        for (const user of users) {
+            user_id = user.dataValues.id;
+
+            try {
+                permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
+                if (permissionGranted.granted) {
+
+                    for (const chart of charts) {
+
+                        await yt_getDataInternal(user_id, chart.metric, channel_id)
+
+                    }
+                    console.log("Yt Data updated successfully for user n°", user_id);
+                }
+            } catch (e) {
+                console.warn("The user n°", user_id, " have an invalid key");
+            }
         }
-      }
-      return res.status(HttpStatus.OK).send({
-        message: "yt_storeAllData executed successfully"
-      });
+        return res.status(HttpStatus.OK).send({
+            message: "yt_storeAllData executed successfully"
+        });
     }
     catch (e) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-        error: 'Internal Server Error',
-        message: 'There is a problem with MongoDB'
-      });
-    }*/
-}; // TODO refactor
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'Internal Server Error',
+            message: 'There is a problem with MongoDB'
+        });
+    }
+};
 
 //returns all the channels for the given user
 const yt_getChannels = async (req, res) => {
@@ -156,8 +112,6 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
     let end_date = (DateFns.subDays(new Date(), DAYS.yesterday));
 
     old_date = await MongoManager.getMongoItemDate(D_TYPE.YT, user_id, channel_id, metric);
-
-    console.log("OLD DATE ", old_date);
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
@@ -218,10 +172,10 @@ function preProcessYTData(data, metric, start_date, end_date) {
                 let dif = tDate.valueOf() - tStart.valueOf();
 
                 if (dif > 0) {
-                    let range = (dif / day);
+                    let range = (dif / DAY);
 
                     for (let j = 0; j < range; j++) {
-                        tStart = new Date(tStart.valueOf() + day);
+                        tStart = new Date(tStart.valueOf() + DAY);
 
                         if (tStart.toISOString().slice(0, 10) != row.date.toISOString().slice(0, 10)) {
                             //console.warn("primo if");
@@ -236,10 +190,10 @@ function preProcessYTData(data, metric, start_date, end_date) {
             }
             if (tEnd.toISOString().slice(0, 10) != newValue[newValue.length - 1].date.toISOString().slice(0, 10)) {
                 let dif = tEnd.valueOf() - newValue[newValue.length - 1].date.valueOf();
-                let range = dif / day;
+                let range = dif / DAY;
                 tStart = new Date(newValue[newValue.length - 1].date.toISOString().slice(0, 10));
                 for (let j = 0; j < range; j++) {
-                    tStart = new Date(tStart.valueOf() + day);
+                    tStart = new Date(tStart.valueOf() + DAY);
                     newValue.push({'date': tStart, 'value': 0});
                 }
             }
@@ -247,10 +201,10 @@ function preProcessYTData(data, metric, start_date, end_date) {
         }
         else {
             let dif = tEnd.valueOf() - tStart.valueOf();
-            let range = (dif / day);
+            let range = (dif / DAY);
             newValue.push({'date': tStart, 'value': 0});
             for (let j = 0; j < range; j++) {
-                tStart = new Date(tStart.valueOf() + day);
+                tStart = new Date(tStart.valueOf() + DAY);
                 newValue.push({'date': tStart, 'value': 0});
             }
             return newValue;
