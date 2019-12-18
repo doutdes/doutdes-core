@@ -5,6 +5,7 @@ const _ = require('lodash');
 const Model = require('../../models/index');
 const FbToken = Model.FbToken;
 const Users = Model.Users;
+const Chart = Model.Charts;
 const site_URL = require('../../app').config['site_URL'];
 const D_TYPE = require('../dashboard-manager').D_TYPE;
 const FBM = require('../../api_handler/facebook-api').METRICS;
@@ -89,9 +90,16 @@ const fb_storeAllData = async (req, res) => {
     let users;
     let page_id;
     let page_list;
+    let charts;
 
     try {
         users = await Users.findAll();
+        charts = await Chart.findAll({
+            where: {
+                type: D_TYPE.FB
+            }
+        });
+
         for (const user of users) {
             user_id = user.dataValues.id;
 
@@ -105,26 +113,9 @@ const fb_storeAllData = async (req, res) => {
 
                     for (page_id of page_list) {
 
-                        await fb_getDataInternal(user_id, FBM.P_FANS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_FANS_CITY, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_FANS_COUNTRY, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_ENGAGED_USERS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_VIEWS_TOTAL, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_UNIQUE, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_VIEWS_EXT_REFERRALS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_ACTION_POST_REACTIONS_TOTAL, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_CITY_UNIQUE, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_BY_COUNTRY_UNIQUE, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_CONSUMPTIONS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_PLACES_CHECKIN_TOTAL, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_NEGATIVE_FEEDBACK, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_FANS_ONLINE_DAY, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_FANS_ADDS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_FANS_REMOVES, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_IMPRESSIONS_PAID, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_VIDEO_VIEWS, page_id);
-                        await fb_getDataInternal(user_id, FBM.POST_IMPRESSIONS, page_id);
-                        await fb_getDataInternal(user_id, FBM.P_VIDEO_ADS, page_id);
+                        for (const chart of charts) {
+                            await fb_getDataInternal(user_id, chart.metric, page_id)
+                        }
                     }
 
                     console.log("Fb Data updated successfully for user n°", user_id);
@@ -190,11 +181,12 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
     let old_startDate;
     let old_endDate;
     let old_date;
+    let response;
     let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
-        old_date = await MongoManager.getFbMongoItemDate(user_id, page_id, metric);
+        old_date = await MongoManager.getMongoItemDate(D_TYPE.FB, user_id, page_id, metric);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -203,7 +195,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
             data = preProcessFBData(data, metric);
-            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.storeMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
@@ -213,8 +205,8 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
             // chiedere dati a Facebook e accertarmi che risponda
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
             data = preProcessFBData(data, metric);
-            await MongoManager.removeFbMongoData(user_id, page_id, metric);
-            await MongoManager.storeFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.removeMongoData(D_TYPE.FB, user_id, page_id, metric);
+            await MongoManager.storeMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
 
             return data;
@@ -222,11 +214,11 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         else if (old_endDate < end_date) {
             data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
             data = preProcessFBData(data, metric);
-            await MongoManager.updateFbMongoData(user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+            await MongoManager.updateMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
         }
 
-        let response = await MongoManager.getFbMongoData(user_id, page_id, metric);
+        response = await MongoManager.getMongoData(D_TYPE.FB, user_id, page_id, metric);
         return response;
 
     } catch (err) {

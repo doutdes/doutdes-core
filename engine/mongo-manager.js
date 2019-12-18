@@ -33,211 +33,290 @@ async function removeUserMongoData(userid, type) {
     }
 }
 
-//store GA data in mongo db
-async function storeGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, file) {
-    let data;
+async function storeMongoData(type, userid, page_id, metric, start_date, end_date, file, dimensions = null) {
     try {
-        data = await new gaMongo({
-            userid: userid, view_id: view_id, metric: metric, dimensions: dimensions,
-            start_date: start_date, end_date: end_date, data: file
-        });
-        data.save().then(() => {
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("storeMongoData - error doing the insert");
-    }
-}
-
-//return the GA start date of a document in mongo
-async function getGaMongoItemDate(userid, view_id, metric, dimensions) {
-    let result;
-    try {
-        result = await gaMongo.find({
-            'userid': userid,
-            'view_id': view_id,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongoGaItemDate - error doing the query");
-    }
-    return result[0] ? {
-        start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date)
-    } : {start_date: null, end_date: null};
-}
-
-//remove a GA mongo document
-async function removeGaMongoData(userid, view_id, metric, dimensions) {
-    try {
-        await gaMongo.findOneAndDelete({
-            'userid': userid,
-            'view_id': view_id,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("removeMongoData - error removing data");
-    }
-}
-
-//update a GA mongo document
-async function updateGaMongoData(userid, view_id, metric, dimensions, start_date, end_date, data) {
-
-    try {
-        if (data) {
-            await gaMongo.findOneAndUpdate({
-                'userid': userid,
-                'view_id': view_id,
-                'metric': metric,
-                'dimensions': dimensions
-            }, {
-                'end_date': end_date,
-                $push: {
-                    'data': {$each: data}
-                }
-            });
-        }
-        else {
-            await gaMongo.findOneAndUpdate({
-                'userid': userid,
-                'view_id': view_id,
-                'metric': metric,
-                'dimensions': dimensions
-            }, {
-                'end_date': end_date
-            });
+        switch (type) {
+            case D_TYPE.GA:
+                await gaMongo.create({
+                    userid: userid, view_id: page_id, metric: metric, dimensions: dimensions,
+                    start_date: start_date, end_date: end_date, data: file
+                });
+                break;
+            case D_TYPE.FB:
+                await fbMongo.create({
+                    userid: userid,
+                    page_id: page_id,
+                    metric: metric,
+                    start_date: start_date,
+                    end_date: end_date,
+                    data: file
+                });
+                break;
+            case D_TYPE.IG:
+                await igMongo.create({
+                    userid: userid,
+                    page_id: page_id,
+                    metric: [metric],
+                    start_date: start_date,
+                    end_date: end_date,
+                    data: file
+                });
+                break;
+            case D_TYPE.YT:
+                await ytMongo.create({
+                    userid: userid,
+                    channel_id: page_id,
+                    metric: metric,
+                    start_date: start_date,
+                    end_date: end_date,
+                    data: file
+                });
+                break;
         }
     } catch (e) {
+        console.warn("Errore con il tipo ", type);
         console.error(e);
-        throw new Error("updateMongoData - error updating data");
+        throw new Error("storeMongoData - error storing data")
     }
 }
 
-//get GA data from mongodb
-async function getGaMongoData(userid, view_id, metric, dimensions) {
+async function getMongoItemDate(type, userid, page_id, metric, dimensions = null) {
     let result;
     try {
-        result = await gaMongo.findOne({
-            'userid': userid,
-            'view_id': view_id,
-            'metric': metric,
-            'dimensions': dimensions
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongodata - error retrieving data");
-    }
-    return result.data;
-}
-
-/** FACEBOOK INSIGHTS **/
-
-//store FB data in mongo db
-async function storeFbMongoData(userid, page_id, metric, start_date, end_date, file) {
-    let data;
-    try {
-        // data = await new fbMongo({
-        //     userid: userid, page_id: page_id, metric: metric, start_date: start_date, end_date: end_date, data: file
-        // });
-        // data.save().then(() => {
-        // });
-        await fbMongo.create({
-            userid: userid, page_id: page_id, metric: metric, start_date: start_date, end_date: end_date, data: file
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("storeFbMongoData - error doing the insert");
-    }
-}
-
-//return the FB start date of a document in mongo
-async function getFbMongoItemDate(userid, page_id, metric) {
-    let result;
-    try {
-        result = await fbMongo.find({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': metric
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongofbItemDate - error doing the query");
-    }
-    return result[0] ? {
-        start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date)
-    } : {start_date: null, end_date: null};
-}
-
-//remove a FB mongo document
-async function removeFbMongoData(userid, page_id, metric) {
-    try {
-        await fbMongo.findOneAndDelete({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': metric,
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("removefbMongoData - error removing data");
-    }
-}
-
-//update a FB mongo document
-async function updateFbMongoData(userid, page_id, metric, start_date, end_date, data) {
-    try {
-        if (data) {
-            await fbMongo.findOneAndUpdate({
-                'userid': userid,
-                'page_id': page_id,
-                'metric': metric,
-            }, {
-                'end_date': end_date,
-                $push: {
-                    'data': {$each: data}
-                }
-            });
-        } else {
-            await fbMongo.findOneAndUpdate({
-                'userid': userid,
-                'page_id': page_id,
-                'metric': metric,
-            }, {
-                'end_date': end_date
-            });
+        switch (type) {
+            case D_TYPE.GA:
+                result = await gaMongo.find({
+                    'userid': userid,
+                    'view_id': page_id,
+                    'metric': metric,
+                    'dimensions': dimensions
+                });
+                return result[0] ? {
+                    start_date: new Date(result[0].start_date),
+                    end_date: new Date(result[0].end_date)
+                } : {start_date: null, end_date: null};
+            case D_TYPE.FB:
+                result = await fbMongo.find({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': metric
+                });
+                return result[0] ? {
+                    start_date: new Date(result[0].start_date),
+                    end_date: new Date(result[0].end_date)
+                } : {start_date: null, end_date: null};
+            case D_TYPE.IG:
+                result = await igMongo.find({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': [metric]
+                });
+                return result[0] ? {
+                    start_date: new Date(result[0].start_date),
+                    end_date: new Date(result[0].end_date)
+                } : {start_date: null, end_date: null};
+            case D_TYPE.YT:
+                result = await ytMongo.find({
+                    'userid': userid,
+                    'channel_id': page_id,
+                    'metric': metric,
+                });
+                return result[0] ? {
+                    start_date: new Date(result[0].start_date),
+                    end_date: new Date(result[0].end_date),
+                    last_date: result[0].data[result[0].data.length - 1] ? new Date(result[0].data[result[0].data.length - 1].date) : new Date(result[0].end_date)
+                } : {start_date: null, end_date: null, last_date: null};
         }
     } catch (e) {
+        console.warn("Errore con il tipo ", type);
         console.error(e);
-        throw new Error("updatefbMongoData - error updating data");
+        throw new Error("getMongoItemData - error doing the query")
     }
 }
 
-//get FB data from mongodb
-async function getFbMongoData(userid, page_id, metric) {
+async function removeMongoData (type, userid, page_id, metric, dimensions = null) {
+    try {
+        switch (type) {
+            case D_TYPE.GA:
+                await gaMongo.findOneAndDelete({
+                    'userid': userid,
+                    'view_id': page_id,
+                    'metric': metric,
+                    'dimensions': dimensions
+                });
+                break;
+            case D_TYPE.FB:
+                await fbMongo.findOneAndDelete({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': metric,
+                });
+                break;
+            case D_TYPE.IG:
+                await igMongo.findOneAndDelete({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': [metric],
+                });
+                break;
+            case D_TYPE.YT:
+                await gaMongo.findOneAndDelete({
+                    'userid': userid,
+                    'channel_id': page_id,
+                    'metric': metric
+                });
+                break;
+        }
+    } catch (e) {
+        console.warn("Errore con il tipo ", type);
+        console.error(e);
+        throw new Error("RemoveMongoDocument - error removing data")
+    }
+}
+
+async function updateMongoData (type, userid, page_id, metric, start_date, end_date, data, dimensions = null){
+    try {
+        switch (type) {
+            case D_TYPE.GA:
+                if (data) {
+                    await gaMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'view_id': page_id,
+                        'metric': metric,
+                        'dimensions': dimensions
+                    }, {
+                        'end_date': end_date,
+                        $push: {
+                            'data': {$each: data}
+                        }
+                    });
+                }
+                else {
+                    await gaMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'view_id': page_id,
+                        'metric': metric,
+                        'dimensions': dimensions
+                    }, {
+                        'end_date': end_date
+                    });
+                }
+                break;
+            case D_TYPE.FB:
+                if (data) {
+                    await fbMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'page_id': page_id,
+                        'metric': metric,
+                    }, {
+                        'end_date': end_date,
+                        $push: {
+                            'data': {$each: data}
+                        }
+                    });
+                } else {
+                    await fbMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'page_id': page_id,
+                        'metric': metric,
+                    }, {
+                        'end_date': end_date
+                    });
+                }
+                break;
+            case D_TYPE.IG:
+                if (data) {
+                    await igMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'page_id': page_id,
+                        'metric': [metric],
+                    }, {
+                        'end_date': end_date,
+                        $addToSet: {
+                            'data': {$each: data}
+                        }
+                    });
+                } else {
+                    await igMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'page_id': page_id,
+                        'metric': [metric],
+                    }, {
+                        'end_date': end_date
+                    });
+                }
+                break;
+            case D_TYPE.YT:
+                if (data) {
+                    await ytMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'channel_id': page_id,
+                        'metric': metric,
+                    }, {
+                        'end_date': end_date,
+                        $push: {
+                            'data': {$each: data}
+                        }
+                    });
+                }
+                else {
+                    await ytMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'channel_id': page_id,
+                        'metric': metric,
+                    }, {
+                        'end_date': end_date
+                    });
+                }
+                break;
+        }
+    } catch (e) {
+        console.warn("Errore con il tipo ", type);
+        console.error(e);
+        throw new Error("UpdateMongoData - error updating data")
+    }
+}
+
+async function getMongoData (type, userid, page_id, metric, dimensions = null){
     let result;
     try {
-        result = await fbMongo.findOne({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': metric,
-        });
-    }
-    catch (e) {
+        switch (type) {
+            case D_TYPE.GA:
+                result = await gaMongo.findOne({
+                    'userid': userid,
+                    'view_id': page_id,
+                    'metric': metric,
+                    'dimensions': dimensions
+                });
+                return result.data;
+            case D_TYPE.FB:
+                result = await fbMongo.findOne({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': metric,
+                });
+                return result.data;
+            case D_TYPE.IG:
+                result = await igMongo.findOne({
+                    'userid': userid,
+                    'page_id': page_id,
+                    'metric': [metric],
+                });
+                return result.data;
+            case D_TYPE.YT:
+                result = await ytMongo.findOne({
+                    'userid': userid,
+                    'channel_id': page_id,
+                    'metric': metric,
+                });
+                return result.data;
+        }
+
+    } catch (e) {
+        console.warn("Errore con il tipo ", type);
         console.error(e);
-        throw new Error("getfbMongodata - error retrieving data");
+        throw new Error("getMongoData - error retrieving data")
     }
-    return result.data;
 }
 
 async function getFbPagesMongo(userid) {
@@ -267,211 +346,6 @@ async function removeFbPageMongo(userid, page_id) {
     }
 }
 
-/**INSTAGRAM INSIGHTS**/
-
-//store IG data in mongo db
-async function storeIgMongoData(userid, page_id, metric, start_date, end_date, file) {
-    let data;
-    //page_id = page_id.toString();
-    try {
-        data = await new igMongo({
-            userid: userid, page_id: page_id, metric: [metric], start_date: start_date, end_date: end_date, data: file
-        });
-        data.save().then(() => {
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("storeIgMongoData - error doing the insert");
-    }
-}
-
-//return the IG start date of a document in mongo
-async function getIgMongoItemDate(userid, page_id, metric) {
-    let result;
-    //page_id = page_id.toString();
-    try {
-        result = await igMongo.find({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': [metric]
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getIgMongoItemDate - error doing the query");
-    }
-    return result[0] ? {
-        start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date)
-    } : {start_date: null, end_date: null};
-}
-
-//remove a IG mongo document
-async function removeIgMongoData(userid, page_id, metric) {
-    //page_id = page_id.toString();
-    try {
-        await igMongo.findOneAndDelete({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': [metric],
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("removeigMongoData - error removing data");
-    }
-}
-
-//update a IG mongo document
-async function updateIgMongoData(userid, page_id, metric, end_date, data) {
-    //page_id = page_id.toString();
-    try {
-        if (data) {
-            await igMongo.findOneAndUpdate({
-                'userid': userid,
-                'page_id': page_id,
-                'metric': [metric],
-            }, {
-                'end_date': end_date,
-                $addToSet: {
-                    'data': {$each: data}
-                }
-            });
-        } else {
-            await igMongo.findOneAndUpdate({
-                'userid': userid,
-                'page_id': page_id,
-                'metric': [metric],
-            }, {
-                'end_date': end_date
-            });
-        }
-    } catch (e) {
-        console.error(e);
-        throw new Error("updateigMongoData - error updating data");
-    }
-}
-
-//get IG data from mongodb
-async function getIgMongoData(userid, page_id, metric) {
-    let result;
-    //page_id = page_id.toString();
-    try {
-        result = await igMongo.findOne({
-            'userid': userid,
-            'page_id': page_id,
-            'metric': [metric],
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getigMongodata - error retrieving data");
-    }
-    return result.data;
-}
-
-/**YOUTUBE ANALYTICS**/
-
-//store Yt data in mongo db
-async function storeYtMongoData(userid, channel_id, metric, start_date, end_date, file) {
-    try {
-        await ytMongo.create({
-            userid: userid, channel_id: channel_id, metric: metric,
-            start_date: start_date, end_date: end_date, data: file
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("storeYtMongoData - error doing the insert");
-    }
-}
-
-async function getYtMongoItemDate(userid, channel_id, metric) {
-    let result;
-    try {
-        result = await ytMongo.find({
-            'userid': userid,
-            'channel_id': channel_id,
-            'metric': metric,
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getMongoYtItemDate - error doing the query");
-    }
-    return result[0] ? {
-        start_date: new Date(result[0].start_date),
-        end_date: new Date(result[0].end_date),
-        last_date: result[0].data[result[0].data.length-1] ? new Date(result[0].data[result[0].data.length-1].date) : new Date(result[0].end_date)
-    } : {start_date: null, end_date: null, last_date: null};
-}
-
-async function removeYtMongoData(userid, channel_id, metric) {
-    try {
-        await gaMongo.findOneAndDelete({
-            'userid': userid,
-            'channel_id': channel_id,
-            'metric': metric
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("removeYtMongoData - error removing data");
-    }
-}
-
-async function updateYtMongoData(userid, channel_id, metric, end_date, data) {
-
-    try {
-        if (data) {
-            await ytMongo.findOneAndUpdate({
-                'userid': userid,
-                'channel_id': channel_id,
-                'metric': metric,
-            }, {
-                'end_date': end_date,
-                $push: {
-                    'data': {$each: data}
-                }
-            });
-        }
-        else {
-            await ytMongo.findOneAndUpdate({
-                'userid': userid,
-                'channel_id': channel_id,
-                'metric': metric,
-            }, {
-                'end_date': end_date
-            });
-        }
-    } catch (e) {
-        console.error(e);
-        throw new Error("update ytMongoData - error updating data");
-    }
-}
-
-async function getYtMongoData(userid, channel_id, metric) {
-    let result;
-    try {
-        result = await ytMongo.findOne({
-            'userid': userid,
-            'channel_id': channel_id,
-            'metric': metric,
-        });
-    }
-    catch (e) {
-        console.error(e);
-        throw new Error("getYtMongodata - error retrieving data");
-    }
-    return result.data;
-}
-
-
 module.exports = {
-    storeGaMongoData, getGaMongoItemDate, removeGaMongoData, updateGaMongoData, getGaMongoData,
-    storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
-    storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
-    storeYtMongoData, getYtMongoItemDate, removeYtMongoData, updateYtMongoData, getYtMongoData,
-    removeUserMongoData, getFbPagesMongo, removeFbPageMongo
+    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getFbPagesMongo, removeFbPageMongo
 };
