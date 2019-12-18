@@ -157,6 +157,8 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
 
     old_date = await MongoManager.getMongoItemDate(D_TYPE.YT, user_id, channel_id, metric);
 
+    console.log("OLD DATE ", old_date);
+
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
     old_lastDate = old_date.last_date;
@@ -187,8 +189,7 @@ const yt_getDataInternal = async (user_id, metric, channel_id) => {
 
     } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(end_date)) {
         // inserire nuovo start Date pari a un giorno dopo l'end date del documento
-
-        response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, (DateFns.addDays(old_lastDate, 1)).toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
+        response = await YoutubeApi.yt_getData(key.dataValues.private_key, metric, channel_id, (DateFns.addDays(old_endDate, 1)).toISOString().slice(0, 10), end_date.toISOString().slice(0, 10));
         result = getResult(response, metric);
         result = preProcessYTData(result, metric, DateFns.addDays(old_lastDate, 1), end_date);
         await MongoManager.updateMongoData(D_TYPE.YT, user_id, channel_id, metric, start_date.toISOString().slice(0, 10), end_date.toISOString().slice(0, 10), result);
