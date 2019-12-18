@@ -184,7 +184,7 @@ const checkInternalPermission = async (user_id, type) => {
             hasPermission = checkYTContains(scopes);
             scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
             break;
-        case D_TYPE.FBM: // Instagram
+        case D_TYPE.FBM:
             scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
             hasPermission = checkFBContains(scopes);
             scopes = scopes.filter(el => !el.includes('instagram'));
@@ -224,8 +224,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);

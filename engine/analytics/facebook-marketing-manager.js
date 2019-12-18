@@ -74,6 +74,7 @@ const fbm_getPages = async (req, res) => {
     try {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await FacebookMApi.getPagesID(key.api_key))['data'];
+        data = data.filter(d => d.business_name !== '');
 
         for (const index in data) {
             const page = {

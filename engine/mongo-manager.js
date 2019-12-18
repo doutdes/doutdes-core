@@ -240,6 +240,33 @@ async function getFbMongoData(userid, page_id, metric) {
     return result.data;
 }
 
+async function getFbPagesMongo(userid) {
+    let result;
+    try {
+        result = await fbMongo.find({
+            'userid': userid,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getfbPagesMongo - error retrieving pages");
+    }
+    return result;
+}
+
+async function removeFbPageMongo(userid, page_id) {
+    try {
+        await fbMongo.deleteMany({
+            'userid': userid,
+            'page_id': page_id,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("removefbPageMongo - error removing page");
+    }
+}
+
 /**INSTAGRAM INSIGHTS**/
 
 //store IG data in mongo db
@@ -446,5 +473,5 @@ module.exports = {
     storeFbMongoData, getFbMongoItemDate, removeFbMongoData, updateFbMongoData, getFbMongoData,
     storeIgMongoData, getIgMongoItemDate, removeIgMongoData, updateIgMongoData, getIgMongoData,
     storeYtMongoData, getYtMongoItemDate, removeYtMongoData, updateYtMongoData, getYtMongoData,
-    removeUserMongoData
+    removeUserMongoData, getFbPagesMongo, removeFbPageMongo
 };
