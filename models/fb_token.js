@@ -11,7 +11,8 @@ module.exports = (sequelize, DataType) => {
             primaryKey: true,
         },
         fb_page_id: DataType.STRING(20),
-        fbm_page_id: DataType.STRING(20)
+        fbm_page_id: DataType.STRING(20),
+        ig_page_id: DataType.STRING(20)
     }, {
         freezeTableName: true,
         timestamps: false,
