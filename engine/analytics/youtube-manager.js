@@ -2,6 +2,7 @@
 const Model = require('../../models/index');
 const GaToken = Model.GaToken;
 const Users = Model.Users;
+const Chart = Model.Charts;
 const DateFns = require('date-fns');
 const D_TYPE = require('../dashboard-manager').D_TYPE;
 const TokenManager = require('../token-manager');
@@ -23,6 +24,7 @@ const YoutubeApi = require('../../api_handler/youtube-api');
 const yt_storeAllData = async (req, res) => {
     let key = req.params.key;
     let auth = process.env.KEY || null;
+
     if (auth == null) {
         console.warn("Scaper executed without a valid key");
     }
@@ -52,10 +54,12 @@ const yt_storeAllData = async (req, res) => {
                 permissionGranted = await TokenManager.checkInternalPermission(user_id, D_TYPE.YT);
                 if (permissionGranted.granted) {
 
+                    channel_list = _.map(await yt_getChannelsInternal(user_id),'id');
+
                     for (const chart of charts) {
-
-                        await yt_getDataInternal(user_id, chart.metric, channel_id)
-
+                        for (let channel_id of channel_list) {
+                            await yt_getDataInternal(user_id, chart.metric, channel_id);
+                        }
                     }
                     console.log("Yt Data updated successfully for user n°", user_id);
                 }
@@ -75,13 +79,21 @@ const yt_storeAllData = async (req, res) => {
     }
 };
 
+const yt_getChannelsInternal = async (user_id) => {
+    let refresh_token, channels;
+
+    refresh_token = await GaToken.findOne({where: {user_id: user_id}});
+    channels = await YoutubeApi.getChannels(refresh_token.dataValues.private_key);
+
+    return channels;
+
+};
+
 //returns all the channels for the given user
 const yt_getChannels = async (req, res) => {
-    let refresh_token, channels = [];
 
     try {
-        refresh_token = await GaToken.findOne({where: {user_id: req.user.id}});
-        channels = await YoutubeApi.getChannels(refresh_token.dataValues.private_key);
+        const channels = await yt_getChannelsInternal(req.user.id);
 
         return res.status(HttpStatus.OK).send(channels);
 
