@@ -1,5 +1,6 @@
 const gaMongo = require('../models/mongo/mongo-ga-model');
 const fbMongo = require('../models/mongo/mongo-fb-model');
+const fbmMongo = require('../models/mongo/mongo-fbm-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 const ytMongo = require('../models/mongo/mongo-yt-model');
 
@@ -33,13 +34,25 @@ async function removeUserMongoData(userid, type) {
     }
 }
 
-async function storeMongoData(type, userid, page_id, metric, start_date, end_date, file, dimensions = null) {
+async function storeMongoData(type, userid, page_id, metric, start_date, end_date, file, dimensions = null, domain = null, breakdown = null) {
     try {
         switch (type) {
             case D_TYPE.GA:
                 await gaMongo.create({
                     userid: userid, view_id: page_id, metric: metric, dimensions: dimensions,
                     start_date: start_date, end_date: end_date, data: file
+                });
+                break;
+            case D_TYPE.FBM:
+                await fbmMongo.create({
+                    userid: userid,
+                    act_id: page_id,
+                    metric: metric,
+                    domain: domain,
+                    breakdowns: breakdown,
+                    start_date: start_date,
+                    end_date: end_date,
+                    data: file
                 });
                 break;
             case D_TYPE.FB:
@@ -80,7 +93,7 @@ async function storeMongoData(type, userid, page_id, metric, start_date, end_dat
     }
 }
 
-async function getMongoItemDate(type, userid, page_id, metric, dimensions = null) {
+async function getMongoItemDate(type, userid, page_id, metric, dimensions = null, domain = null, breakdown = null) {
     let result;
     try {
         switch (type) {
@@ -100,6 +113,18 @@ async function getMongoItemDate(type, userid, page_id, metric, dimensions = null
                     'userid': userid,
                     'page_id': page_id,
                     'metric': metric
+                });
+                return result[0] ? {
+                    start_date: new Date(result[0].start_date),
+                    end_date: new Date(result[0].end_date)
+                } : {start_date: null, end_date: null};
+            case D_TYPE.FBM:
+                result = await fbmMongo.find({
+                    'userid': userid,
+                    'act_id': page_id,
+                    'metric': metric,
+                    'domain': domain,
+                    'breakdowns': breakdown
                 });
                 return result[0] ? {
                     start_date: new Date(result[0].start_date),
@@ -134,7 +159,7 @@ async function getMongoItemDate(type, userid, page_id, metric, dimensions = null
     }
 }
 
-async function removeMongoData (type, userid, page_id, metric, dimensions = null) {
+async function removeMongoData (type, userid, page_id, metric, dimensions = null , domain = null, breakdown = null) {
     try {
         switch (type) {
             case D_TYPE.GA:
@@ -150,6 +175,15 @@ async function removeMongoData (type, userid, page_id, metric, dimensions = null
                     'userid': userid,
                     'page_id': page_id,
                     'metric': metric,
+                });
+                break;
+            case D_TYPE.FBM:
+                await fbmMongo.findOneAndDelete({
+                    'userid': userid,
+                    'act_id': page_id,
+                    'metric': metric,
+                    'domain': domain,
+                    'breakdowns': breakdown
                 });
                 break;
             case D_TYPE.IG:
@@ -174,7 +208,7 @@ async function removeMongoData (type, userid, page_id, metric, dimensions = null
     }
 }
 
-async function updateMongoData (type, userid, page_id, metric, start_date, end_date, data, dimensions = null){
+async function updateMongoData (type, userid, page_id, metric, start_date, end_date, data, dimensions = null, domain = null, breakdown = null){
     try {
         switch (type) {
             case D_TYPE.GA:
@@ -219,6 +253,32 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
                         'userid': userid,
                         'page_id': page_id,
                         'metric': metric,
+                    }, {
+                        'end_date': end_date
+                    });
+                }
+                break;
+            case D_TYPE.FBM:
+                if (data) {
+                    await fbmMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'act_id': page_id,
+                        'metric': metric,
+                        'domain': domain,
+                        'breakdowns': breakdown
+                    }, {
+                        'end_date': end_date,
+                        $push: {
+                            'data': {$each: data}
+                        }
+                    });
+                } else {
+                    await fbmMongo.findOneAndUpdate({
+                        'userid': userid,
+                        'act_id': page_id,
+                        'metric': metric,
+                        'domain': domain,
+                        'breakdowns': breakdown
                     }, {
                         'end_date': end_date
                     });
@@ -276,8 +336,7 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
         throw new Error("UpdateMongoData - error updating data")
     }
 }
-
-async function getMongoData (type, userid, page_id, metric, dimensions = null){
+async function getMongoData (type, userid, page_id, metric, dimensions = null, domain = null, breakdown = null){
     let result;
     try {
         switch (type) {
@@ -294,6 +353,15 @@ async function getMongoData (type, userid, page_id, metric, dimensions = null){
                     'userid': userid,
                     'page_id': page_id,
                     'metric': metric,
+                });
+                return result.data;
+            case D_TYPE.FBM:
+                result = await fbmMongo.findOne({
+                    'userid': userid,
+                    'act_id': page_id,
+                    'metric': metric,
+                    'domain': domain,
+                    'breakdowns': breakdown
                 });
                 return result.data;
             case D_TYPE.IG:
