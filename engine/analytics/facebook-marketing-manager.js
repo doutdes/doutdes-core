@@ -17,9 +17,6 @@ const getData = async (req, res) => {
     let response;
     let page_id;
 
-    // let startDate = '2019-08-01';
-    // let endDate =  '2019-11-04';
-
     let domain = req.query.domain;
     let breakdown = req.query.breakdowns;
     let metric = req.query.metric;
@@ -107,11 +104,12 @@ const fb_getDataInternal = async (user_id, metric, page_id, domain, id, breakdow
     let old_endDate;
     let old_date;
     let response;
+    let d_type = domain === 'insights' ? D_TYPE.FBM : D_TYPE.FBC;
     let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
 
     try {
-        old_date = await MongoManager.getMongoItemDate(D_TYPE.FBM, user_id, page_id, metric, null, domain, breakdown);
+        old_date = await MongoManager.getMongoItemDate(d_type, user_id, page_id, metric, null, domain, breakdown, id);
 
         old_startDate = old_date.start_date;
         old_endDate = old_date.end_date;
@@ -119,8 +117,8 @@ const fb_getDataInternal = async (user_id, metric, page_id, domain, id, breakdow
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data =  await FacebookMApi.facebookQuery(page_id, key.api_key, domain, breakdown, metric, start_date, end_date, id);
-            await MongoManager.storeMongoData(D_TYPE.FBM, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data, null, domain, breakdown);
+            await MongoManager.storeMongoData(d_type, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data, null, domain, breakdown, id);
 
             return data;
         }
@@ -128,19 +126,19 @@ const fb_getDataInternal = async (user_id, metric, page_id, domain, id, breakdow
         else if (old_startDate > start_date) {
             // chiedere dati a Facebook e accertarmi che risponda
             data =  await FacebookMApi.facebookQuery(page_id, key.api_key, domain, breakdown, metric, start_date, end_date, id);
-            await MongoManager.removeMongoData(D_TYPE.FBM, user_id, page_id, metric, null, domain, breakdown);
-            await MongoManager.storeMongoData(D_TYPE.FBM, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data, null, domain, breakdown);
+            await MongoManager.removeMongoData(d_type, user_id, page_id, metric, null, domain, breakdown, id);
+            await MongoManager.storeMongoData(d_type, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data, null, domain, breakdown, id);
 
             return data;
         }
         else if (old_endDate < end_date) {
             data =  await FacebookMApi.facebookQuery(page_id, key.api_key, domain, breakdown, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date, id);
-            await MongoManager.updateMongoData(D_TYPE.FBM, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
-                end_date.toISOString().slice(0, 10), data, null, domain, breakdown);
+            await MongoManager.updateMongoData(d_type, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data, null, domain, breakdown, id);
         }
 
-        response = (await MongoManager.getMongoData(D_TYPE.FBM, user_id, page_id, metric, null, domain, breakdown))[0];
+        response = (await MongoManager.getMongoData(d_type, user_id, page_id, metric, null, domain, breakdown, id))[0];
         return response;
 
     } catch (err) {
