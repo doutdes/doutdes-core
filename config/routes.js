@@ -161,12 +161,14 @@ module.exports = function (app, passport, config) {
     app.get(`${fbPath}/posts`, reqAuth, AccMan.roleAuth(all), FbM.fb_getPost);
 
     /****************** FACEBOOK MARKETING MANAGER ********************/
+    app.get(`${fbmPath}/pages`, reqAuth, AccMan.roleAuth(all), FbMM.fbm_getPages);
+
     app.get(`${fbmPath}/adslist`, FbMM.getAdsList);
-    app.get(`${fbmPath}/:act_id/insights`, FbMM.getData);  // Retrieves generic data about the ads account
-    app.get(`${fbmPath}/:act_id/insights/breakdowns`, FbMM.getData);
-    app.get(`${fbmPath}/:act_id/campaigns`, FbMM.getData); // It gets more generic levels of data
-    app.get(`${fbmPath}/:act_id/adsets`, FbMM.getData);
-    app.get(`${fbmPath}/:act_id/ads`, FbMM.getData);
+
+    app.get(`${fbmPath}/data`, reqAuth, AccMan.roleAuth(all), FbMM.getData);
+
+    app.get(`${fbmPath}/:act_id/:level/breakdowns/:group`, reqAuth, AccMan.roleAuth(all), FbMM.getData);
+    app.get(`${fbmPath}/:act_id/:level/:id*?`, reqAuth, AccMan.roleAuth(all),FbMM.getData);
 
     /****************** GOOGLE MANAGER ********************/
     /** Data response is always an array of arrays as follows:

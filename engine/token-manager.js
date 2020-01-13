@@ -67,6 +67,7 @@ const checkExistence = async (req, res) => {
     let joinModel;
 
     switch (parseInt(req.params.type)) {
+        case D_TYPE.FBM:
         case D_TYPE.FB:
         case D_TYPE.IG:
             joinModel = FbToken;
@@ -145,7 +146,7 @@ const checkInternalPermission = async (user_id, type) => {
     let scopes = [];
     let hasPermission, key;
 
-    if (parseInt(type) === D_TYPE.FB || parseInt(type) === D_TYPE.IG) { // Facebook or Instagram
+    if (parseInt(type) === D_TYPE.FB || parseInt(type) === D_TYPE.IG || parseInt(type) === D_TYPE.FBM) { // Facebook or Instagram
         key = await FbToken.findOne({where: {user_id: user_id}});
     } else {
         key = await GaToken.findOne({where: {user_id: user_id}});
@@ -183,6 +184,11 @@ const checkInternalPermission = async (user_id, type) => {
             hasPermission = checkYTContains(scopes);
             scopes = scopes.filter(el => el.includes('yt-analytics') || el.includes('youtube'));
             break;
+        case D_TYPE.FBM:
+            scopes = _.map((await FbAPI.getTokenInfo(key['api_key']))['data'], 'permission');
+            hasPermission = checkFBContains(scopes);
+            scopes = scopes.filter(el => !el.includes('instagram'));
+            break;
         default:
             return {
                 error: true,
@@ -218,8 +224,8 @@ const revokePermissions = async (req, res) => {
                 await FbToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.FB);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.IG);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.FB);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.IG);
                 break;
             // case D_TYPE.IG:
             //     await revokeFbPermissions(key);
@@ -231,8 +237,8 @@ const revokePermissions = async (req, res) => {
                 await GaToken.destroy({where: {user_id: req.user.id}});
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.GA);
                 await DashboardManager.deleteChartsFromDashboardByType(req.user.id, D_TYPE.YT);
-                //await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
-                //await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
+                await MongoManager.removeUserMongoData(req.user.id, D_TYPE.GA);
+                await MongoManager.removeUserMongoData(req.user.id,D_TYPE.YT);
                 break;
         }
 
@@ -273,7 +279,9 @@ const readAllKeysById = (req, res) => {
                 fb_token: (fb == null) ? null : fb.dataValues.api_key,     // FB Token
                 ga_token: (ga == null) ? null : ga.dataValues.private_key, // GA Token
                 ga_view_id: (ga == null) ? null : ga.dataValues.view_id,   // GA View_id
-                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id
+                fb_page_id: (fb == null) ? null : fb.dataValues.fb_page_id,
+                fbm_page_id: (fb == null) ? null : fb.dataValues.fbm_page_id,
+                ig_page_id: (fb == null) ? null : fb.dataValues.ig_page_id // ig_page_id
             });
         })
         .catch(err => {
@@ -304,6 +312,10 @@ const update = (req, res) => { // TODO sistemare
     console.log('aaaa',req.body);
     const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
+        case D_TYPE.IG: //fb
+            console.log('sono qui dentro')
+            return updateIgKey(req, res);
+        case D_TYPE.FBM:
         case D_TYPE.FB: //fb
             return updateFbKey(req, res);
         case D_TYPE.GA: //google
@@ -414,7 +426,8 @@ const insertGaData = (req, res) => {
 const updateFbKey = (req, res) => {
     FbToken.update({
         api_key: req.body.api.api_key,
-        fb_page_id: req.body.api.fb_page_id
+        fb_page_id: req.body.api.fb_page_id,
+        fbm_page_id: req.body.api.fbm_page_id,
     }, {
         where: {
             user_id: req.user.id
@@ -429,6 +442,28 @@ const updateFbKey = (req, res) => {
             updated: false,
             api_key: req.body.api.api_key,
             error: 'Cannot update the Facebook key'
+        })
+    })
+};
+
+const updateIgKey = (req, res) => {
+    FbToken.update({
+        api_key: req.body.api.api_key,
+        ig_page_id: req.body.api.ig_page_id
+    }, {
+        where: {
+            user_id: req.user.id
+        }
+    }).then(up_key => {
+        return res.status(HttpStatus.OK).send({
+            updated: true,
+            api_key: req.body.api.api_key
+        })
+    }).catch(err => {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            updated: false,
+            api_key: req.body.api.api_key,
+            error: 'Cannot update the Instagram key'
         })
     })
 };

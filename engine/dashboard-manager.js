@@ -14,7 +14,8 @@ const D_TYPE = {
     FB: 1,
     GA: 2,
     IG: 3,
-    YT: 4
+    YT: 4,
+    FBM: 5
 };
 
 const DS_TYPE = {
@@ -791,6 +792,9 @@ const formatResult = (dashChart) => {
         interval: dashChart['dataValues']['Chart']['dataValues']['interval'],
         format: dashChart['dataValues']['Chart']['dataValues']['format'],
         originalTitle: dashChart['dataValues']['Chart']['dataValues']['title'],
-        position: dashChart['dataValues']['position']
+        position: dashChart['dataValues']['position'],
+        description: dashChart['dataValues']['Chart']['dataValues']['description'],
+        domain: dashChart['dataValues']['Chart']['dataValues']['domain'],
+        breakdowns: dashChart['dataValues']['Chart']['dataValues']['breakdowns'],
     };
 };

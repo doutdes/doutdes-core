@@ -319,6 +319,33 @@ async function getMongoData (type, userid, page_id, metric, dimensions = null){
     }
 }
 
+async function getFbPagesMongo(userid) {
+    let result;
+    try {
+        result = await fbMongo.find({
+            'userid': userid,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("getfbPagesMongo - error retrieving pages");
+    }
+    return result;
+}
+
+async function removeFbPageMongo(userid, page_id) {
+    try {
+        await fbMongo.deleteMany({
+            'userid': userid,
+            'page_id': page_id,
+        });
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("removefbPageMongo - error removing page");
+    }
+}
+
 module.exports = {
-    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData
+    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getFbPagesMongo, removeFbPageMongo
 };

@@ -16,6 +16,8 @@ module.exports = (sequelize, DataType) => {
         interval: DataType.INTEGER(5),
         format: DataType.STRING(30),
         description: DataType.STRING(255),
+        domain: DataType.STRING(100),
+        breakdowns: DataType.STRING(100)
     }, {
         freezeTableName: true,
         timestamps: false,
