@@ -200,7 +200,19 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
     try {
         access_token = await getPageAccessToken(token, channelId);
         result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
+        let d={};
+        let s;
 
+        if(metric==='online_followers') {
+            for(let el of result['data'][0]['values']){
+                d={}
+                for (let i in el['value']){
+                    s=(parseInt(i)+9)%24;
+                    d[''+s]=result['data'][0]['values'][0]['value'][i];
+                }
+                el['value']=d;
+            }
+}
         return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
