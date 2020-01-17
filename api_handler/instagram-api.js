@@ -203,7 +203,7 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
         let d={};
         let s;
 
-        if(metric==='online_followers') {
+        if(metric==='online_followers') { //time change compared to the time released by the API Instagram, +9
             console.log(result['data'][0]['values'][1])
             for(let el of result['data'][0]['values']){
                 d={}
