@@ -204,7 +204,6 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
         let s;
 
         if(metric==='online_followers') { //time change compared to the time released by the API Instagram, +9
-            console.log(result['data'][0]['values'][1])
             for(let el of result['data'][0]['values']){
                 d={}
                 for (let i in el['value']){
@@ -214,8 +213,6 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
                 el['value']=d;
 
             }
-            console.log('baubau')
-            console.log(result['data'][0]['values'])
         }
         return result['data'][0]['values'];
     } catch (e) {
