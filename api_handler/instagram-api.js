@@ -204,15 +204,19 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
         let s;
 
         if(metric==='online_followers') {
+            console.log(result['data'][0]['values'][1])
             for(let el of result['data'][0]['values']){
                 d={}
                 for (let i in el['value']){
                     s=(parseInt(i)+9)%24;
-                    d[''+s]=result['data'][0]['values'][0]['value'][i];
+                    d[''+s]=el['value'][i];
                 }
                 el['value']=d;
+
             }
-}
+            console.log('baubau')
+            console.log(result['data'][0]['values'])
+        }
         return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
