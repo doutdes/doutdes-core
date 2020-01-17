@@ -200,20 +200,18 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
     try {
         access_token = await getPageAccessToken(token, channelId);
         result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
-        let d={};
-        let s;
-
+        let dTime={};
+        
         if(metric==='online_followers') { //time change compared to the time released by the API Instagram, +9
             for(let el of result['data'][0]['values']){
-                d={}
+                dTime={};
                 for (let i in el['value']){
-                    s=(parseInt(i)+9)%24;
-                    d[''+s]=el['value'][i];
+                    dTime[''+(parseInt(i)+9)%24]=el['value'][i];
                 }
-                el['value']=d;
-
+                el['value']=dTime;
             }
         }
+
         return result['data'][0]['values'];
     } catch (e) {
         console.error(e);
