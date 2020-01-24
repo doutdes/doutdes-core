@@ -44,6 +44,34 @@ const fb_getScopes = async (req, res) => {
     }
 };
 
+const updatePages = async (req, res) => {
+    let fbData, pagesListMongo = [], pagesList = [], key, removedPages = [];
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+
+        (await FacebookApi.getPagesID(key.api_key))['data'].forEach(el => pagesList.push(el.id));
+        fbData = await MongoManager.getFbPagesMongo(req.user.id);
+        fbData.forEach(p => pagesListMongo.push(p.page_id));
+        pagesListMongo = pagesListMongo.filter(function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+        });
+        pagesListMongo.forEach(p => pagesList.includes(p.toString()) !== true
+            ? (removedPages.push(p.toString()), MongoManager.removeFbPageMongo(req.user.id, p))
+            : null
+        );
+        return res.status(HttpStatus.OK).send(removedPages);
+    }
+    catch (err) {
+        console.error(err['message']);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+
+};
+
 const fb_getPages = async (req, res) => {
     let data, key;
     let pages = [];
@@ -296,4 +324,4 @@ async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
 }
 
 /** EXPORTS **/
-module.exports = {fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData};
+module.exports = {fb_getData, fb_getPost, fb_getPages, fb_login_success, fb_getScopes, fb_storeAllData, updatePages};

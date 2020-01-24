@@ -161,15 +161,15 @@ function preProcessIGData(data, metric, period) {
 
     if (period !== "lifetime")
         data = data.slice(0,-1);
+
     return data;
 }
 
 function getIntervalDate(data) {
     //console.log ("getIntervalDate -> ", data);
-    return {
-        start_date: data[0].end_time,
-        end_date: data[data.length - 1].end_time
-    }
+    let date = {start_date: data[0].end_time,
+        end_date: data[data.length - 1].end_time};
+    return date;
 }
 
 const ig_getDataInternal = async (user_id, page_id, metric, period, interval = null, media_id = null) => {
@@ -197,18 +197,18 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
 
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            //data = preProcessIGData(data, metric, period);
+            data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
             await MongoManager.storeMongoData(D_TYPE.IG, user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
             return data;
         } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today) && period === "lifetime") {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            //data = preProcessIGData(data, metric, period);
+            data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
             await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
         }   else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(yesterday)){
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
-            //data = preProcessIGData(data, metric, period);
+            data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
             await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, '', date.end_date.slice(0, 10), data);
         }
@@ -252,7 +252,7 @@ const ig_getData = async (req, res) => {
             })
         }
 
-        response = await ig_getDataInternal(req.user.id, req.query.page_id, req.query.metric, req.query.period, parseInt(req.query.interval), req.query.media_id);
+        response = await getResponseData(req, res);
 
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
@@ -270,6 +270,26 @@ const ig_getData = async (req, res) => {
         });
     }
 };
+
+const getResponseData = async (req, res) => {
+    let response = [], data = [];
+    let metric = [];
+
+    req.query.metric.includes(',')
+        ? metric = req.query.metric.split(',')
+        : metric.push(req.query.metric);
+
+    if (req.query.metric === 'lost_followers') {
+        response = await getLostFollowers(req, res);
+    } else {
+        for (let el of metric) {
+            data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
+        }
+        data.length === 1 ? response = data[0] : response.push({data, 'end_time': data[0][data[0].length - 1].end_time, 'metrics': metric});
+    }
+
+    return response;
+}
 
 const ig_storeAllData = async (req, res) => {
 
@@ -407,12 +427,12 @@ const ig_getStories = async (req, res) => {
 };
 
 const ig_getBusinessInfo = async (req, res) => {
-    let data, key;
+    let data;
     let pageID = req.query.page_id;
 
     try {
-        key = await FbToken.findOne({where: {user_id: req.user.id}});
-        data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+        data = await getBusinessInfo(pageID, req.user.id);
+
         return res.status(HttpStatus.OK).send(data);
     } catch (err) {
         console.error(err);
@@ -422,6 +442,43 @@ const ig_getBusinessInfo = async (req, res) => {
         })
     }
 };
+async function getBusinessInfo(pageID, user_id) {
+    let date, data, copy, key, dataArray;
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0');
+    let yyyy = today.getFullYear();
+    let day_time = 1000*60*60*24;
+
+    today = yyyy + '-' + mm + '-' + dd;
+    try {
+        date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, 'business');
+        key = await FbToken.findOne({where: {user_id: user_id}});
+        if (date.start_date === null) {
+            data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+            data['end_time'] = today;
+            await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
+        } else {
+            dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
+            let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
+            if (dataArray[dataArray.length -1 ].end_time !== today) {
+                data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+                if (diff_time > day_time) {
+                    for (let i = (diff_time/day_time) - 1; i > 0; i--){
+                        dataArray.push({'followers_count': data['followers_count'],'media_count': data['media_count'], 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+                    }
+                }
+                data['end_time'] = today;
+                dataArray.push(data);
+            }
+            await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', date, today, dataArray);
+        }
+        data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
+        return data;
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 //get data from Instagram insights
 async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
@@ -438,15 +495,31 @@ async function getAPIdata(user_id, page_id, metric, period, start_date = null, e
 
     try {
         data = //(start_date && end_date)
-            //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
-            await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
-        //console.warn('data', data);
+                //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
+                await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
+
         return data;
     } catch (e) {
         console.error("Error retrieving Instagram data");
     }
 
 }
+async function getLostFollowers(req, res) {
+    let data = [], date;
+
+    try {
+        date = await MongoManager.getMongoItemDate(D_TYPE.IG, req.user.id, req.query.page_id, 'business');
+
+        data.push({'business': await getBusinessInfo(req.query.page_id, req.user.id), 'end_time': date.start_date});
+        data.push({'follower_count': await getAPIdata(req.user.id, req.query.page_id,'follower_count', req.query.period, date.start_date, null), 'end_time': date.start_date});
+        data.push({'end_time': date.start_date});
+    } catch (e) {
+        console.error("Error retrieving Instagram data");
+    }
+
+    return data;
+}
+
 
 /** EXPORTS **/
 module.exports = {

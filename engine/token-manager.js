@@ -120,6 +120,7 @@ const checkExistence = async (req, res) => {
 const permissionGranted = async (req, res) => {
     let response;
     try {
+
         response = await checkInternalPermission(req.user.id, req.params.type);
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {

@@ -153,6 +153,7 @@ module.exports = function (app, passport, config) {
     app.delete(`${messPath}/deleteMessageByID`, reqAuth, AccMan.roleAuth(admin), MessMan.deleteMessageByID);
 
     /****************** FACEBOOK MANAGER ********************/
+    app.get(`${fbPath}/updatePages`, reqAuth, AccMan.roleAuth(all), FbM.updatePages);
     app.get(`${fbPath}/pages`, reqAuth, AccMan.roleAuth(all), FbM.fb_getPages);
     app.get(`${fbPath}/getScopes`, reqAuth, AccMan.roleAuth(all), FbM.fb_getScopes);
     app.get(`${fbPath}/storeAllData/:key*?`, FbM.fb_storeAllData);
