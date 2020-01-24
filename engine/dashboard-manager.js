@@ -189,8 +189,6 @@ exports.getDashboardByID = async function (req, res, next) {
             include: [{model: Charts, required: true,}],
             where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
         });
-        console.log('baubau')
-        console.log(finalResult[0])
         for (const i in finalResult) {
             dataToReturn.push(formatResult(finalResult[i]));
         }
