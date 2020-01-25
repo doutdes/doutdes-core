@@ -190,7 +190,6 @@ exports.getDashboardByID = async function (req, res, next) {
             include: [{model: Charts, required: true,}],
             where: {dashboard_id: userDashboards[0].dataValues.dashboard_id}
         });
-
         for (const i in finalResult) {
             dataToReturn.push(formatResult(finalResult[i]));
         }
@@ -800,5 +799,6 @@ const formatResult = (dashChart) => {
         description: dashChart['dataValues']['Chart']['dataValues']['description'],
         domain: dashChart['dataValues']['Chart']['dataValues']['domain'],
         breakdowns: dashChart['dataValues']['Chart']['dataValues']['breakdowns'],
+        countFan: dashChart['dataValues']['Chart']['dataValues']['countFan']
     };
 };
