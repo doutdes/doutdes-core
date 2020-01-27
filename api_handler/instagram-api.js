@@ -69,10 +69,47 @@ async function getPagesID(token) {
 
     try {
         result = JSON.parse(await Request(options));
+        result = await checkPermissionPages(token, result);
         return result;
     } catch (e) {
         console.error(e);
     }
+}
+
+
+async function checkPermissionPages(token, data){
+    let tmp;
+    let array;
+    let result = { 'data' : [] };
+
+    // console.log('baubau');
+    // console.log(data['data']);
+
+    const options = {
+        method: 'GET',
+        uri: 'https://graph.facebook.com/v5.0/debug_token',
+        qs: {
+            access_token: token,
+            input_token: data['data'][0]['access_token'],
+        }
+    };
+
+    try {
+        tmp = JSON.parse(await Request(options));
+        if (tmp['data']['granular_scopes'][4]['target_ids']){
+            array = tmp['data']['granular_scopes'][4]['target_ids'];
+            data['data'].forEach(e => e['instagram_business_account']
+                ? (array.includes(e['instagram_business_account']['id']) ?  result['data'].push(e) : null)
+                : null);
+        } else {
+            return data;
+        }
+
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
+
 }
 
 /** GET username from id **/
