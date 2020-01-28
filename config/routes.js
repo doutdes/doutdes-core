@@ -183,6 +183,7 @@ module.exports = function (app, passport, config) {
 
     /****************** INSTAGRAM DASHBOARD ********************/
     app.get(`${igPath}/pages`, reqAuth, AccMan.roleAuth(all), IgM.ig_getPages);
+    app.get(`${igPath}/updatePages`, reqAuth, AccMan.roleAuth(all), IgM.updatePages);
     app.get(`${igPath}/businessInfo`, reqAuth, AccMan.roleAuth(all), IgM.ig_getBusinessInfo);
 
     app.get(`${igPath}/storeAllData/:key*?`, IgM.ig_storeAllData);

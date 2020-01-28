@@ -528,6 +528,37 @@ async function getLostFollowers(req, res) {
     return data;
 }
 
+const updatePages = async (req, res) => {
+    let igData, pagesListMongo = [], pagesList = [], key, removedPages = [];
+
+    try {
+        key = await FbToken.findOne({where: {user_id: req.user.id}});
+
+        (await InstagramApi.getPagesID(key.api_key))['data'].forEach(el =>
+            el['instagram_business_account']
+                ? pagesList.push(el['instagram_business_account']['id'])
+                : null);
+
+        igData = await MongoManager.getPagesMongo(req.user.id, D_TYPE.IG);
+        igData.forEach(p => pagesListMongo.push(p.page_id));
+        pagesListMongo = pagesListMongo.filter(function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+        });
+        pagesListMongo.forEach(p => pagesList.includes(p) !== true
+            ? (removedPages.push(p), MongoManager.removePageMongo(req.user.id, p, D_TYPE.IG))
+            : null
+        );
+        return res.status(HttpStatus.OK).send(removedPages);
+    }
+    catch (err) {
+        console.error(err['message']);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem either with Facebook servers or with our database'
+        })
+    }
+
+};
 
 /** EXPORTS **/
 module.exports = {
@@ -540,5 +571,6 @@ module.exports = {
     ig_getStories,
     ig_getBusinessInfo,
     ig_storeAllData,
-    ig_storeAllDataDaily
+    ig_storeAllDataDaily,
+    updatePages
 };
