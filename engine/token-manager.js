@@ -67,6 +67,7 @@ const checkExistence = async (req, res) => {
     let joinModel;
 
     switch (parseInt(req.params.type)) {
+        case D_TYPE.FBC:
         case D_TYPE.FBM:
         case D_TYPE.FB:
         case D_TYPE.IG:
@@ -74,7 +75,7 @@ const checkExistence = async (req, res) => {
             break;
         case D_TYPE.GA:
             joinModel = GaToken;
-            break;
+            break
         case D_TYPE.YT:
             joinModel = GaToken;
             break;
