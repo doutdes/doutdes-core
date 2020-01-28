@@ -461,12 +461,21 @@ async function getMongoData (type, userid, page_id, metric, dimensions = null, d
     }
 }
 
-async function getFbPagesMongo(userid) {
+async function getPagesMongo(userid, type) {
     let result;
     try {
-        result = await fbMongo.find({
-            'userid': userid,
-        });
+        switch (type) {
+            case D_TYPE.FB:
+                result = await fbMongo.find({
+                    'userid': userid,
+                });
+                break;
+            case D_TYPE.IG:
+                result = await igMongo.find({
+                    'userid': userid,
+                });
+                break;
+        }
     }
     catch (e) {
         console.error(e);
@@ -475,12 +484,22 @@ async function getFbPagesMongo(userid) {
     return result;
 }
 
-async function removeFbPageMongo(userid, page_id) {
+async function removePageMongo(userid, page_id, type) {
     try {
-        await fbMongo.deleteMany({
-            'userid': userid,
-            'page_id': page_id,
-        });
+        switch (type) {
+            case D_TYPE.FB:
+                await fbMongo.deleteMany({
+                    'userid': userid,
+                    'page_id': page_id,
+                });
+                break;
+            case D_TYPE.IG:
+                await igMongo.deleteMany({
+                    'userid': userid,
+                    'page_id': page_id,
+                });
+                break;
+        }
     }
     catch (e) {
         console.error(e);
@@ -489,5 +508,5 @@ async function removeFbPageMongo(userid, page_id) {
 }
 
 module.exports = {
-    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getFbPagesMongo, removeFbPageMongo
+    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo
 };

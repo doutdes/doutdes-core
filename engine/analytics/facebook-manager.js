@@ -51,13 +51,13 @@ const updatePages = async (req, res) => {
         key = await FbToken.findOne({where: {user_id: req.user.id}});
 
         (await FacebookApi.getPagesID(key.api_key))['data'].forEach(el => pagesList.push(el.id));
-        fbData = await MongoManager.getFbPagesMongo(req.user.id);
+        fbData = await MongoManager.getPagesMongo(req.user.id, D_TYPE.FB);
         fbData.forEach(p => pagesListMongo.push(p.page_id));
         pagesListMongo = pagesListMongo.filter(function onlyUnique(value, index, self) {
             return self.indexOf(value) === index;
         });
         pagesListMongo.forEach(p => pagesList.includes(p.toString()) !== true
-            ? (removedPages.push(p.toString()), MongoManager.removeFbPageMongo(req.user.id, p))
+            ? (removedPages.push(p.toString()), MongoManager.removePageMongo(req.user.id, p, D_TYPE.FB))
             : null
         );
         return res.status(HttpStatus.OK).send(removedPages);
