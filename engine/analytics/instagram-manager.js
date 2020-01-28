@@ -155,7 +155,7 @@ function preProcessIGData(data, metric, period) {
 
     if (metric.toString() === "audience_gender_age" && data) {// This metric has dots in keys, which are not allowed
         stringified = JSON.stringify(data);
-        stringified = stringified.replace(/F./g, "F").replace(/M./g, "M");
+        stringified = stringified.replace(/F./g, "F").replace(/M./g, "M").replace(/U./g, "U");
         data = JSON.parse(stringified);
     }
 
