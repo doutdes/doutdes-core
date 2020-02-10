@@ -71,6 +71,7 @@ async function getPagesID(token) {
         result = JSON.parse(await Request(options));
        // result = await checkPermissionPages(token, result); //problema sull'access token in versione dev
         return result;
+        
     } catch (e) {
         console.error(e);
     }
