@@ -47,7 +47,7 @@ const ig_getPages = async (req, res) => {
         pages = await ig_getInternalPages(req.user.id);
         return res.status(HttpStatus.OK).send(pages);
     } catch (err) {
-        console.error(err);
+      //  console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
             message: 'There is a problem either with Instagram servers or with our database'
@@ -264,15 +264,13 @@ const ig_getData = async (req, res) => {
 
         return res.status(HttpStatus.OK).send(response);
     } catch (err) {
-        console.error(err);
         if (err.statusCode === 400) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 name: 'Instagram Bad Request',
                 message: 'Invalid OAuth access token.'
             });
         }
-
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        return res.status(HttpStatus.CONFLICT).send({
             name: 'Internal Server Error',
             message: 'There is a problem either with Instagram servers or with our database'
         });
