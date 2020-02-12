@@ -80,12 +80,16 @@ async function getPagesID(token) {
 }
 
 async function permissionPage(token, data){
-
     let result = { 'data' : [] };
     let id;
+    let flag;
     try {
         for (const e of data['data']){
-            if(await supportFunctionPermission(token, e['instagram_business_account']['id']) === 'flag') {
+            if(e['instagram_business_account']) {
+                id = e['instagram_business_account']['id'];
+            }
+            flag = await supportFunctionPermission(token, id);
+            if( flag === 'flag') {
                 result['data'].push(e);
             }
         }
@@ -110,6 +114,7 @@ async function supportFunctionPermission(token, id){
     try{
         result = JSON.parse(await Request(options));
         if( result['data'] ){
+
             return 'flag';    // non funziona coi booleani
         }
     } catch (e) {
