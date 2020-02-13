@@ -88,7 +88,7 @@ async function permissionPage(token, data){
             if(e['instagram_business_account']) {
                 id = e['instagram_business_account']['id'];
             }
-            flag = await supportFunctionPermission(token, id);
+            flag = await supportFunctionPermissions(token, id);
             if( flag === 'flag') {
                 result['data'].push(e);
             }
@@ -100,7 +100,7 @@ async function permissionPage(token, data){
 
 }
 
-async function supportFunctionPermission(token, id){
+async function supportFunctionPermissions(token, id){
     const options = {
             method: 'GET',
             uri: 'https://graph.facebook.com/v6.0/'+id+'/insights',
@@ -114,10 +114,10 @@ async function supportFunctionPermission(token, id){
     try{
         result = JSON.parse(await Request(options));
         if( result['data'] ){
-
             return 'flag';    // non funziona coi booleani
         }
     } catch (e) {
+        //console.log(e)
         console.log('instagram services failure permissions ');
         return 'noflag';
     }
