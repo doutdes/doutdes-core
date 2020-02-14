@@ -253,7 +253,7 @@ const ig_getData = async (req, res) => {
             })
         }
 
-        if (req.url.includes('media') && !req.query.media_id) {
+        if (req.url.includes('/media') && !req.query.media_id) {
             return res.status(HttpStatus.BAD_REQUEST).send({
                 error: true,
                 message: 'You have not provided a media ID for the Instagram media request.'
@@ -280,8 +280,10 @@ const ig_getData = async (req, res) => {
 };
 
 const getResponseData = async (req, res) => {
-    let response = [], data = [];
+    let response = [], data = [], n = 1000;
     let metric = [];
+    let key = await FbToken.findOne({where: {user_id: req.user.id}});
+    let pageID = req.query.page_id;
 
     req.query.metric.includes(',')
         ? metric = req.query.metric.split(',')
@@ -289,13 +291,18 @@ const getResponseData = async (req, res) => {
 
     if (req.query.metric === 'lost_followers') {
         response = await getLostFollowers(req, res);
+    } else if (req.query.metric === 'like_media') {
+        response = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
+        response.forEach(el => delete Object.assign(el, {['end_time']: el['timestamp'] })['timestamp']);
     } else {
         for (let el of metric) {
             data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
         }
         data.length === 1 ? response = data[0] : response.push({data, 'end_time': data[0][data[0].length - 1].end_time, 'metrics': metric});
     }
-
+    if (req.query.metric === 'like_media') {
+        console.log('poba', response)
+    }
     return response;
 }
 

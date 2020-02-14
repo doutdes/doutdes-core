@@ -133,14 +133,15 @@ async function getUsernameFromId(pageID, token) {
 }
 
 /** GET the latest n media from instagram **/
-async function getMedia(pageID, token, n=20) {
+async function getMedia(pageID, token, n=20, info = false) {
     let result;
+    let string = info ? ', comments_count, like_count' : '';
     const options = {
         method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/media',
         qs: {
             access_token: token,
-            fields: 'id,media_type,timestamp',
+            fields: 'id,media_type,timestamp'+ string,
             limit: n,
         }
     };

@@ -222,6 +222,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         //check if the previous document exist and create a new one
         if (old_startDate == null) {
             data = await getAPIdata(user_id, page_id, metric, start_date, end_date);
+
             data = preProcessFBData(data, metric);
             await MongoManager.storeMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
@@ -247,6 +248,7 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
         }
 
         response = await MongoManager.getMongoData(D_TYPE.FB, user_id, page_id, metric);
+
         return response;
 
     } catch (err) {
