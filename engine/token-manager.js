@@ -311,11 +311,10 @@ const insertKey = (req, res) => {
     }
 };
 const update = (req, res) => { // TODO sistemare
-    console.log('aaaa',req.body);
+    //console.log('aaaa',req.body);
     const service_id = parseInt(req.body.api.service_id);
     switch (service_id) {
         case D_TYPE.IG: //fb
-            console.log('sono qui dentro')
             return updateIgKey(req, res);
         case D_TYPE.FBM:
         case D_TYPE.FB: //fb

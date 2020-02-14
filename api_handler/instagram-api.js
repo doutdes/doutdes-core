@@ -69,48 +69,99 @@ async function getPagesID(token) {
 
     try {
         result = JSON.parse(await Request(options));
-        result = await checkPermissionPages(token, result);
+     // result = await checkPermissionPages(token, result); //problema sull'access token in versione dev
+        result = await permissionPage(token, result);
+
         return result;
+        
     } catch (e) {
         console.error(e);
     }
 }
 
-
-async function checkPermissionPages(token, data){
-    let tmp;
-    let array;
+async function permissionPage(token, data){
     let result = { 'data' : [] };
-
-    // console.log('baubau');
-    // console.log(data['data']);
-
-    const options = {
-        method: 'GET',
-        uri: 'https://graph.facebook.com/v5.0/debug_token',
-        qs: {
-            access_token: token,
-            input_token: data['data'][0]['access_token'],
+    let id;
+    let flag;
+    try {
+        for (const e of data['data']){
+            if(e['instagram_business_account']) {
+                id = e['instagram_business_account']['id'];
+            }
+            flag = await supportFunctionPermissions(token, id);
+            if( flag === 'flag') {
+                result['data'].push(e);
+            }
         }
+        return result;
+    } catch (e) {
+        console.error(e);
+    }
+
+}
+
+async function supportFunctionPermissions(token, id){
+    const options = {
+            method: 'GET',
+            uri: 'https://graph.facebook.com/v6.0/'+id+'/insights',
+            qs: {
+                metric: 'audience_city',
+                period: 'lifetime',
+                access_token: token,
+            }
     };
 
-    try {
-        tmp = JSON.parse(await Request(options));
-        if (tmp['data']['granular_scopes'][4]['target_ids']){
-            array = tmp['data']['granular_scopes'][4]['target_ids'];
-            data['data'].forEach(e => e['instagram_business_account']
-                ? (array.includes(e['instagram_business_account']['id']) ?  result['data'].push(e) : null)
-                : null);
-        } else {
-            return data;
+    try{
+        result = JSON.parse(await Request(options));
+        if( result['data'] ){
+            return 'flag';    // non funziona coi booleani
         }
-
-        return result;
     } catch (e) {
-        console.error(e);
+        //console.log(e)
+        console.log('instagram services failure permissions ');
+        return 'noflag';
     }
 
 }
+
+
+
+
+// async function checkPermissionPages(token, data){
+//     let tmp;
+//     let array;
+//     let result = { 'data' : [] };
+//
+//     // console.log('baubau');
+//     // console.log(data['data']);
+//
+//     const options = {
+//         method: 'GET',
+//         uri: 'https://graph.facebook.com/v5.0/debug_token',
+//         qs: {
+//             access_token: token,
+//             input_token: data['data'][0]['access_token'],
+//         }
+//     };
+//
+//     try {
+//         tmp = JSON.parse(await Request(options));
+//         if (tmp['data']['granular_scopes'][4]['target_ids']){
+//             array = tmp['data']['granular_scopes'][4]['target_ids'];
+//             data['data'].forEach(e => e['instagram_business_account']
+//                 ? (array.includes(e['instagram_business_account']['id']) ?  result['data'].push(e) : null)
+//                 : null);
+//         } else {
+//             return data;
+//         }
+//
+//         return result;
+//     } catch (e) {
+//         console.error(e);
+//     }
+//
+// }
+//TODO to delete if the permissions page solution works, if not go back
 
 /** GET username from id **/
 async function getUsernameFromId(pageID, token) {
