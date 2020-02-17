@@ -159,6 +159,13 @@ function preProcessIGData(data, metric, period) {
         data = JSON.parse(stringified);
     }
 
+    if (metric.toString() === "audience_city" && data) {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace( /\./g , " " ); //replace all dots, remember
+        data = JSON.parse(stringified);
+    }
+
+
     if (period !== "lifetime")
         data = data.slice(0,-1);
 
