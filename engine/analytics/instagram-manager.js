@@ -512,7 +512,6 @@ async function getAPIdata(user_id, page_id, metric, period, start_date = null, e
          data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
 
          if(metric === 'online_followers') { //time change compared to the time released by the API Instagram, +9
-             console.log('stampo data', data)
              data= online_Followers(data);
          }
 
@@ -583,13 +582,13 @@ function online_Followers(data){
         }
         for (const e of data) {
             for (let i = 0; i < 24; i++) {
-                if (e['value'].length > 0) {
-                    e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0;
-                }
+                Object.keys(e['value']).length > 0 ?
+                    e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0
+                : null;
             }
         }
     }catch (e) {
-        console.log('online_followers error', e);
+        console.log(e)
     }
 
     return data;
