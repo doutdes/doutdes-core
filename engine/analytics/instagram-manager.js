@@ -159,6 +159,13 @@ function preProcessIGData(data, metric, period) {
         data = JSON.parse(stringified);
     }
 
+    if (metric.toString() === "audience_city" && data) {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace( /\./g , " " ); //replace all dots, remember
+        data = JSON.parse(stringified);
+    }
+
+
     if (period !== "lifetime")
         data = data.slice(0,-1);
 
@@ -505,16 +512,22 @@ async function getAPIdata(user_id, page_id, metric, period, start_date = null, e
     }
 
     try {
-        data = //(start_date && end_date)
+      //  data = //(start_date && end_date)
                 //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
-                await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
+         data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
+
+         if(metric === 'online_followers') { //time change compared to the time released by the API Instagram, +9
+             data= online_Followers(data);
+         }
 
         return data;
+
     } catch (e) {
         console.error("Error retrieving Instagram data");
     }
 
 }
+
 async function getLostFollowers(req, res) {
     let data = [], date;
 
@@ -560,9 +573,31 @@ const updatePages = async (req, res) => {
             message: 'There is a problem either with Facebook servers or with our database'
         })
     }
-
 };
 
+function online_Followers(data){
+    let dTime;
+    try {
+        for (let e of data) {
+            dTime = {};
+            for (let i in e['value']) {
+                dTime['' + (parseInt(i) + 9) % 24] = e['value'][i];
+            }
+            e['value'] = dTime;
+        }
+        for (const e of data) {
+            for (let i = 0; i < 24; i++) {
+                Object.keys(e['value']).length > 0 ?
+                    e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0
+                : null;
+            }
+        }
+    }catch (e) {
+        console.log(e)
+    }
+
+    return data;
+}
 /** EXPORTS **/
 module.exports = {
     setMetric,
