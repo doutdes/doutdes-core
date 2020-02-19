@@ -298,9 +298,7 @@ const getResponseData = async (req, res) => {
         }
         data.length === 1 ? response = data[0] : response.push({data, 'end_time': data[0][data[0].length - 1].end_time, 'metrics': metric});
     }
-    if (req.query.metric === 'like_media') {
-        console.log('poba', response)
-    }
+
     return response;
 }
 
