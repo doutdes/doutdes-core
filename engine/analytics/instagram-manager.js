@@ -196,24 +196,17 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
     let date, today, yesterday;
     try {
         old_date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, page_id, metric);
+        old_startDate = old_date.start_date; //primo giorno su mongo
+        old_endDate = old_date.end_date; //ultimo giorno su mongo
+        today = new Date(); //giorno di oggi
+        yesterday = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), 1)); //giorno di ieri
 
-        old_startDate = old_date.start_date;
-        old_endDate = old_date.end_date;
-        today = new Date();
-        yesterday = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), 1));
 
-        if (old_startDate == null) {
+        if (old_startDate == null) { //se non ci sono date, chiama tutti i dati e gli salva una volta
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
             data = preProcessIGData(data, metric, period);
             date = getIntervalDate(data);
             await MongoManager.storeMongoData(D_TYPE.IG, user_id, page_id, metric, date.start_date.slice(0, 10), date.end_date.slice(0, 10), data);
-
-            // if(metric === 'online_followers'){
-            //     console.warn('----------')
-            //     console.warn('stampo qui')
-            //     console.warn(data)
-            //     console.warn('----------')
-            // }
             return data;
         } else if (DateFns.startOfDay(old_endDate) < DateFns.startOfDay(today) && period === "lifetime") {
             data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
@@ -226,6 +219,7 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
             date = getIntervalDate(data);
             await MongoManager.updateMongoData(D_TYPE.IG, user_id, page_id, metric, '', date.end_date.slice(0, 10), data);
         }
+
         response = await MongoManager.getMongoData(D_TYPE.IG, user_id, page_id, metric);
 
         return response;
@@ -234,6 +228,15 @@ const ig_getDataInternal = async (user_id, page_id, metric, period, interval = n
     }
 
 };
+
+async  function supportCheckData(data, user_id, page_id, metric, period, since, until, media_id){
+    let date;
+    data = await getAPIdata(user_id, page_id, metric, period, since, until, media_id);
+    data = preProcessIGData(data, metric, period);
+    date = getIntervalDate(data);
+
+    return data, date;
+}
 
 const ig_getData = async (req, res) => {
     let response;
