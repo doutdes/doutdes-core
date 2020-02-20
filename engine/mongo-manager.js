@@ -359,12 +359,14 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
                 break;
             case D_TYPE.IG:
                 if (data) {
-                    for (const e of data){
-                        await igMongo.updateOne({'userid': userid,
-                                'page_id': page_id,
-                                'metric': metric,
-                                'data.end_time': e["end_time"]},
-                            {$set: {'data.$.value': e.value}})
+                    if(metric === 'impressions'){
+                        for (const e of data){
+                            await igMongo.updateOne({'userid': userid,
+                                    'page_id': page_id,
+                                    'metric': metric,
+                                    'data.end_time': e["end_time"]},
+                                {$set: {'data.$.value': e.value}});
+                        }
                     }
                     await igMongo.findOneAndUpdate({
                         'userid': userid,
