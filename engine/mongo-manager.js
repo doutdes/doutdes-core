@@ -359,7 +359,7 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
                 break;
             case D_TYPE.IG:
                 if (data) {
-                        for (const e of data){ //check on data modified by instragram API
+                        for (const e of data){ //check on data modified by instagram API
                             if(e["end_time"] && e['value']){
                             await igMongo.updateOne({'userid': userid,
                                     'page_id': page_id,
