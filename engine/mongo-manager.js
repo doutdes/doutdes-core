@@ -90,12 +90,6 @@ async function storeMongoData(type, userid, page_id, metric, start_date, end_dat
                 break;
             case D_TYPE.IG:
 
-                if(metric === 'impressions'){
-                    console.log('-----------------------');
-                    console.log('poba', metric, file);
-                    console.log('-------------------------');
-                }
-
                 await igMongo.create({
                     userid: userid,
                     page_id: page_id,
