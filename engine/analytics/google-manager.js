@@ -234,6 +234,7 @@ const ga_getScopes = async (req, res) => {
 const ga_viewList = async (req, res) => {
         let result;
     try {
+        MongoManager.userLogManager(2, req.user.id);
         result = await ga_viewListInternal(req.user.id);
 
         return res.status(HttpStatus.OK).send(result);

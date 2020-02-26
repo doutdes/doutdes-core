@@ -4,6 +4,7 @@ const fbmMongo = require('../models/mongo/mongo-fbm-model');
 const fbcMongo = require('../models/mongo/mongo-fbc-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 const ytMongo = require('../models/mongo/mongo-yt-model');
+const logMongo =require('../models/mongo/mongo-log-model');
 
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 
@@ -89,7 +90,6 @@ async function storeMongoData(type, userid, page_id, metric, start_date, end_dat
                 });
                 break;
             case D_TYPE.IG:
-
                 await igMongo.create({
                     userid: userid,
                     page_id: page_id,
@@ -489,7 +489,7 @@ async function getPagesMongo(userid, type) {
     }
     catch (e) {
         console.error(e);
-        throw new Error("getfbPagesMongo - error retrieving pages");
+        throw new Error("getPagesMongo - error retrieving pages");
     }
     return result;
 }
@@ -513,10 +513,86 @@ async function removePageMongo(userid, page_id, type) {
     }
     catch (e) {
         console.error(e);
-        throw new Error("removefbPageMongo - error removing page");
+        throw new Error("removePageMongo - error removing page");
     }
 }
 
+
+async function userLogManager(type, userid){
+    let date = new Date();
+    try{
+        if( (await logMongo.find({userid: userid })).length != 0){
+              await userLogUpdate(type, userid, date);
+        }else{
+             await userLogCreate(userid, date);
+            await userLogUpdate(type, userid, date);
+        }
+    }catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+    }
+}
+
+async function userLogUpdate(type, userid, date){
+    let key = returnDashboardTypeLog(type);
+    try{
+        await logMongo.updateOne(
+                {userid: userid},
+                {$set: {last_log: date}});
+        await logMongo.update(
+            {userid:userid},
+            {$push:{[key]:{date : date }}});
+        } catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+    }
+}
+
+async function userLogCreate(userid, date){
+
+    try{
+        await logMongo.create({
+            userid: userid,
+            dash_fb:{},
+            dash_fbc:{},
+            dash_fbm:{},
+            dash_ga:{},
+            dash_ig:{},
+            dash_yt:{},
+            last_log: date
+        });
+
+    }catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+    }
+}
+
+function returnDashboardTypeLog(type){
+    switch (type) {
+        case D_TYPE.FB:
+            return "dash_fb";
+            break;
+        case D_TYPE.FBC:
+            return "dash_fbc";
+            break;
+        case D_TYPE.FBM:
+            return "dash_fbm";
+            break;
+        case D_TYPE.GA:
+            return "dash_ga";
+            break;
+        case D_TYPE.IG:
+            return "dash_ig";
+            break;
+        case D_TYPE.YT:
+            return "dash_yt";
+            break;
+
+    }
+}
+
+
 module.exports = {
-    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo
+    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo, userLogManager
 };

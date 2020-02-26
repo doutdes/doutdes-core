@@ -77,6 +77,7 @@ const fb_getPages = async (req, res) => {
     let pages = [];
 
     try {
+        MongoManager.userLogManager(1, req.user.id);
         key = await FbToken.findOne({where: {user_id: req.user.id}});
         data = (await FacebookApi.getPagesID(key.api_key))['data'];
 
