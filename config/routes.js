@@ -9,6 +9,7 @@ const FbMM = require('../engine/analytics/facebook-marketing-manager');
 const IgM = require('../engine/analytics/instagram-manager');
 const GaM = require('../engine/analytics/google-manager');
 const YtM = require('../engine/analytics/youtube-manager');
+const MtM = require('../engine/mongo-manager');
 
 const ErrorHandler = require('../engine/error-handler');
 
@@ -28,7 +29,7 @@ module.exports = function (app, passport, config) {
     const ytPath = '/yt';
     const fbPath = '/fb';
     const fbmPath = '/fbm';
-
+    const mongoPath = '/mongo';
     /* AUTH */
     const reqAuth = passport.authenticate('jwt', {session: false});
 
@@ -190,7 +191,7 @@ module.exports = function (app, passport, config) {
     app.get(`${igPath}/storeAllDataDaily/:key*?`, IgM.ig_storeAllDataDaily);
 
     app.get(`${igPath}/data`, reqAuth, AccMan.roleAuth(all), IgM.ig_getData);
-    app.get(`${igPath}/media`, reqAuth, AccMan.roleAuth(all), IgM.ig_getData);  // includes stories todo check
+    app.get(`${igPath}/media`, reqAuth, AccMan.roleAuth(all), IgM.ig_getData);  //todo includes stories check
 
     /****************** INSTAGRAM MEDIA MANAGER ********************/
     app.get(`${igPath}/:page_id/media/:n*?`, reqAuth, AccMan.roleAuth(all), IgM.ig_getMedia);
@@ -211,5 +212,8 @@ module.exports = function (app, passport, config) {
 
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
+
+    /****************** LOOGGER MENAGER ********************/
+    app.post(`${mongoPath}/logger`, reqAuth, AccMan.roleAuth(all), MtM.userLogManager)
 };
 

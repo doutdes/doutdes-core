@@ -93,7 +93,6 @@ const yt_getChannelsInternal = async (user_id) => {
 const yt_getChannels = async (req, res) => {
 
     try {
-        MongoManager.userLogManager(4, req.user.id);
         const channels = await yt_getChannelsInternal(req.user.id);
 
         return res.status(HttpStatus.OK).send(channels);

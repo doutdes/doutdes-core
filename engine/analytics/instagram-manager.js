@@ -44,8 +44,6 @@ const ig_getPages = async (req, res) => {
     let pages = [];
 
     try {
-
-        MongoManager.userLogManager(3, req.user.id);
         pages = await ig_getInternalPages(req.user.id);
         return res.status(HttpStatus.OK).send(pages);
     } catch (err) {
