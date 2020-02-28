@@ -210,10 +210,10 @@ module.exports = function (app, passport, config) {
     app.put(`${calPath}/updateEvent`, reqAuth, AccMan.roleAuth(all), CalMan.getEvents);
     app.delete(`${calPath}/deleteEvent`, reqAuth, AccMan.roleAuth(all), CalMan.deleteEvent);
 
+    /****************** LOOGGER MENAGER ********************/
+    app.post(`${mongoPath}`, reqAuth, MtM.userLogManager)
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
 
-    /****************** LOOGGER MENAGER ********************/
-    app.post(`${mongoPath}/logger`, reqAuth, AccMan.roleAuth(all), MtM.userLogManager)
 };
 

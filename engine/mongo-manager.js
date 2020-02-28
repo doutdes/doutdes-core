@@ -518,8 +518,10 @@ async function removePageMongo(userid, page_id, type) {
 }
 
 
-async function userLogManager(type, userid){
+async function userLogManager(req, res){
     let date = new Date();
+    const userid = req.body.userid;
+    const type = parseInt(req.body.type);
     try{
         if( (await logMongo.find({userid: userid })).length != 0){
               await userLogUpdate(type, userid, date);
@@ -527,9 +529,15 @@ async function userLogManager(type, userid){
              await userLogCreate(userid, date);
             await userLogUpdate(type, userid, date);
         }
+        return res.send({message: "logger ok"});
     }catch (e) {
         console.log(e);
         throw new Error("error userlog")
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem with Logger '
+        })
     }
 }
 
@@ -570,22 +578,22 @@ async function userLogCreate(userid, date){
 
 function returnDashboardTypeLog(type){
     switch (type) {
-        case D_TYPE.FB:
+        case 1:
             return "dash_fb";
             break;
-        case D_TYPE.FBC:
+        case 6:
             return "dash_fbc";
             break;
-        case D_TYPE.FBM:
+        case 5:
             return "dash_fbm";
             break;
-        case D_TYPE.GA:
+        case 2:
             return "dash_ga";
             break;
-        case D_TYPE.IG:
+        case 3:
             return "dash_ig";
             break;
-        case D_TYPE.YT:
+        case 4:
             return "dash_yt";
             break;
 
