@@ -184,14 +184,15 @@ async function getUsernameFromId(pageID, token) {
 }
 
 /** GET the latest n media from instagram **/
-async function getMedia(pageID, token, n=20) {
+async function getMedia(pageID, token, n=20, info = false) {
     let result;
+    let string = info ? ', comments_count, like_count' : '';
     const options = {
         method: 'GET',
         uri: 'https://graph.facebook.com/'+pageID+'/media',
         qs: {
             access_token: token,
-            fields: 'id,media_type,timestamp',
+            fields: 'id,media_type,timestamp'+ string,
             limit: n,
         }
     };
@@ -284,6 +285,7 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
 
 const getInstagramData = async (channelId, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
+
     try {
         access_token = await getPageAccessToken(token, channelId);
         result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
