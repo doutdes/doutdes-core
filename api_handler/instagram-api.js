@@ -285,6 +285,7 @@ function instagramQuery(method, metric,pageID, token, period=null, since=null, u
 
 const getInstagramData = async (channelId, metric, period, token, since=null, until=null, mediaID=null) => {
     let result = {}, access_token;
+
     try {
         access_token = await getPageAccessToken(token, channelId);
         result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
