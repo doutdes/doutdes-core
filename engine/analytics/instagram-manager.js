@@ -296,9 +296,12 @@ const getResponseData = async (req, res) => {
 
     if (req.query.metric === 'lost_followers') {
         response = await getLostFollowers(req, res);
-    } else if (req.query.metric === 'like_media') {
+    } else if (req.query.metric === 'like_count' || req.query.metric === 'comments_count') {
         response = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
-        response.forEach(el => delete Object.assign(el, {['end_time']: el['timestamp'] })['timestamp']);
+        response.forEach(el => {
+            delete Object.assign(el, {['end_time']: el['timestamp']})['timestamp'];
+            delete Object.assign(el, {['value']: el[req.query.metric]})[req.query.metric];
+    });
     } else {
         for (let el of metric) {
             data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
