@@ -520,13 +520,19 @@ async function removePageMongo(userid, page_id, type) {
 
 async function userLogManager(req, res){
     let date = new Date();
-    const userid = req.body.userid;
+    const userid = req.body.user;
     const type = parseInt(req.body.type);
+    const username = req.body.username;
     try{
+        const length = (await logMongo.find({userid: userid }))[0][returnDashboardTypeLog(type)].length;
+        const t = returnDashboardTypeLog(type);
+        const last = new Date((await logMongo.find({userid: userid }))[0][t][length-1]['date']).getTime();
+        const now = new Date().getTime();
+        const difference =Math.round( (now -last) /60000 );
         if( (await logMongo.find({userid: userid })).length != 0){
-              await userLogUpdate(type, userid, date);
+             if(difference >= 30 ) await userLogUpdate(type, userid, date);
         }else{
-             await userLogCreate(userid, date);
+             await userLogCreate(userid, username, date);
             await userLogUpdate(type, userid, date);
         }
         return res.send({message: "logger ok"});
@@ -556,11 +562,13 @@ async function userLogUpdate(type, userid, date){
     }
 }
 
-async function userLogCreate(userid, date){
+async function userLogCreate(userid, username, date){
 
     try{
         await logMongo.create({
             userid: userid,
+            username: username,
+            dash_custom:{},
             dash_fb:{},
             dash_fbc:{},
             dash_fbm:{},
@@ -578,6 +586,10 @@ async function userLogCreate(userid, date){
 
 function returnDashboardTypeLog(type){
     switch (type) {
+
+        case 0:
+            return "dash_custom";
+            break;
         case 1:
             return "dash_fb";
             break;
@@ -596,7 +608,6 @@ function returnDashboardTypeLog(type){
         case 4:
             return "dash_yt";
             break;
-
     }
 }
 
