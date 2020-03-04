@@ -211,7 +211,11 @@ module.exports = function (app, passport, config) {
     app.delete(`${calPath}/deleteEvent`, reqAuth, AccMan.roleAuth(all), CalMan.deleteEvent);
 
     /****************** LOOGGER MENAGER ********************/
-    app.post(`${mongoPath}`, reqAuth, MtM.userLogManager)
+    app.post(`${mongoPath}`, reqAuth, MtM.userLogManager);
+    // app.get(`${mongoPath}/userid/:id`, function(req,res) {
+    //     res.send('miao')
+    // });
+    app.get(`${mongoPath}/userid/:id`, MtM.createCsv);
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
 
