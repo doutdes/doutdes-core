@@ -466,8 +466,9 @@ const ig_getBusinessInfo = async (req, res) => {
         })
     }
 };
+
 async function getBusinessInfo(pageID, user_id, since = null) {
-    let date, data, copy, key, dataArray;
+    let date, data, key, dataArray;
     let today = new Date();
     let dd = String(today.getDate()).padStart(2, '0');
     let mm = String(today.getMonth() + 1).padStart(2, '0');
