@@ -256,6 +256,18 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
         switch (type) {
             case D_TYPE.GA:
                 if (data) {
+                    console.log(metric)
+                    console.log(data)
+                    if(metric === "ga:avgSessionDuration"){
+                        console.log('miao',data)}
+                    for (const e of data){ //check on data modified by instagram API
+                        console.log('miao',data)
+                            await igMongo.updateOne({'userid': userid,
+                                    'page_id': page_id,
+                                    'metric': metric,
+                                    'data': {$elemMatch:{'0': e[0]}}},
+                                {$set: {'data.$.1': e[1]}});
+                        }
                     await gaMongo.findOneAndUpdate({
                         'userid': userid,
                         'view_id': page_id,
