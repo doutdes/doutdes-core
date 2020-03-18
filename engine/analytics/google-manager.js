@@ -129,6 +129,7 @@ const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
     console.log('bau', old_startDate)
+    console.log('ciao', start_date)
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
