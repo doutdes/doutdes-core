@@ -81,7 +81,7 @@ exports.readUserDashboards = function (req, res, next) {
         })
 };
 exports.getDashboardByType = function (req, res, next) {
-
+   // console.log('arrivo qui')
     UserDashboards.findAll({
         include: [{model: Dashboard, required: true, where: {category: req.params.type}}],
         attributes: {exclude: ['DashboardId']},
@@ -95,7 +95,7 @@ exports.getDashboardByType = function (req, res, next) {
                     message: 'Cannot get dashboard information'
                 })
             }
-
+            //MongoManager.userLogManager(req.params.type, req.user.id); //Todo log manager tests
             return res.status(HttpStatus.OK).send(userDashboards[0]['Dashboard']);
         })
         .catch(err => {

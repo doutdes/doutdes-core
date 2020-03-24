@@ -4,6 +4,7 @@ const fbmMongo = require('../models/mongo/mongo-fbm-model');
 const fbcMongo = require('../models/mongo/mongo-fbc-model');
 const igMongo = require('../models/mongo/mongo-ig-model');
 const ytMongo = require('../models/mongo/mongo-yt-model');
+const logMongo =require('../models/mongo/mongo-log-model');
 
 const D_TYPE = require('../engine/dashboard-manager').D_TYPE;
 
@@ -89,13 +90,6 @@ async function storeMongoData(type, userid, page_id, metric, start_date, end_dat
                 });
                 break;
             case D_TYPE.IG:
-
-                if(metric === 'impressions'){
-                    console.log('-----------------------');
-                    console.log('poba', metric, file);
-                    console.log('-------------------------');
-                }
-
                 await igMongo.create({
                     userid: userid,
                     page_id: page_id,
@@ -262,6 +256,15 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
         switch (type) {
             case D_TYPE.GA:
                 if (data) {
+                    if(metric === "ga:avgSessionDuration"){
+                        console.log('miao',data)}
+                    for (const e of data){ //check on data modified by google API
+                            await igMongo.updateOne({'userid': userid,
+                                    'page_id': page_id,
+                                    'metric': metric,
+                                    'data': {$elemMatch:{'0': e[0]}}},
+                                {$set: {'data.$.1': e[1]}});
+                        }
                     await gaMongo.findOneAndUpdate({
                         'userid': userid,
                         'view_id': page_id,
@@ -269,10 +272,10 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
                         'dimensions': dimensions
                     }, {
                         'end_date': end_date,
-                        $push: {
+                        $addToSet: {
                             'data': {$each: data}
                         }
-                    });
+                    });//change push in addtoset StefanoU
                 }
                 else {
                     await gaMongo.findOneAndUpdate({
@@ -495,7 +498,7 @@ async function getPagesMongo(userid, type) {
     }
     catch (e) {
         console.error(e);
-        throw new Error("getfbPagesMongo - error retrieving pages");
+        throw new Error("getPagesMongo - error retrieving pages");
     }
     return result;
 }
@@ -519,10 +522,156 @@ async function removePageMongo(userid, page_id, type) {
     }
     catch (e) {
         console.error(e);
-        throw new Error("removefbPageMongo - error removing page");
+        throw new Error("removePageMongo - error removing page");
     }
 }
 
+///////// LOG MENAGER //////////
+
+async function userLogManager(req, res){
+    let date = new Date();
+    const userid = req.body.user;
+    console.log(req.body.type)
+    const type = parseInt(req.body.type);
+    const username = req.body.username;
+    try{
+        if( (await logMongo.find({userid: userid })).length != 0){
+            const length = (await logMongo.find({userid: userid }))[0][returnDashboardTypeLog(type)].length;
+            const t = returnDashboardTypeLog(type);
+            const last = new Date((await logMongo.find({userid: userid }))[0][t][length-1]['date']).getTime();
+            const now = new Date().getTime();
+            const difference = Math.round( (now -last) /60000 );
+             if(difference >= 30 || !difference) {
+                 await userLogUpdate(type, userid, date);
+             }
+        }else{
+             await userLogCreate(userid, username, date);
+            await userLogUpdate(type, userid, date);
+        }
+        return res.send({message: "logger ok"});
+    }catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            name: 'Internal Server Error',
+            message: 'There is a problem with Logger '
+        })
+    }
+}
+
+async function userLogUpdate(type, userid, date){
+    let key = returnDashboardTypeLog(type);
+    try{
+        await logMongo.updateOne(
+                {userid: userid},
+                {$set: {last_log: date}});
+        await logMongo.update(
+            {userid:userid},
+            {$push:{[key]:{date : date }}});
+        } catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+    }
+}
+
+async function userLogCreate(userid, username, date){
+
+    try{
+        await logMongo.create({
+            userid: userid,
+            username: username,
+            dash_custom:{},
+            dash_fb:{},
+            dash_fbc:{},
+            dash_fbm:{},
+            dash_ga:{},
+            dash_ig:{},
+            dash_yt:{},
+            last_log: date
+        });
+
+    }catch (e) {
+        console.log(e);
+        throw new Error("error userlog")
+    }
+}
+
+function returnDashboardTypeLog(type){
+    switch (type) {
+
+        case 0:
+            return "dash_custom";
+            break;
+        case 1:
+            return "dash_fb";
+            break;
+        case 6:
+            return "dash_fbc";
+            break;
+        case 5:
+            return "dash_fbm";
+            break;
+        case 2:
+            return "dash_ga";
+            break;
+        case 3:
+            return "dash_ig";
+            break;
+        case 4:
+            return "dash_yt";
+            break;
+    }
+}
+
+async function createCsv(req, res, next) {
+    console.log('ci arrivo')
+    console.log(req.params)
+    try{
+    if (req.params.id === '25') {
+        head = 'id,username,date_custom,count_custom,date_fb,count_fb,date_fbc,count_fbc,date_fbm,count_fbm,date_ig,count_ig,date_ag,count_ag,date_yt,count_yt\n'
+        res.write(head);
+        for (const el of (await logMongo.find({}))) {
+            //   const el = (await logMongo.find({}))[i]
+            const username = el.username;
+            const id = el.userid;
+            const lastlog = new Date(el.last_log).toLocaleString();
+
+            const count_custom = el.dash_custom.length - 1 ? el.dash_custom.length - 1 : 0;
+            const date_custom = el.dash_custom.length >= 2 ? el.dash_custom[count_custom].date.toLocaleDateString() : 'Nan';
+
+            const count_fb = el.dash_fb.length - 1 ? el.dash_fb.length - 1 : 0;
+            const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString() : 'Nan';
+
+            const count_fbc = el.dash_fbc.length - 1 ? el.dash_fbc.length - 1 : 0;
+            const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString() : 'NaN';
+
+            const count_fbm = el.dash_fbm.length - 1 ? el.dash_fbm.length - 1 : 0;
+            const date_fbm = el.dash_fbm.length >= 2 ? el.dash_fbm[count_fbm].date.toLocaleDateString() : 'NaN';
+
+            const count_ig = el.dash_ig.length - 1 ? el.dash_ig.length - 1 : 0;
+            const date_ig = el.dash_ig.length >= 2 ? el.dash_ig[count_ig].date.toLocaleDateString() : 'NaN';
+
+            const count_ga = el.dash_ga.length - 1 ? el.dash_ga.length - 1 : 0;
+            const date_ga = el.dash_ga.length >= 2 ? el.dash_ga[count_ga].date.toLocaleDateString() : 'NaN';
+
+            const count_yt = el.dash_yt.length - 1 ? el.dash_yt.length - 1 : 0;
+            const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString() : 'NaN';
+
+            console.log(username, id, date_custom)
+            res.write(`${id},${username},${lastlog},${date_custom},${count_custom},${date_fb},${count_fb},${date_fbc},${count_fbc},${date_fbm},${count_fbm},${date_ig},${count_ig},${date_ga},${count_ga},${date_yt},${count_yt}\n`)
+        }
+        res.end()
+
+    }
+    }catch (e) {
+        console.log(e)
+        throw new Error("error logcsv")
+    }
+
+
+}
+
 module.exports = {
-    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo
+    removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo, userLogManager, createCsv
 };

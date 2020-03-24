@@ -267,6 +267,13 @@ function preProcessFBData(data, metric) {
         data = JSON.parse(stringified);
     }
 
+    if (metric.toString() === "page_fans_gender_age") {// This metric has dots in keys, which are not allowed
+        stringified = JSON.stringify(data);
+        stringified = stringified.replace(/\./g, " ");
+        data = JSON.parse(stringified);
+    }
+
+
     return data;
 }
 

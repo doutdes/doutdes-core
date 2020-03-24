@@ -122,14 +122,14 @@ const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = 
     let old_date;
     let start_date = new Date(DateFns.subDays(DateFns.subDays(new Date(), DAYS.yesterday).setUTCHours(0, 0, 0, 0), DAYS.min_date));
     let end_date = new Date(DateFns.subDays(new Date().setUTCHours(0, 0, 0, 0), DAYS.yesterday)); // yesterday
-
     //get the start date of the mongo document if exists
     key = await GaToken.findOne({where: {user_id: user_id}});
     old_date = await MongoManager.getMongoItemDate(D_TYPE.GA, user_id, view_id, metrics, dimensions); // TODO bug with view ID
 
     old_startDate = old_date.start_date;
     old_endDate = old_date.end_date;
-
+    console.log('bau', old_startDate)
+    console.log('ciao', start_date)
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
@@ -155,6 +155,7 @@ const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = 
     }
 
     response = await MongoManager.getMongoData(D_TYPE.GA, user_id, view_id, metrics, dimensions);
+
     return response;
 
 };

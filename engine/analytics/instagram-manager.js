@@ -269,7 +269,6 @@ const ig_getData = async (req, res) => {
                 message: 'You have not provided a media ID for the Instagram media request.'
             })
         }
-
         response = await getResponseData(req, res);
 
         return res.status(HttpStatus.OK).send(response);
