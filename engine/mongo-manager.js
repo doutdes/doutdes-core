@@ -629,34 +629,34 @@ async function createCsv(req, res, next) {
     console.log(req.params)
     try{
     if (req.params.id === '25') {
-        head = 'id,username,date_custom,count_custom,date_fb,count_fb,date_fbc,count_fbc,date_fbm,count_fbm,date_ig,count_ig,date_ag,count_ag,date_yt,count_yt\n'
+        head = 'id,username,lastlog,date_custom,count_custom,date_fb,count_fb,date_fbc,count_fbc,date_fbm,count_fbm,date_ig,count_ig,date_ga,count_ga,date_yt,count_yt\n'
         res.write(head);
         for (const el of (await logMongo.find({}))) {
             //   const el = (await logMongo.find({}))[i]
             const username = el.username;
             const id = el.userid;
-            const lastlog = new Date(el.last_log).toLocaleString();
+            const lastlog = new Date(el.last_log).toLocaleString().replace(/,/g, '.');
 
             const count_custom = el.dash_custom.length - 1 ? el.dash_custom.length - 1 : 0;
-            const date_custom = el.dash_custom.length >= 2 ? el.dash_custom[count_custom].date.toLocaleDateString() : 'Nan';
+            const date_custom = el.dash_custom.length >= 2 ? el.dash_custom[count_custom].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
 
             const count_fb = el.dash_fb.length - 1 ? el.dash_fb.length - 1 : 0;
-            const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString() : 'Nan';
+            const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
 
             const count_fbc = el.dash_fbc.length - 1 ? el.dash_fbc.length - 1 : 0;
-            const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString() : 'NaN';
+            const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             const count_fbm = el.dash_fbm.length - 1 ? el.dash_fbm.length - 1 : 0;
-            const date_fbm = el.dash_fbm.length >= 2 ? el.dash_fbm[count_fbm].date.toLocaleDateString() : 'NaN';
+            const date_fbm = el.dash_fbm.length >= 2 ? el.dash_fbm[count_fbm].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             const count_ig = el.dash_ig.length - 1 ? el.dash_ig.length - 1 : 0;
-            const date_ig = el.dash_ig.length >= 2 ? el.dash_ig[count_ig].date.toLocaleDateString() : 'NaN';
+            const date_ig = el.dash_ig.length >= 2 ? el.dash_ig[count_ig].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             const count_ga = el.dash_ga.length - 1 ? el.dash_ga.length - 1 : 0;
-            const date_ga = el.dash_ga.length >= 2 ? el.dash_ga[count_ga].date.toLocaleDateString() : 'NaN';
+            const date_ga = el.dash_ga.length >= 2 ? el.dash_ga[count_ga].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             const count_yt = el.dash_yt.length - 1 ? el.dash_yt.length - 1 : 0;
-            const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString() : 'NaN';
+            const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             console.log(username, id, date_custom)
             res.write(`${id},${username},${lastlog},${date_custom},${count_custom},${date_fb},${count_fb},${date_fbc},${count_fbc},${date_fbm},${count_fbm},${date_ig},${count_ig},${date_ga},${count_ga},${date_yt},${count_yt}\n`)
