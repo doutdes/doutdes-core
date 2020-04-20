@@ -291,27 +291,57 @@ const getResponseData = async (req, res) => {
     let metric = [];
     let key = await FbToken.findOne({where: {user_id: req.user.id}});
     let pageID = req.query.page_id;
+    let since = (new Date()).getFullYear() + '-01-01';
 
     req.query.metric.includes(',')
         ? metric = req.query.metric.split(',')
-        : metric.push(req.query.metric);
+        : metric.push(req.query.metric); // più metriche assieme
 
     if (req.query.metric === 'lost_followers') {
         response = await getLostFollowers(req, res);
     } else if (req.query.metric === 'like_count' || req.query.metric === 'comments_count') {
-        response = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
-        response.forEach(el => {
-            delete Object.assign(el, {['end_time']: el['timestamp']})['timestamp'];
-            delete Object.assign(el, {['value']: el[req.query.metric]})[req.query.metric];
-    });
+        data = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
+        data = data.filter(el => new Date(el.timestamp).getTime() >= new Date(since).getTime());
+        data.forEach(el => {
+            delete Object.assign(el, {['end_time']: el['timestamp'].slice(0, 10)})['timestamp'];
+            delete el['id']
+        });
+        response.push(data)
+       data = await saveMongo(pageID, req.user.id, 'media', response);
+        data.forEach(el => el.forEach(el2 => {
+            delete Object.assign(el2, {['value']: el2[req.query.metric]})[req.query.metric];
+        }));
+        response = data;
     } else {
         for (let el of metric) {
             data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
         }
-        data.length === 1 ? response = data[0] : response.push({data, 'end_time': data[0][data[0].length - 1].end_time, 'metrics': metric});
+        data.length === 1 ? response = data[0] : response.push({data, 'end_time': data[0][data[0].length - 1].end_time, 'metrics': metric}); // response prende il risultato di una o più metriche
     }
 
     return response;
+}
+
+async function saveMongo(pageID, user_id, metric, data) {
+    let today = new Date();
+    let date;
+    const start = data[0][data[0].length - 1].end_time;
+    const end = data[0][0].end_time;
+    try {
+        date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
+
+        if (date.start_date === null) {
+            data['end_date'] = end;
+
+            await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), data);
+        } else if (date.end_date < DateFns.startOfDay(today)) {
+            await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, metric, '', end.slice(0, 10), data);
+        }
+        data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, metric);
+        return data;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 const ig_storeAllData = async (req, res) => {
@@ -465,8 +495,9 @@ const ig_getBusinessInfo = async (req, res) => {
         })
     }
 };
+
 async function getBusinessInfo(pageID, user_id, since = null) {
-    let date, data, copy, key, dataArray;
+    let date, data, key, dataArray;
     let today = new Date();
     let dd = String(today.getDate()).padStart(2, '0');
     let mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -477,24 +508,25 @@ async function getBusinessInfo(pageID, user_id, since = null) {
     try {
         date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, 'business');
         key = await FbToken.findOne({where: {user_id: user_id}});
+
         if (date.start_date === null) {
             data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
             data['end_time'] = today;
             await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
         } else {
             dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
-            let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
-            if (dataArray[dataArray.length -1 ].end_time !== today) {
-                data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
-                if (diff_time > day_time) {
-                    for (let i = (diff_time/day_time) - 1; i > 0; i--){
-                        dataArray.push({'followers_count': data['followers_count'],'media_count': data['media_count'], 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+            if (date.end_time !== today) {
+                    let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
+                    data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+                    if (diff_time > day_time) {
+                        for (let i = (diff_time/day_time) - 1; i > 0; i--){
+                            dataArray.push({'followers_count': data['followers_count'],'media_count': data['media_count'], 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+                        }
                     }
-                }
-                data['end_time'] = today;
-                dataArray.push(data);
+                    data['end_time'] = today;
+                    dataArray.push(data);
+                await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', '', today, dataArray);
             }
-            await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', date, today, dataArray);
         }
         data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
         if (since) {
