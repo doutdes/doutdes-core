@@ -625,8 +625,7 @@ function returnDashboardTypeLog(type){
 }
 
 async function createCsv(req, res, next) {
-    console.log('ci arrivo')
-    console.log(req.params)
+
     try{
     if (req.params.id === '25') {
         head = 'id,username,lastlog,date_custom,count_custom,date_fb,count_fb,date_fbc,count_fbc,date_fbm,count_fbm,date_ig,count_ig,date_ga,count_ga,date_yt,count_yt\n'
@@ -658,7 +657,6 @@ async function createCsv(req, res, next) {
             const count_yt = el.dash_yt.length - 1 ? el.dash_yt.length - 1 : 0;
             const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
-            console.log(username, id, date_custom)
             res.write(`${id},${username},${lastlog},${date_custom},${count_custom},${date_fb},${count_fb},${date_fbc},${count_fbc},${date_fbm},${count_fbm},${date_ig},${count_ig},${date_ga},${count_ga},${date_yt},${count_yt}\n`)
         }
         res.end()
