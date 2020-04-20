@@ -643,7 +643,7 @@ async function createCsv(req, res, next) {
             const count_fb = el.dash_fb.length - 1 ? el.dash_fb.length - 1 : 0;
             const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
 
-            const count_fbc = el.dash_fbc.length - 1 ? el.dash_fbc.length - 1 : 0;
+            const count_fbc = el.dash_fbc.length - 1 ? el.da    sh_fbc.length - 1 : 0;
             const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
 
             const count_fbm = el.dash_fbm.length - 1 ? el.dash_fbm.length - 1 : 0;
