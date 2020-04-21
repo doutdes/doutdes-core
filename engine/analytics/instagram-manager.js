@@ -440,6 +440,8 @@ const ig_storeAllDataDaily = async (req, res) => {
 
                     for (const page_id of pages) {
 
+                        await getBusinessInfo(page_id, user_id)
+
                         for (const chart of charts) {
                             await ig_getDataInternal(user_id, page_id, chart.metric, chart.period)
                         }
@@ -520,7 +522,7 @@ async function getBusinessInfo(pageID, user_id, since = null) {
                     data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
                     if (diff_time > day_time) {
                         for (let i = (diff_time/day_time) - 1; i > 0; i--){
-                            dataArray.push({'followers_count': data['followers_count'],'media_count': data['media_count'], 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+                            dataArray.push({'followers_count': 0,'media_count': 0, 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
                         }
                     }
                     data['end_time'] = today;
