@@ -511,23 +511,25 @@ async function getBusinessInfo(pageID, user_id, since = null) {
         date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, 'business');
         key = await FbToken.findOne({where: {user_id: user_id}});
 
-        if (date.start_date === null) {
-            data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
-            data['end_time'] = today;
-            await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
-        } else {
-            dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
-            if (date.end_time !== today) {
-                    let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
-                    data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
-                    if (diff_time > day_time) {
-                        for (let i = (diff_time/day_time) - 1; i > 0; i--){
-                            dataArray.push({'followers_count': 0,'media_count': 0, 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+        if (since) {
+            if (date.start_date === null) {
+                data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+                data['end_time'] = today;
+                await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
+            } else {
+                dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
+                if (date.end_time !== today) {
+                        let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
+                        data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+                        if (diff_time > day_time) {
+                            for (let i = (diff_time/day_time) - 1; i > 0; i--){
+                                dataArray.push({'followers_count': 0,'media_count': 0, 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
+                            }
                         }
-                    }
-                    data['end_time'] = today;
-                    dataArray.push(data);
-                await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', '', today, dataArray);
+                        data['end_time'] = today;
+                        dataArray.push(data);
+                    await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', '', today, dataArray);
+                }
             }
         }
         data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
