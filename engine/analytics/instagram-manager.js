@@ -47,7 +47,7 @@ const ig_getPages = async (req, res) => {
         pages = await ig_getInternalPages(req.user.id);
         return res.status(HttpStatus.OK).send(pages);
     } catch (err) {
-      //  console.error(err);
+        //  console.error(err);
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
             name: 'Internal Server Error',
             message: 'There is a problem either with Instagram servers or with our database'
@@ -307,7 +307,7 @@ const getResponseData = async (req, res) => {
             delete el['id']
         });
         response.push(data)
-       data = await saveMongo(pageID, req.user.id, 'media', response);
+        data = await saveMongo(pageID, req.user.id, 'media', response);
         data.forEach(el => el.forEach(el2 => {
             delete Object.assign(el2, {['value']: el2[req.query.metric]})[req.query.metric];
         }));
@@ -514,20 +514,20 @@ async function getBusinessInfo(pageID, user_id, since = null) {
         if (since) {
             if (date.start_date === null) {
                 data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
-                data['end_time'] = today;
+                data['end_date'] = today;
                 await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
             } else {
                 dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
-                if (date.end_time !== today) {
-                        let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
-                        data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
-                        if (diff_time > day_time) {
-                            for (let i = (diff_time/day_time) - 1; i > 0; i--){
-                                dataArray.push({'followers_count': 0,'media_count': 0, 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
-                            }
+                if (date.end_date - new Date(today) > 0) {
+                    let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
+                    data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
+                    if (diff_time > day_time) {
+                        for (let i = (diff_time/day_time) - 1; i > 0; i--){
+                            dataArray.push({'followers_count': 0,'media_count': 0, 'id': data['id'], 'end_time': (yyyy + '-' + mm + '-' + (dd - i))});
                         }
-                        data['end_time'] = today;
-                        dataArray.push(data);
+                    }
+                    data['end_time'] = today;
+                    dataArray.push(data);
                     await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', '', today, dataArray);
                 }
             }
@@ -555,13 +555,13 @@ async function getAPIdata(user_id, page_id, metric, period, start_date = null, e
     }
 
     try {
-      //  data = //(start_date && end_date)
-                //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
-         data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
+        //  data = //(start_date && end_date)
+        //? await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, new Date(start_date), new Date(end_date), media_id) :
+        data = await InstagramApi.getInstagramData(page_id, metric, period, key.api_key, start_date, end_date, media_id);
 
-         if(metric === 'online_followers') { //time change compared to the time released by the API Instagram, +9
-             data= online_Followers(data);
-         }
+        if(metric === 'online_followers') { //time change compared to the time released by the API Instagram, +9
+            data= online_Followers(data);
+        }
 
         return data;
 
@@ -640,7 +640,7 @@ function online_Followers(data){
             for (let i = 0; i < 24; i++) {
                 Object.keys(e['value']).length > 0 ?
                     e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0
-                : null;
+                    : null;
             }
         }
     }catch (e) {
