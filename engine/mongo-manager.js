@@ -526,12 +526,11 @@ async function removePageMongo(userid, page_id, type) {
     }
 }
 
-///////// LOG MENAGER //////////
+///////// LOG MANAGER //////////
 
 async function userLogManager(req, res){
     let date = new Date();
     const userid = req.body.user;
-    console.log(req.body.type)
     const type = parseInt(req.body.type);
     const username = req.body.username;
     try{
@@ -628,10 +627,9 @@ async function createCsv(req, res, next) {
 
     try{
     if (req.params.id === '25') {
-        head = 'id,username,lastlog,date_custom,count_custom,date_fb,count_fb,date_fbc,count_fbc,date_fbm,count_fbm,date_ig,count_ig,date_ga,count_ga,date_yt,count_yt\n'
+        head = 'id,username,ultimo accesso ,dashboard Custom ,totale entrate Custom,dashboard FB ,totale entrate FB,dashboard FBC,totale entrate FBC,dashboard FBM,totale entrate FBM,dashboard IG,totale entrate IG,dashboard GA,totale entrare GA,dashboard YT,totale entrate YT\n'
         res.write(head);
         for (const el of (await logMongo.find({}))) {
-            //   const el = (await logMongo.find({}))[i]
             const username = el.username;
             const id = el.userid;
             const lastlog = new Date(el.last_log).toLocaleString().replace(/,/g, '.');
