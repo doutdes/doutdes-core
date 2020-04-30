@@ -4,7 +4,7 @@
  * API calls from Page Insights Facebook
  **/
 const Request = require('request-promise');
-const fbInsightURI = 'https://graph.facebook.com/v4.0/';
+const fbInsightURI = 'https://graph.facebook.com/v6.0/';
 
 const level_params = {
     'insights':'reach, impressions, spend, inline_link_clicks, clicks, cpc, cpp, ctr',
@@ -46,7 +46,7 @@ const getPagesID = async (token) =>  {
     let result;
     const options = {
         method: 'GET',
-        uri: 'https://graph.facebook.com/v4.0/me/adaccounts',
+        uri: 'https://graph.facebook.com/v6.0/me/adaccounts',
         qs: {
             access_token: token,
             fields: 'name, business_name',
