@@ -306,12 +306,22 @@ const getResponseData = async (req, res) => {
             delete Object.assign(el, {['end_time']: el['timestamp'].slice(0, 10)})['timestamp'];
             delete el['id']
         });
-        response.push(data)
-        data = await saveMongo(pageID, req.user.id, 'media', response);
-        data.forEach(el => el.forEach(el2 => {
-            delete Object.assign(el2, {['value']: el2[req.query.metric]})[req.query.metric];
-        }));
+
+        // response.push(data)
+
+        // data = await saveMongo(pageID, req.user.id, 'media', response);
+
+        // data.forEach(el => el.forEach(el2 => {
+        //     delete Object.assign(el2, {['value']: el2[req.query.metric]})[req.query.metric];
+        // }));
+        data.forEach(el =>
+                delete Object.assign(el, {['value']: el[req.query.metric]})[req.query.metric]
+        );
+
+        data.reverse()
+
         response = data;
+
     } else {
         for (let el of metric) {
             data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
@@ -511,14 +521,13 @@ async function getBusinessInfo(pageID, user_id, since = null) {
         date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, 'business');
         key = await FbToken.findOne({where: {user_id: user_id}});
 
-        if (since) {
-            if (date.start_date === null) {
+        if (date.start_date === null) {
                 data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
                 data['end_date'] = today;
                 await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, 'business', today, today, data);
-            } else {
+        } else {
                 dataArray = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
-                if (date.end_date - new Date(today) > 0) {
+                if (date.end_date - new Date(today) < 0) {
                     let diff_time = Math.abs(new Date(today) - new Date(dataArray[dataArray.length -1 ].end_time));
                     data = (await InstagramApi.getBusinessDiscoveryInfo(pageID, key.api_key));
                     if (diff_time > day_time) {
@@ -531,7 +540,6 @@ async function getBusinessInfo(pageID, user_id, since = null) {
                     await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, 'business', '', today, dataArray);
                 }
             }
-        }
         data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, 'business');
         if (since) {
             data = data.filter(el => new Date(el.end_time).getTime() > since);
