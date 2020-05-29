@@ -260,14 +260,16 @@ async function ga_viewListInternal(user_id) {
     key = await GaToken.findOne({where: {user_id: user_id}});
     data = await GoogleApi.getViewList(key.private_key);
 
-    for (const i in data.accountList) {
+    for (const i in data.profileList) { //accountList
 
-        index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id']);
-        view_id = data.profileList[index]['id'];
+        // index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id'])
+        // view_id = data.profileList[index]['id'];
 
         result.push({
-            id: view_id,
-            name: data.accountList[i]['name']
+            //id: view_id,
+            //name: data.accountList[i]['name']
+            id: data.profileList[i]['id'],
+            name: (data.profileList[i]['websiteUrl']).toString()
         });
     }
     return result;
