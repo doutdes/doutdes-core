@@ -73,7 +73,7 @@ const getViewList = async (private_key) => {
 const getData = async (private_key, view_id, start_date, end_date, metrics, dimensions, sort = null, filters = null) => {
 
     const access_token = await getAccessToken(private_key);
-
+console.log('poba',access_token, view_id, start_date, end_date, metrics, dimensions)
     let params = {
         'access_token': access_token,
         'ids': 'ga:' + view_id,

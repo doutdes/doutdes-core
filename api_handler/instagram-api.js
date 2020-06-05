@@ -290,8 +290,9 @@ const getInstagramData = async (channelId, metric, period, token, since=null, un
         access_token = await getPageAccessToken(token, channelId);
         result = JSON.parse(await instagramQuery('GET', metric, channelId, access_token, period, since, until, null, mediaID));
         let dTime={};
-
-        return result['data'][0]['values'];
+        result = mediaID ?  result['data']
+            :  result['data'][0]['values'];
+        return result;
     } catch (e) {
         console.error(e);
         throw new Error("Bad Instagram Request");
