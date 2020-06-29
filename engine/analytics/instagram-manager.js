@@ -301,7 +301,6 @@ const getResponseData = async (req, res) => {
         response = await getLostFollowers(req, res);
     } else if (req.query.metric.includes('media')) {
         let date = await MongoManager.getMongoItemDate(D_TYPE.IG, req.user.id, pageID, 'media');
-
         if (!DateFns.isToday(date.end_date)) {
             data = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
             data = data.filter(el => new Date(el.timestamp).getTime() >= new Date(since).getTime());
@@ -360,26 +359,24 @@ const getResponseData = async (req, res) => {
 
 async function saveMongo(pageID, user_id, metric, data) {
     let today = new Date();
+    let formatDate = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     let date;
 
     try {
-        if (data.length > 0) {
-
-            const start = data[0].end_time;
-            const end = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+            const start = data.length > 0 ? data[0].end_time : formatDate;
+            const end = formatDate;
 
             date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
 
             if (date.start_date === null) {
                 data['end_date'] = end;
-
                 await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), [data]);
             } else if (date.end_date < DateFns.startOfDay(today)) {
                 await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, metric, '', end, [data]);
             }
-        }
-        data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, metric);
+            data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, metric);
         return data[data.length - 1];
+
     } catch (e) {
         console.error(e);
     }
