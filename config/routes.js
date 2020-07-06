@@ -215,7 +215,7 @@ module.exports = function (app, passport, config) {
     // app.get(`${mongoPath}/userid/:id`, function(req,res) {
     //     res.send('miao')
     // });
-    app.get(`${mongoPath}/userid/:id`, MtM.createCsv);
+    app.get(`${mongoPath}/get`, reqAuth, MtM.createCsv);
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
 
