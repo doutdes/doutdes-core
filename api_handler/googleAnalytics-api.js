@@ -73,23 +73,21 @@ const getViewList = async (private_key) => {
 const getData = async (private_key, view_id, start_date, end_date, metrics, dimensions, sort = null, filters = null) => {
 
     const access_token = await getAccessToken(private_key);
-
     let params = {
         'access_token': access_token,
         'ids': 'ga:' + view_id,
         'start-date': start_date,
         'end-date': end_date,
         'metrics': metrics,
-        'dimensions': dimensions,
         'max-results': 10000
     };
 
     // Optional fields: if they exist, then they can be added to the query params
     if (sort) params['sort'] = sort;
     if (filters) params['filters'] = filters;
+    if (dimensions !== 'null') params['dimensions'] = dimensions;
 
     const result = await google.analytics('v3').data.ga.get(params);
-
     return result.data.rows;
 };
 const revokePermissions = async (private_key) => {

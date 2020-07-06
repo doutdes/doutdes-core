@@ -299,29 +299,54 @@ const getResponseData = async (req, res) => {
 
     if (req.query.metric === 'lost_followers') {
         response = await getLostFollowers(req, res);
-    } else if (req.query.metric === 'like_count' || req.query.metric === 'comments_count') {
-        data = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
-        data = data.filter(el => new Date(el.timestamp).getTime() >= new Date(since).getTime());
-        data.forEach(el => {
-            delete Object.assign(el, {['end_time']: el['timestamp'].slice(0, 10)})['timestamp'];
-            delete el['id']
-        });
+    } else if (req.query.metric.includes('media')) {
+        let date = await MongoManager.getMongoItemDate(D_TYPE.IG, req.user.id, pageID, 'media');
+        if (!DateFns.isToday(date.end_date)) {
+            data = (await InstagramApi.getMedia(pageID, key.api_key, n, true))['data'];
+            data = data.filter(el => new Date(el.timestamp).getTime() >= new Date(since).getTime());
 
-        // response.push(data)
+            const images = [], album = [], video = [];
+            data.forEach( el => el.media_type ==='CAROUSEL_ALBUM' ? album.push(el) : el.media_type === 'IMAGE' ? images.push(el) : video.push(el));
+            for (let el of images) {
+                let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
+                response.push({'end_time': el.timestamp, 'media_type': 'image',
+                    'reach': tmp[0].values[0].value,
+                    'impressions': tmp[1].values[0].value,
+                    'saved': tmp[2].values[0].value,
+                    'engagement': tmp[3].values[0].value,
+                    'like': el['like_count'],
+                    'comments': el['comments_count']
+                });
+            }
+            for (let el of video) {
+                let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
 
-        // data = await saveMongo(pageID, req.user.id, 'media', response);
+                response.push({'end_time': el.timestamp, 'media_type': 'video',
+                    'reach': tmp[0].values[0].value,
+                    'impressions': tmp[1].values[0].value,
+                    'saved': tmp[2].values[0].value,
+                    'engagement': tmp[3].values[0].value,
+                    'like': el['like_count'],
+                    'comments': el['comments_count']
+                });
+            }
+            for (let el of album) {
+                let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
 
-        // data.forEach(el => el.forEach(el2 => {
-        //     delete Object.assign(el2, {['value']: el2[req.query.metric]})[req.query.metric];
-        // }));
-        data.forEach(el =>
-                delete Object.assign(el, {['value']: el[req.query.metric]})[req.query.metric]
-        );
+                response.push({'end_time': el.timestamp, 'media_type': 'album',
+                    'reach': tmp[0].values[0].value,
+                    'impressions': tmp[1].values[0].value,
+                    'saved': tmp[2].values[0].value,
+                    'engagement': tmp[3].values[0].value,
+                    'like': el['like_count'],
+                    'comments': el['comments_count']
+                });
+        }
+            response = response.reverse();
+        }
 
-        data.reverse()
-
-        response = data;
-
+        response = await saveMongo(req.query.page_id, req.user.id, 'media', response);
+        req.query.metric.includes('Like') ? response.forEach(el => el['value'] = el.like) : response.forEach(el => el['value'] = el.engagement + el.saved);
     } else {
         for (let el of metric) {
             data.push(await ig_getDataInternal(req.user.id, req.query.page_id, el, req.query.period, parseInt(req.query.interval), req.query.media_id));
@@ -334,21 +359,24 @@ const getResponseData = async (req, res) => {
 
 async function saveMongo(pageID, user_id, metric, data) {
     let today = new Date();
+    let formatDate = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     let date;
-    const start = data[0][data[0].length - 1].end_time;
-    const end = data[0][0].end_time;
+
     try {
-        date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
+            const start = data.length > 0 ? data[0].end_time : formatDate;
+            const end = formatDate;
 
-        if (date.start_date === null) {
-            data['end_date'] = end;
+            date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
 
-            await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), data);
-        } else if (date.end_date < DateFns.startOfDay(today)) {
-            await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, metric, '', end.slice(0, 10), data);
-        }
-        data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, metric);
-        return data;
+            if (date.start_date === null) {
+                data['end_date'] = end;
+                await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), [data]);
+            } else if (date.end_date < DateFns.startOfDay(today)) {
+                await MongoManager.updateMongoData(D_TYPE.IG, user_id, pageID, metric, '', end, [data]);
+            }
+            data = await MongoManager.getMongoData(D_TYPE.IG, user_id, pageID, metric);
+        return data[data.length - 1];
+
     } catch (e) {
         console.error(e);
     }
