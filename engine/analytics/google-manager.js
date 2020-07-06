@@ -132,8 +132,10 @@ const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = 
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
-        await MongoManager.storeMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
-            end_date.toISOString().slice(0, 10), data, dimensions);
+        if (dimensions !== 'ga:userGender,ga:userAgeBracket') {
+            await MongoManager.storeMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
+                end_date.toISOString().slice(0, 10), data, dimensions);
+        }
 
         return data;
     }
