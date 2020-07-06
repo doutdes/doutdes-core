@@ -88,7 +88,6 @@ const getData = async (private_key, view_id, start_date, end_date, metrics, dime
     if (dimensions !== 'null') params['dimensions'] = dimensions;
 
     const result = await google.analytics('v3').data.ga.get(params);
-
     return result.data.rows;
 };
 const revokePermissions = async (private_key) => {

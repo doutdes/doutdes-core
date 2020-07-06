@@ -132,10 +132,9 @@ const ga_getDataInternal = async (user_id, view_id, metrics, dimensions, sort = 
     //check if the previous document exist and create a new one
     if (old_startDate == null) {
         data = await getAPIData(user_id, view_id, metrics, dimensions, start_date, end_date, sort, filters);
-        if (dimensions !== 'ga:userGender, ga:userAgeBracket') {
         await MongoManager.storeMongoData(D_TYPE.GA, user_id, view_id, metrics, start_date.toISOString().slice(0, 10),
             end_date.toISOString().slice(0, 10), data, dimensions);
-        }
+
         return data;
     }
     //check if the start date is below our start date. If yes, delete the previous document and create a new one.
