@@ -264,14 +264,16 @@ async function ga_viewListInternal(user_id) {
 
         // index = data.profileList.findIndex(el => el.accountId == data.accountList[i]['id'])
         // view_id = data.profileList[index]['id'];
-
-        result.push({
+        let name = (data.profileList[i]['websiteUrl']).toString()
+        name = name.includes("http://") ? name.replace('http://','') : name.includes("https://") ? name.replace('https://','') : name;
+            result.push({
             //id: view_id,
             //name: data.accountList[i]['name']
             id: data.profileList[i]['id'],
-            name: (data.profileList[i]['websiteUrl']).toString()
+            name: name
         });
     }
+    console.log('############################################################### ALLERT ###########################################################', result)
     return result;
 };
 
