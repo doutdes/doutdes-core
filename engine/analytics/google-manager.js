@@ -273,7 +273,6 @@ async function ga_viewListInternal(user_id) {
             name: name
         });
     }
-    console.log('############################################################### ALLERT ###########################################################', result)
     return result;
 };
 
