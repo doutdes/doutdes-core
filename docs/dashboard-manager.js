@@ -1,6 +1,7 @@
 /**
  * @api {get} /dashboards/getAllUserDashboards/ Get all by user
  * @apiName Get Dashboards
+ * @apiVersion 1.9.1
  * @apiDescription This request takes all the dashboards owned by the user who made the call.
  * @apiGroup Dashboard
  * @apiPermission all
@@ -57,6 +58,7 @@
 /**
  * @api {get} /dashboards/getDashboardByType/:type Get By Type
  * @apiName Get Dashboards By Type
+ * @apiVersion 1.9.1
  * @apiDescription This request takes a single dashboard owned by a user, given its type
  * @apiGroup Dashboard
  * @apiPermission all
@@ -83,7 +85,7 @@
  *          "Dashboard": {
  *              "id": 229,
  *              "name": "Facebook",
- *              "cateogry": 1,
+ *              "category": 1,
  *          }
  *      }
  *
@@ -110,6 +112,7 @@
 /**
  * @api {get} /dashboards/getDashboardByID/:id Get By ID
  * @apiName Get Dashboards By ID
+ * @apiVersion 1.9.1
  * @apiDescription returns all the charts assigned to a chosen dashboard of the user who makes the call
  * @apiGroup Dashboard
  * @apiPermission all
@@ -161,6 +164,7 @@
 /**
  * @api {get} /dashboards/getChart/:dashboard_id/:chart_id Read Chart
  * @apiName Read Chart
+ * @apiVersion 1.9.1
  * @apiDescription Given dashboard ID and chart ID it returns the corresponding chart
  * @apiGroup Dashboard
  * @apiPermission all
@@ -217,6 +221,7 @@
 /**
  * @api {get} /dashboards/getChartsNotAddedByDashboard/:dashboard_id/ Read Not Added By Dashboard
  * @apiName Read Not Added By Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription Returns not added charts for the custom dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -259,6 +264,7 @@
 /**
  * @api {get} /dashboards/getChartsNotAddedByDashboardAndType/:dashboard_id/:type/ Get Charts Not Added By Dashboard Id and Type
  * @apiName Get Charts Not Added By Dashboard Id and Type
+ * @apiVersion 1.9.1
  * @apiDescription This request returns the charts not added yet into the dashboard, given a dashboard id and its type
  * @apiGroup Dashboard
  * @apiPermission all
@@ -308,6 +314,7 @@
 /**
  * @api {post} /dashboards/addChartToDashboard/ Add Chart to Dashboard
  * @apiName Add Charts to Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request adds a chart to a dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -364,6 +371,7 @@
 /**
  * @api {delete} /dashboards/removeChartFromDashboard/ Remove Chart from Dashboard
  * @apiName Remove a chart from a Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request removes a chart from a dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -419,6 +427,7 @@
 /**
  * @api {put} /dashboards/updateChartInDashboard/ Update Chart in Dashboard
  * @apiName Update chart from a Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request updates a chart holded by a dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -477,6 +486,7 @@
 /**
  * @api {delete} /dashboards/clearDashboard/ Clear Dashboard
  * @apiName Clear Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request removes all charts from a dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -528,6 +538,7 @@
 /**
  * @api {delete} /dashboards/deleteUserDashboard/ Remove Dashboard from a user
  * @apiName Remove Dashboard from a user
+ * @apiVersion 1.9.1
  * @apiDescription This request removes a dashboard from a user
  * @apiGroup Dashboard
  * @apiPermission all
@@ -582,6 +593,7 @@
 /**
  * @api {delete} /dashboards/deleteDashboard/ Remove Dashboard
  * @apiName Remove Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request removes a dashboard
  * @apiGroup Dashboard
  * @apiPermission all
@@ -633,6 +645,7 @@
 /**
  * @api {post} /dashboards/createDashboard/ Create Dashboard
  * @apiName Create Dashboard
+ * @apiVersion 1.9.1
  * @apiDescription This request create a new dashboard
  * @apiGroup Dashboard
  * @apiPermission all

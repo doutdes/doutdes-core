@@ -2,6 +2,7 @@
  * @api {post} /users/create/ Create
  *
  * @apiName Create new user
+ * @apiVersion 1.9.1
  * @apiDescription The request create a new user
  * @apiGroup User
  *
@@ -25,8 +26,8 @@
  *     HTTP/1.1 201 CREATED
  *     {
  *          "created": true,
- *          "first_name": "Gianni",
- *          "last_name": "Sperti"
+ *          "first_name": "Nome",
+ *          "last_name": "Cognome"
  *     }
  *
  * @apiError (400) UserAlreadyExists The username or the email has been already used.
@@ -52,6 +53,7 @@
 /**
  * @api {get} /users/getFromId/ Get From ID
  * @apiName GetFromId
+ * @apiVersion 1.9.1
  * @apiDescription The request gives to the user who made the call all his informations.
  * @apiGroup User
  * @apiPermission all
@@ -90,15 +92,15 @@
  *          "email": "admin",
  *          "company_name": "myCompany",
  *          "vat_number": 123456789456,
- *          "first_name": "Michael",
- *          "last_name": "Bohn",
- *          "birth_place": "Land of Admins",
+ *          "first_name": "Nome",
+ *          "last_name": "Cognome",
+ *          "birth_place": "Cagliari",
  *          "birth_date": "1990-06-06",
  *          "fiscal_code": "aaaddd93e92b292u",
- *          "address": "Admin street, 23",
- *          "province": "ad",
- *          "city": "administration",
- *          "zip": "01923",
+ *          "address": "via Ospedale, 72",
+ *          "province": "Ca",
+ *          "city": "Cagliari",
+ *          "zip": "01924",
  *          "password": "a_password",
  *          "user_type": "his_user_type",
  *          "checksum": "a_nice_checksum"
@@ -124,6 +126,7 @@
  * @api {put} /users/update/ Update
  *
  * @apiName Update
+ * @apiVersion 1.9.1
  * @apiDescription This request lets the user who made the call to update his informations.
  * @apiGroup User
  * @apiPermission all
@@ -169,9 +172,10 @@
  */
 
 /**
- * @api {sendMail} /users/delete/ Delete
+ * @api {delete} /users/delete/ Delete
  *
  * @apiName Delete
+ * @apiVersion 1.9.1
  * @apiDescription This request lets the admin to delete a user from the platform.
  * @apiGroup User
  * @apiPermission admin
@@ -189,7 +193,7 @@
  *     HTTP/1.1 200 OK
  *     {
  *          "deleted": true,
- *          "username": "Gianni",
+ *          "username": "admin",
  *     }
  *
  * @apiError (500) InternalServerError Cannot delete the user
@@ -204,4 +208,40 @@
  */
 
 /**
+ * @api {post} /login Login user
+ * @apiName Login
+ * @apiGroup Login
+ * @apiSuccess {Number} id Identifier of the User.
+ * @apiSuccess {String} username Username of the User.
+ * @apiSuccess {String} email Email of the User.
+ * @apiSuccess {String} first_name First Name of the User.
+ * @apiSuccess {String} last_name Last Name of the User.
+ * @apiSuccess {String} user_type Type of the User.
+ *
+ *  @apiParam {String} username username of user (required).
+ *  @apiParam {String} password password of the user (required).
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *  "user": {
+ *       "id": 3,
+ *       "username": "admin",
+ *       "email": "email@email.com",
+ *       "first_name": "Nome",
+ *       "last_name": "Cognome",
+ *       "user_type": "1"
+ *       },
+ *   "token": "vSE1L8ng-dVJaDlmnmi2JlbMvudkaIeDqvJ-zBjk0Uk"
+ *   }
+ *
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          {
+ *  "logged": false,
+ *   "error": "unauthorized"
+ *   }
+ */
+
 
