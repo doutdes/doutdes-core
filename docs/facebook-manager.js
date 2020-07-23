@@ -1,9 +1,9 @@
 /**
- * @api {get} /fb/:page_id/fancount/ Get fan count
- * @apiName Get fan count
+ * @api {get} /fb/pages Get pages
+ * @apiName Get pages
  * @apiGroup Facebook
- * @apiDescription This request returns the number of fans of the page inserted as a parameter.
- * @apiPermission all
+ * @apiVersion 1.9.1
+ * @apiDescription This request get all facebook pages associated to user's facebook token.
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -12,38 +12,19 @@
  *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
  *     }
  *
- * @apiParam {String} page_id User page ID
- * @apiSuccess (200) {Number} value Value of the required metric
- * @apiSuccess (200) {Date} end_time Date of data collection
  *
- * @apiSuccessExample {json} Success-Response:
+ * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     [
+ *     {
  *          {
- *              "value": 518,
- *              "end_time": "2019-05-06T07:00:00+0000"
+ *          "name": "page name",
+ *          "id": "page_id",
  *          },
  *          {
- *              "value": 519,
- *              "end_time": "2019-05-07T07:00:00+0000"
- *          },
- *          {
- *              "value": 522,
- *              "end_time": "2019-05-08T07:00:00+0000"
- *          },
- *          {
- *              "value": 525,
- *              "end_time": "2019-05-09T07:00:00+0000"
+ *          "name": "page name",
+ *          "id": "page_id",
  *          }
- *     ]
- * @apiError (400) noParameters Bad Request
- *
- *  @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *          {
- *              "name": 'Facebook Bad Request',
- *              "message": 'Invalid OAuth access token.'
- *          }
+ *      }
  *
  * @apiError (401) Unauthorized The user is not authorized to do the request.
  *
@@ -51,22 +32,22 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get information from Facebook
+ * @apiError (500) InternalServerError Cannot get the message
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
  *         {
- *              "name": 'Internal Server Error',
- *              "message": 'There is a problem either with Facebook servers or with our database'
+ *          name: 'Internal Server Error',
+ *          message: 'There is a problem either with Facebook servers or with our database'
  *         }
  */
 
 /**
- * @api {get} /fb/:page_id/engageduser/ Get engaged user
- * @apiName Get engaged user
+ * @api {get} /fb/scopes Get scopes
+ * @apiName Get scopes
  * @apiGroup Facebook
- * @apiDescription This request returns the total number of people who have interacted with the page (interaction means any click)
- * @apiPermission all
+ * @apiVersion 1.9.1
+ * @apiDescription This request get all facebook scopes associated to user's facebook token.
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -75,38 +56,24 @@
  *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
  *     }
  *
- * @apiParam {String} page_id User page ID
- * @apiSuccess (200) {Number} value Value of the required metric
- * @apiSuccess (200) {Date} end_time Date of data collection
  *
- * @apiSuccessExample {json} Success-Response:
+ * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     [
- *          {
- *              "value": 5,
- *              "end_time": "2019-05-06T07:00:00+0000"
- *          },
- *          {
- *              "value": 3,
- *              "end_time": "2019-05-07T07:00:00+0000"
- *          },
- *          {
- *              "value": 2,
- *              "end_time": "2019-05-08T07:00:00+0000"
- *          },
- *          {
- *              "value": 10,
- *              "end_time": "2019-05-09T07:00:00+0000"
- *          }
- *     ]
- * @apiError (400) noParameters Bad Request
- *
- *  @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *          {
- *              "name": 'Facebook Bad Request',
- *              "message": 'Invalid OAuth access token.'
- *          }
+ *     {
+ *          scopes:
+ *              [
+ *                  "read_insights",
+ *                  "pages_show_list",
+ *                  "ads_read",
+ *                  "business_management",
+ *                  "pages_read_engagement",
+ *                  "pages_manage_metadata",
+ *                  "pages_read_user_content",
+ *                  "pages_manage_ads",
+ *                  "public_profile",
+ *                  "manage_pages"
+ *              ]
+ *      }
  *
  * @apiError (401) Unauthorized The user is not authorized to do the request.
  *
@@ -114,22 +81,22 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get information from Facebook
+ * @apiError (500) InternalServerError Cannot get the message
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
  *         {
- *              "name": 'Internal Server Error',
- *              "message": 'There is a problem either with Facebook servers or with our database'
+ *          name: 'Internal Server Error',
+ *          message: 'There is a problem either with Facebook servers or with our database'
  *         }
  */
 
 /**
- * @api {get} /fb/:page_id/pageviewstotal/ Get page views total
- * @apiName Get page views total
+ * @api {get} /fb/data Get data
+ * @apiName Get data
  * @apiGroup Facebook
- * @apiDescription This request returns the number of times that the page profile was viewed by people who logged in and people who didn't.
- * @apiPermission all
+ * @apiVersion 1.9.1
+ * @apiDescription This request get data given a metric and page id (fb token required on DB)
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -138,113 +105,57 @@
  *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
  *     }
  *
- * @apiParam {String} page_id User page ID
- * @apiSuccess (200) {Number} value Value of the required metric
- * @apiSuccess (200) {Date} end_time Date of data collection
  *
- * @apiSuccessExample {json} Success-Response:
+ * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     [
- *          {
- *              "value": 0,
- *              "end_time": "2019-05-06T07:00:00+0000"
- *          },
- *          {
- *              "value": 2,
- *              "end_time": "2019-05-07T07:00:00+0000"
- *          },
- *          {
- *              "value": 2,
- *              "end_time": "2019-05-08T07:00:00+0000"
- *          },
- *          {
- *              "value": 6,
- *              "end_time": "2019-05-09T07:00:00+0000"
- *          }
- *     ]
- * @apiError (400) noParameters Bad Request
- *
- *  @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *          {
- *              "name": 'Facebook Bad Request',
- *              "message": 'Invalid OAuth access token.'
- *          }
- *
- * @apiError (401) Unauthorized The user is not authorized to do the request.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *          Unauthorized
- *
- * @apiError (500) InternalServerError Cannot get information from Facebook
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 INTERNAL SERVER ERROR
- *         {
- *              "name": 'Internal Server Error',
- *              "message": 'There is a problem either with Facebook servers or with our database'
- *         }
- */
-
-/**
- * @api {get} /fb/:page_id/pagereactions/ Get page reactions
- * @apiName Get page reactions
- * @apiGroup Facebook
- * @apiDescription This request returns the total daily number of reactions to a post on a Page, by type.
- * @apiPermission all
- *
- * @apiHeader {String} Authorization Json Web Token retrieved from login request.
- *
- * @apiHeaderExample {json} Header-Example:
  *     {
- *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
- *     }
+ *          data:
+ *              [
+ *                  {
+ *                  "value": []
+ *                  "end_time" : date
+ *                  },
+ *                  {
+ *                  "value": []
+ *                  "end_time" : date
+ *                  }
+ *              ]
+ *      }
  *
- * @apiParam {String} page_id User page ID
- * @apiSuccess (200) {Array} value Value of the required metric
- * @apiSuccess (200) {Date} end_time Date of data collection
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     [
- *          {
- *              "value": {
- *                  "like": 2,
- *                  "wow": 3
- *              },
- *              "end_time": "2019-05-06T07:00:00+0000"
- *          },
- *          {
- *              "value": {
- *                  "like": 2,
- *                  "love": 5,
- *                  "sigh": 1
- *              },
- *              "end_time": "2019-05-07T07:00:00+0000"
- *          }
- *     ]
- * @apiError (400) noParameters Bad Request
+ ** @apiError (400) noParameters Bad Request
  *
  *  @apiErrorExample Error-Response:
  *     HTTP/1.1 400 Bad Request
  *          {
- *              "name": 'Facebook Bad Request',
- *              "message": 'Invalid OAuth access token.'
+ *              error: true,
+ *              message: 'You have not provided a page ID for the Facebook data request.'
  *          }
  *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              error: true,
+ *              message: 'You have not provided a metric for the Facebook data request.'
+ *          }
+ *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              name: 'Facebook Bad Request',
+ *              message: 'Invalid OAuth access token.'
+ *          }
  * @apiError (401) Unauthorized The user is not authorized to do the request.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get information from Facebook
+ * @apiError (500) InternalServerError Cannot get the message
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
  *         {
- *              "name": 'Internal Server Error',
- *              "message": 'There is a problem either with Facebook servers or with our database'
+ *          name: 'Internal Server Error',
+ *          message: 'There is a problem either with Facebook servers or with our database'
  *         }
  */
