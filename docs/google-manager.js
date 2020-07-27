@@ -160,15 +160,6 @@
  *          }
  *      }
  *
- * @apiError (400) noParameters Bad Request     .
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *          {
- *              name: 'Google Analytics Bad Request',
- *              message: 'Invalid access token.'
- *          }
- *
  * @apiError (401) Unauthorized The user is not authorized to do the request.
  *
  * @apiErrorExample Error-Response:
@@ -184,3 +175,4 @@
  *          message: 'There is a problem either with Google servers or with our database'
  *         }
  */
+
