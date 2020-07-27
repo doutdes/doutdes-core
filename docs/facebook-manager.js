@@ -1,6 +1,6 @@
 /**
- * @api {get} /fb/pages Get pages
- * @apiName Get pages
+ * @api {get} /fb/pages Get Pages List
+ * @apiName Get Pages List
  * @apiGroup Facebook
  * @apiVersion 1.9.1
  * @apiDescription This request get all facebook pages associated to user's facebook token.
@@ -97,6 +97,9 @@
  * @apiGroup Facebook
  * @apiVersion 1.9.1
  * @apiDescription This request get data given a metric and page id (fb token required on DB)
+ *
+ * @apiParam {String} metric kind of data required.
+ * @apiParam {String} page_id Identifier of the page.
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
