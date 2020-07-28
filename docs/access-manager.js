@@ -211,6 +211,7 @@
  * @api {post} /login Login user
  * @apiName Login
  * @apiGroup Login
+ * @apiVersion 1.9.1
  * @apiSuccess {Number} id Identifier of the User.
  * @apiSuccess {String} username Username of the User.
  * @apiSuccess {String} email Email of the User.

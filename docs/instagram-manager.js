@@ -34,7 +34,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -78,7 +78,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -94,8 +94,6 @@
  * @apiGroup Instagram
  * @apiVersion 1.9.1
  * @apiDescription This request get data given some parameters and page id (fb token required on DB)
- *
- * @apiParam {String} page_id Identifier of Instagram Page
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -160,7 +158,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR

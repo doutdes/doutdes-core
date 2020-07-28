@@ -32,7 +32,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -81,7 +81,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -153,7 +153,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR

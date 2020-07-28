@@ -7,10 +7,10 @@
  *
  *
  * @apiParam {String} view_id Identifier of the view.
- * @apiParam {String} metric Identifier of the page.
- * @apiParam {String} dimension Identifier of the page.
- * @apiParam {String} sort Identifier of the page.
- * @apiParam {String} filter Identifier of the page.
+ * @apiParam {String} metric kind of data required.
+ * @apiParam {String} dimensions data attributes.
+ * @apiParam {String} sort order of the data returned.
+ * @apiParam {String} filter filter for data required.
  *
  * @apiHeader {String} Authorization Json Web Token retrieved from login request.
  *
@@ -57,7 +57,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -121,7 +121,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
@@ -166,7 +166,7 @@
  *     HTTP/1.1 401 Unauthorized
  *          Unauthorized
  *
- * @apiError (500) InternalServerError Cannot get the message
+ * @apiError (500) InternalServerError Cannot get data
  *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 500 INTERNAL SERVER ERROR
