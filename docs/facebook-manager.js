@@ -162,3 +162,67 @@
  *          message: 'There is a problem either with Facebook servers or with our database'
  *         }
  */
+
+/**
+ * @api {get} /fb/posts Get posts
+ * @apiName Get posts
+ * @apiGroup Facebook
+ * @apiVersion 1.9.1
+ * @apiDescription This request get all posts of the page
+ *
+ * @apiParam {String} page_id Identifier of the page.
+ *
+ * @apiHeader {String} Authorization Json Web Token retrieved from login request.
+ *
+ * @apiHeaderExample {json} Header-Example:
+ *     {
+ *       "Authorization": "Bearer YW55X25hbWUiOm51bGwsInZhdF9udW1iZXIi"
+ *     }
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *          data:
+ *              [
+ *                  {
+ *                  "id": "post id"
+ *                  "created_time" : date
+ *                  },
+ *                  {
+ *                  "id": "post id"
+ *                  "created_time" : date
+ *                  }
+ *              ]
+ *      }
+ *
+ ** @apiError (400) noParameters Bad Request
+ *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              error: true,
+ *              message: 'You must specify a page id in the request'
+ *          }
+ *
+ *  @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *          {
+ *              name: 'Facebook Bad Request',
+ *              message: 'Invalid OAuth access token.'
+ *          }
+ * @apiError (401) Unauthorized The user is not authorized to do the request.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *          Unauthorized
+ *
+ * @apiError (500) InternalServerError Cannot get data
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 INTERNAL SERVER ERROR
+ *         {
+ *          name: 'Internal Server Error',
+ *          message: 'There is a problem either with Facebook servers or with our database'
+ *         }
+ */
