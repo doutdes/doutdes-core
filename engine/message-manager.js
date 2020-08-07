@@ -13,11 +13,12 @@ const createMessage = async (req, res) => {
             Message.create({
                 title: message.title,
                 text: message.text
-            }).then(() => {
+            }).then(result => {
                 return res.status(HttpStatus.OK).send({
                     message: 'Message successfully created',
                     title: message.title,
-                    text: message.text
+                    text: message.text,
+                    id: result['dataValues']['id']
                 });
             })
         }
@@ -70,7 +71,7 @@ const getMessagesForUser = async (req, res) => {
     let usermessages;
     try {
         //get all messages for the user from the db
-        usermessages = await UserMessages.findAll({
+        usermessages = await UserMessages.findAll({ //DA CONSIDERARE
             where: {
                 user_id: req.user.id
             }
@@ -88,11 +89,57 @@ const getMessagesForUser = async (req, res) => {
         });
     }
 };
+const adminMessages = async (req, res) => {
+    let message_id = req.body.message_id;
+    let senderId = req.user.id; //Id dell'utente che vuole inviare il messaggio
+    let message, sentMessage, existsMessage, users;
+    try {
+        message = await Message.findById(message_id);
+        if (message) {
+            users = await User.findAll();
+            for(let i = 0; i < users.length; i++){
+                existsMessage = await UserMessages.findAll({
+                    where: {
+                        message_id: message_id,
+                        user_id: users[i].id
+                    }
+                });
+            }
+            if (existsMessage.length > 0) {
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    error: 'the message has been sent previously for the selected user'
+                });
+            } else {
+                for(let i = 0; i < users.length; i++){
+                    if(users[i].id !== senderId){ //Controllo per bloccare l'invio del messaggio anche al mittente
+                        sentMessage = await UserMessages.create({
+                            message_id: message_id,
+                            user_id: users[i].id
+                        });
+                    }
+                }
+                return res.status(HttpStatus.OK).send({
+                    message: 'Message sent successfully'
+                });
+            }
+        } else {
+            return res.status(HttpStatus.BAD_REQUEST).send({
+                error: 'The message selected doesn\'t exists'
+            });
+        }
 
+    }
+    catch
+        (e) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            error: 'The message selected doesn\'t exists'
+        });
+    }
+
+};
 const sendMessageToUser = async (req, res) => {
     let message_id = req.body.message_id;
     let user_id = req.body.user_id;
-
     let message, user, sentMessage, existsMessage;
 
     try {
@@ -266,5 +313,5 @@ const deleteMessageByID = async (req, res) => {
     }
 };
 
-module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, setMessageRead,
+module.exports = {createMessage, readMessageByID, getMessagesForUser, sendMessageToUser, adminMessages, setMessageRead,
     deleteMessageForUser, deleteMessageByID};

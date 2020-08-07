@@ -148,6 +148,7 @@ module.exports = function (app, passport, config) {
     app.post(`${messPath}/createMessage`, reqAuth, AccMan.roleAuth(admin), MessMan.createMessage);
     app.get(`${messPath}/getMessageByID/:message_id`, reqAuth, AccMan.roleAuth(all), MessMan.readMessageByID);
     app.get(`${messPath}/getMessagesForUser`, reqAuth, AccMan.roleAuth(all), MessMan.getMessagesForUser);
+    app.post(`${messPath}/adminMessages`, reqAuth, AccMan.roleAuth(admin), MessMan.adminMessages);
     app.post(`${messPath}/sendMessageToUser`, reqAuth, AccMan.roleAuth(admin), MessMan.sendMessageToUser);
     app.put(`${messPath}/setMessageRead`, reqAuth, AccMan.roleAuth(all), MessMan.setMessageRead);
     app.delete(`${messPath}/deleteMessageForUser/:message_id`, reqAuth, AccMan.roleAuth(all), MessMan.deleteMessageForUser);

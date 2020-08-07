@@ -2,7 +2,7 @@
 const {google} = require('googleapis');
 const Request = require('request-promise');
 
-const config = require('../config/config').production;
+const config = require('../config/config').development;
 
 const getAccessToken = async (refresh_token) => {
     let result;
