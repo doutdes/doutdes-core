@@ -520,6 +520,76 @@ exports.updateChartInDashboard = function (req, res, next) {
         });
 };
 
+exports.updateStyleChartInDashboard = function (req, res, next) {
+    const chart = req.body.chart;
+    //console.log(chart);
+    UserDashboards.findOne({
+        where: {
+            user_id: req.user.id,
+            dashboard_id: chart.dashboard_id,
+        },
+        attributes: {
+            exclude: ['DashboardId']
+        },
+    })
+        .then(dashboard => {
+            if(!dashboard){
+                return res.status(HttpStatus.BAD_REQUEST).send({
+                    update: false,
+                    chart_id: parseInt(chart.chart_id),
+                    dashboard_id: parseInt(chart.dashboard_id),
+                    error: 'Cannot update a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
+                });
+            }
+
+            DashboardCharts.update({
+                chart_id: chart.chart_id,
+            }, {
+                where: {
+                        dashboard_id: chart.dashboard_id,
+                        //chart_id: chart.chart_id
+                },
+                logging: console.log
+            })
+                .then(chartUpdate =>{
+
+                    if (chartUpdate[0] === 0) {
+                        return res.status(HttpStatus.BAD_REQUEST).send({
+                            update: false,
+                            dashboard_id: chart.dashboard_id,
+                            chart_id: chart.chart_id,
+                            message: 'Cannot update a chart that doesn\'t exists'
+                        })
+                    }
+
+                    return res.status(HttpStatus.CREATED).send({
+                        update: true,
+                        dashboard_id: chart.dashboard_id,
+                        chart_id: chart.chart_id
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+
+                    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                        updated: false,
+                        dashboard_id: chart.dashboard_id,
+                        chart_id: chart.chart_id,
+                        error: 'Cannot update the chart from the dashboard'
+                    });
+                })
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                update: false,
+                dashboard_id: chart.dashboard_id,
+                chart_id: chart.chart_id,
+                error: 'Cannot update the chart from the dashboard'
+            });
+        });
+};
+
 exports.updateArray = (req, res) => {
     const arrayReceived = req.body.arrayReceived;
 
