@@ -547,6 +547,7 @@ exports.updateStyleChartInDashboard = function (req, res, next) {
             }, {
                 where: {
                         dashboard_id: chart.dashboard_id,
+                        title: chart.title
                         //chart_id: chart.chart_id
                 },
                 logging: console.log
