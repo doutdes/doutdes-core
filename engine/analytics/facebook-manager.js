@@ -328,8 +328,41 @@ const fb_login_success = async (req, res) => {
 };
 
 async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
+    let data;
+
     const key = await FbToken.findOne({where: {user_id: user_id}});
-    return await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
+    data = await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
+
+    if(metric === 'page_fans_online') { //time change compared to the time released by the API Facebook, +9
+        return online_FollowersFB(data);
+    }
+
+    return data;
+
+}
+
+function online_FollowersFB(data){
+    let dTime;
+    try {
+        for (let e of data) {
+            dTime = {};
+            for (let i in e['value']) {
+                dTime['' + (parseInt(i) + 9) % 24] = e['value'][i];
+            }
+            e['value'] = dTime;
+        }
+        for (const e of data) {
+            for (let i = 0; i < 24; i++) {
+                Object.keys(e['value']).length > 0 ?
+                    e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0
+                    : null;
+            }
+        }
+    }catch (e) {
+        console.log(e)
+    }
+
+    return data;
 }
 
 /** EXPORTS **/

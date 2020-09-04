@@ -582,6 +582,7 @@ async function getBusinessInfo(pageID, user_id, since = null) {
 async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
     const key = await FbToken.findOne({where: {user_id: user_id}});
     let data;
+
     if(start_date) {
         start_date = new Date(start_date)
     }
