@@ -92,7 +92,7 @@ const getMessagesForUser = async (req, res) => {
 const adminMessages = async (req, res) => {
     let message_id = req.body.message_id;
     let senderId = req.user.id; //Id dell'utente che vuole inviare il messaggio
-    let message, sentMessage, existsMessage, users;
+    let message, sentMessage, existsMessage, users; 
     try {
         message = await Message.findById(message_id);
         if (message) {
