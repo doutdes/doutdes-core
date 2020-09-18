@@ -617,13 +617,15 @@ async function getLostFollowers(req, res) {
 
     try {
         date = await MongoManager.getMongoItemDate(D_TYPE.IG, req.user.id, req.query.page_id, 'business');
-        business = await getBusinessInfo(req.query.page_id, req.user.id, since);
-        data.push({'business': business, 'end_time': since});
 
-        followers = await getAPIdata(req.user.id, req.query.page_id,'follower_count', req.query.period, since, null);
+        followers = await ig_getDataInternal(req.user.id, req.query.page_id,'follower_count', req.query.period, req.query.interval, null);
+
+        business = await getBusinessInfo(req.query.page_id, req.user.id, new Date(followers[0].end_time));
+
         followers = followers.filter(el => new Date(el.end_time).getTime() > new Date(business[0].end_time).getTime());
 
-        data.push({'follower_count': followers, 'end_time': since});
+        data.push({'business': business, 'end_time': followers[0].end_time});
+        data.push({'follower_count': followers, 'end_time': followers[0].end_time});
         data.push({'end_time': date.start_date});
     } catch (e) {
         console.error("Error retrieving Instagram data");
