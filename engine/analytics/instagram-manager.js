@@ -318,9 +318,10 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
             }
+            response = response.reverse();
+
             for (let el of video) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
-
                 response.push({'end_time': el.timestamp, 'media_type': 'video',
                     'reach': tmp[0].values[0].value,
                     'impressions': tmp[1].values[0].value,
@@ -330,6 +331,8 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
             }
+            response = response.reverse();
+
             for (let el of album) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
 
@@ -367,7 +370,6 @@ async function saveMongo(pageID, user_id, metric, data) {
             const end = formatDate;
 
             date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
-
             if (date.start_date === null) {
                 data['end_date'] = end;
                 await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), [data]);
