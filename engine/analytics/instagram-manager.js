@@ -307,9 +307,9 @@ const getResponseData = async (req, res) => {
 
             const images = [], album = [], video = [];
             data.forEach( el => el.media_type ==='CAROUSEL_ALBUM' ? album.push(el) : el.media_type === 'IMAGE' ? images.push(el) : video.push(el));
-            for (let el of images) {
+            for (let el of data) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
-                response.push({'end_time': el.timestamp, 'media_type': 'image',
+                response.push({'end_time': el.timestamp, 'media_type': 'el.media_type',
                     'reach': tmp[0].values[0].value,
                     'impressions': tmp[1].values[0].value,
                     'saved': tmp[2].values[0].value,
@@ -320,7 +320,7 @@ const getResponseData = async (req, res) => {
             }
             response = response.reverse();
 
-            for (let el of video) {
+           /* for (let el of video) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
                 response.push({'end_time': el.timestamp, 'media_type': 'video',
                     'reach': tmp[0].values[0].value,
@@ -345,7 +345,7 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
         }
-            response = response.reverse();
+            response = response.reverse();*/
         }
 
         response = await saveMongo(req.query.page_id, req.user.id, 'media', response);

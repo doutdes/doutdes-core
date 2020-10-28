@@ -241,7 +241,10 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
             return data;
         }
         else if (old_endDate < end_date) {
-            data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
+            let oldEndDate = new Date(DateFns.addDays(old_endDate, 1));
+            oldEndDate = Math.ceil((end_date - oldEndDate) / (1000 * 60 * 60 * 24)) > 90 ? start_date : oldEndDate;
+
+            data = await getAPIdata(user_id, page_id, metric, oldEndDate, end_date);
             data = preProcessFBData(data, metric);
             await MongoManager.updateMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);

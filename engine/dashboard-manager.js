@@ -290,7 +290,7 @@ exports.addChartToDashboard = function (req, res, next) {
                     chart_id: parseInt(chart.chart_id),
                     error: 'Cannot insert a chart in a dashboard that doesn\'t exists or that you doesn\'t own'
                 });
-
+console.log(chart.chart_id, 'poba')
             DashboardCharts.create({
                 dashboard_id: chart.dashboard_id,
                 chart_id: chart.chart_id,
