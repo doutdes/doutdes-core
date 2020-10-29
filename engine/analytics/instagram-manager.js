@@ -309,7 +309,7 @@ const getResponseData = async (req, res) => {
             data.forEach( el => el.media_type ==='CAROUSEL_ALBUM' ? album.push(el) : el.media_type === 'IMAGE' ? images.push(el) : video.push(el));
             for (let el of data) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
-                response.push({'end_time': el.timestamp, 'media_type': 'el.media_type',
+                response.push({'end_time': el.timestamp, 'media_type': el.media_type,
                     'reach': tmp[0].values[0].value,
                     'impressions': tmp[1].values[0].value,
                     'saved': tmp[2].values[0].value,
