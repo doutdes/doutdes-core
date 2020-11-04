@@ -32,10 +32,12 @@
     "passport-google-oauth20": "^1.0.0",
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
+    "python-shell": "^2.0.2",
     "querystring": "^0.2.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "sendmail": "^1.4.1",
-    "sequelize": "^4.44.3"
+    "sequelize": "^4.44.3",
+    "shelljs": "^0.8.4"
   }
 }

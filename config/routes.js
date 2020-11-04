@@ -3,6 +3,7 @@ const TokenManager = require('../engine/token-manager');
 const DashMan = require('../engine/dashboard-manager');
 const CalMan = require('../engine/calendar-manager');
 const MessMan = require('../engine/message-manager');
+const InstPred = require('../engine/instagram-prediction');
 
 const FbM = require('../engine/analytics/facebook-manager');
 const FbMM = require('../engine/analytics/facebook-marketing-manager');
@@ -23,6 +24,7 @@ module.exports = function (app, passport, config) {
     const dashPath = '/dashboards';
     const calPath  = '/calendar';
     const messPath = '/message';
+    const instPredPath = '/prediction';
 
     const gaPath = '/ga';
     const igPath = '/ig';
@@ -153,6 +155,9 @@ module.exports = function (app, passport, config) {
     app.put(`${messPath}/setMessageRead`, reqAuth, AccMan.roleAuth(all), MessMan.setMessageRead);
     app.delete(`${messPath}/deleteMessageForUser/:message_id`, reqAuth, AccMan.roleAuth(all), MessMan.deleteMessageForUser);
     app.delete(`${messPath}/deleteMessageByID`, reqAuth, AccMan.roleAuth(admin), MessMan.deleteMessageByID);
+
+    /****************** INSTAGRAM PREDICTION ********************/
+    app.post(`${instPredPath}/concatenationStrings`, reqAuth, AccMan.roleAuth(admin), InstPred.concatenationStrings);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(`${fbPath}/updatePages`, reqAuth, AccMan.roleAuth(all), FbM.updatePages);
