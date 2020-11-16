@@ -307,9 +307,9 @@ const getResponseData = async (req, res) => {
 
             const images = [], album = [], video = [];
             data.forEach( el => el.media_type ==='CAROUSEL_ALBUM' ? album.push(el) : el.media_type === 'IMAGE' ? images.push(el) : video.push(el));
-            for (let el of images) {
+            for (let el of data) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
-                response.push({'end_time': el.timestamp, 'media_type': 'image',
+                response.push({'end_time': el.timestamp, 'media_type': el.media_type,
                     'reach': tmp[0].values[0].value,
                     'impressions': tmp[1].values[0].value,
                     'saved': tmp[2].values[0].value,
@@ -318,9 +318,10 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
             }
-            for (let el of video) {
-                let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
+            response = response.reverse();
 
+           /* for (let el of video) {
+                let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
                 response.push({'end_time': el.timestamp, 'media_type': 'video',
                     'reach': tmp[0].values[0].value,
                     'impressions': tmp[1].values[0].value,
@@ -330,6 +331,8 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
             }
+            response = response.reverse();
+
             for (let el of album) {
                 let tmp = await getAPIdata(req.user.id, req.query.page_id, 'reach,impressions,saved,engagement','lifetime', null, null, el.id);
 
@@ -342,7 +345,7 @@ const getResponseData = async (req, res) => {
                     'comments': el['comments_count']
                 });
         }
-            response = response.reverse();
+            response = response.reverse();*/
         }
 
         response = await saveMongo(req.query.page_id, req.user.id, 'media', response);
@@ -367,7 +370,6 @@ async function saveMongo(pageID, user_id, metric, data) {
             const end = formatDate;
 
             date = await MongoManager.getMongoItemDate(D_TYPE.IG, user_id, pageID, metric);
-
             if (date.start_date === null) {
                 data['end_date'] = end;
                 await MongoManager.storeMongoData(D_TYPE.IG, user_id, pageID, metric, start.slice(0, 10), end.slice(0, 10), [data]);
@@ -582,6 +584,7 @@ async function getBusinessInfo(pageID, user_id, since = null) {
 async function getAPIdata(user_id, page_id, metric, period, start_date = null, end_date = null, media_id = null) {
     const key = await FbToken.findOne({where: {user_id: user_id}});
     let data;
+
     if(start_date) {
         start_date = new Date(start_date)
     }
@@ -616,13 +619,15 @@ async function getLostFollowers(req, res) {
 
     try {
         date = await MongoManager.getMongoItemDate(D_TYPE.IG, req.user.id, req.query.page_id, 'business');
-        business = await getBusinessInfo(req.query.page_id, req.user.id, since);
-        data.push({'business': business, 'end_time': since});
 
-        followers = await getAPIdata(req.user.id, req.query.page_id,'follower_count', req.query.period, since, null);
+        followers = await ig_getDataInternal(req.user.id, req.query.page_id,'follower_count', req.query.period, req.query.interval, null);
+
+        business = await getBusinessInfo(req.query.page_id, req.user.id, new Date(followers[0].end_time));
+
         followers = followers.filter(el => new Date(el.end_time).getTime() > new Date(business[0].end_time).getTime());
 
-        data.push({'follower_count': followers, 'end_time': since});
+        data.push({'business': business, 'end_time': followers[0].end_time});
+        data.push({'follower_count': followers, 'end_time': followers[0].end_time});
         data.push({'end_time': date.start_date});
     } catch (e) {
         console.error("Error retrieving Instagram data");
