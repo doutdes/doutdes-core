@@ -13,12 +13,11 @@ const createMessage = async (req, res) => {
             Message.create({
                 title: message.title,
                 text: message.text
-            }).then(result => {
+            }).then(() => {
                 return res.status(HttpStatus.OK).send({
                     message: 'Message successfully created',
                     title: message.title,
-                    text: message.text,
-                    id: result['dataValues']['id']
+                    text: message.text
                 });
             })
         }
@@ -71,7 +70,7 @@ const getMessagesForUser = async (req, res) => {
     let usermessages;
     try {
         //get all messages for the user from the db
-        usermessages = await UserMessages.findAll({ //DA CONSIDERARE
+        usermessages = await UserMessages.findAll({
             where: {
                 user_id: req.user.id
             }
@@ -140,6 +139,7 @@ const adminMessages = async (req, res) => {
 const sendMessageToUser = async (req, res) => {
     let message_id = req.body.message_id;
     let user_id = req.body.user_id;
+
     let message, user, sentMessage, existsMessage;
 
     try {

@@ -241,7 +241,10 @@ const fb_getDataInternal = async (user_id, metric, page_id) => {
             return data;
         }
         else if (old_endDate < end_date) {
-            data = await getAPIdata(user_id, page_id, metric, new Date(DateFns.addDays(old_endDate, 1)), end_date);
+            let oldEndDate = new Date(DateFns.addDays(old_endDate, 1));
+            oldEndDate = Math.ceil((end_date - oldEndDate) / (1000 * 60 * 60 * 24)) > 90 ? start_date : oldEndDate;
+
+            data = await getAPIdata(user_id, page_id, metric, oldEndDate, end_date);
             data = preProcessFBData(data, metric);
             await MongoManager.updateMongoData(D_TYPE.FB, user_id, page_id, metric, start_date.toISOString().slice(0, 10),
                 end_date.toISOString().slice(0, 10), data);
@@ -328,8 +331,41 @@ const fb_login_success = async (req, res) => {
 };
 
 async function getAPIdata(user_id, page_id, metric, start_date, end_date) {
+    let data;
+
     const key = await FbToken.findOne({where: {user_id: user_id}});
-    return await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
+    data = await FacebookApi.getFacebookData(page_id, metric, 'day', key.api_key, start_date, end_date);
+
+    if(metric === 'page_fans_online') { //time change compared to the time released by the API Facebook, +9
+        return online_FollowersFB(data);
+    }
+
+    return data;
+
+}
+
+function online_FollowersFB(data){
+    let dTime;
+    try {
+        for (let e of data) {
+            dTime = {};
+            for (let i in e['value']) {
+                dTime['' + (parseInt(i) + 9) % 24] = e['value'][i];
+            }
+            e['value'] = dTime;
+        }
+        for (const e of data) {
+            for (let i = 0; i < 24; i++) {
+                Object.keys(e['value']).length > 0 ?
+                    e['value'][i.toString()] ? e['value'][i.toString()] = e['value'][i.toString()] : e['value'][i.toString()] = 0
+                    : null;
+            }
+        }
+    }catch (e) {
+        console.log(e)
+    }
+
+    return data;
 }
 
 /** EXPORTS **/

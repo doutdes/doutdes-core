@@ -257,7 +257,7 @@ async function updateMongoData (type, userid, page_id, metric, start_date, end_d
             case D_TYPE.GA:
                 if (data) {
                     if(metric === "ga:avgSessionDuration"){
-                        console.log('miao',data)}
+                        console.log('dati: ',data)}
                     for (const e of data){ //check on data modified by google API
                             await igMongo.updateOne({'userid': userid,
                                     'page_id': page_id,
@@ -622,51 +622,65 @@ function returnDashboardTypeLog(type){
             break;
     }
 }
-
-async function createCsv(req, res, next) {
-
+ async function createCsv(req, res) {
+    let result
+     console.log('################### WROOOOMMMM ###########################');
+     console.log('ci arrivo')
     try{
-    if (req.params.id === '25') {
-        head = 'id,username,ultimo accesso ,dashboard Custom ,totale entrate Custom,dashboard FB ,totale entrate FB,dashboard FBC,totale entrate FBC,dashboard FBM,totale entrate FBM,dashboard IG,totale entrate IG,dashboard GA,totale entrare GA,dashboard YT,totale entrate YT\n'
-        res.write(head);
-        for (const el of (await logMongo.find({}))) {
-            const username = el.username;
-            const id = el.userid;
-            const lastlog = new Date(el.last_log).toLocaleString().replace(/,/g, '.');
+        result = await logMongo.find({})
 
-            const count_custom = el.dash_custom.length - 1 ? el.dash_custom.length - 1 : 0;
-            const date_custom = el.dash_custom.length >= 2 ? el.dash_custom[count_custom].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
-
-            const count_fb = el.dash_fb.length - 1 ? el.dash_fb.length - 1 : 0;
-            const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
-
-            const count_fbc = el.dash_fbc.length - 1 ? el.dash_fbc.length - 1 : 0;
-            const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
-
-            const count_fbm = el.dash_fbm.length - 1 ? el.dash_fbm.length - 1 : 0;
-            const date_fbm = el.dash_fbm.length >= 2 ? el.dash_fbm[count_fbm].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
-
-            const count_ig = el.dash_ig.length - 1 ? el.dash_ig.length - 1 : 0;
-            const date_ig = el.dash_ig.length >= 2 ? el.dash_ig[count_ig].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
-
-            const count_ga = el.dash_ga.length - 1 ? el.dash_ga.length - 1 : 0;
-            const date_ga = el.dash_ga.length >= 2 ? el.dash_ga[count_ga].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
-
-            const count_yt = el.dash_yt.length - 1 ? el.dash_yt.length - 1 : 0;
-            const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
-
-            res.write(`${id},${username},${lastlog},${date_custom},${count_custom},${date_fb},${count_fb},${date_fbc},${count_fbc},${date_fbm},${count_fbm},${date_ig},${count_ig},${date_ga},${count_ga},${date_yt},${count_yt}\n`)
-        }
-        res.end()
-
-    }
+        return res.send(result)
+        console.log(res)
     }catch (e) {
         console.log(e)
         throw new Error("error logcsv")
     }
-
-
-}
+    return res;
+ }
+// async function createCsv(req, res, next) {
+//
+//     try{
+//     if (req.params.id === '25') {
+//         head = 'id,username,ultimo accesso ,dashboard Custom ,totale entrate Custom,dashboard FB ,totale entrate FB,dashboard FBC,totale entrate FBC,dashboard FBM,totale entrate FBM,dashboard IG,totale entrate IG,dashboard GA,totale entrare GA,dashboard YT,totale entrate YT\n'
+//         res.write(head);
+//         for (const el of (await logMongo.find({}))) {
+//             const username = el.username;
+//             const id = el.userid;
+//             const lastlog = new Date(el.last_log).toLocaleString().replace(/,/g, '.');
+//
+//             const count_custom = el.dash_custom.length - 1 ? el.dash_custom.length - 1 : 0;
+//             const date_custom = el.dash_custom.length >= 2 ? el.dash_custom[count_custom].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
+//
+//             const count_fb = el.dash_fb.length - 1 ? el.dash_fb.length - 1 : 0;
+//             const date_fb = el.dash_fb.length >= 2 ? el.dash_fb[count_fb].date.toLocaleDateString().replace(/,/g, '.') : 'Nan';
+//
+//             const count_fbc = el.dash_fbc.length - 1 ? el.dash_fbc.length - 1 : 0;
+//             const date_fbc = el.dash_fbc.length >= 2 ? el.dash_fbc[count_fbc].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
+//
+//             const count_fbm = el.dash_fbm.length - 1 ? el.dash_fbm.length - 1 : 0;
+//             const date_fbm = el.dash_fbm.length >= 2 ? el.dash_fbm[count_fbm].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
+//
+//             const count_ig = el.dash_ig.length - 1 ? el.dash_ig.length - 1 : 0;
+//             const date_ig = el.dash_ig.length >= 2 ? el.dash_ig[count_ig].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
+//
+//             const count_ga = el.dash_ga.length - 1 ? el.dash_ga.length - 1 : 0;
+//             const date_ga = el.dash_ga.length >= 2 ? el.dash_ga[count_ga].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
+//
+//             const count_yt = el.dash_yt.length - 1 ? el.dash_yt.length - 1 : 0;
+//             const date_yt = el.dash_ga.length >= 2 ? el.dash_ga[count_yt].date.toLocaleDateString().replace(/,/g, '.') : 'NaN';
+//
+//             res.write(`${id},${username},${lastlog},${date_custom},${count_custom},${date_fb},${count_fb},${date_fbc},${count_fbc},${date_fbm},${count_fbm},${date_ig},${count_ig},${date_ga},${count_ga},${date_yt},${count_yt}\n`)
+//         }
+//         res.end()
+//
+//     }
+//     }catch (e) {
+//         console.log(e)
+//         throw new Error("error logcsv")
+//     }
+//
+//
+// }
 
 module.exports = {
     removeUserMongoData, storeMongoData, getMongoItemDate, removeMongoData, updateMongoData, getMongoData, getPagesMongo, removePageMongo, userLogManager, createCsv

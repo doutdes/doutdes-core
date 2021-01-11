@@ -26,6 +26,7 @@ const getData = async (req, res) => {
         let key = await FbToken.findOne({where: {user_id: req.user.id}});
         page_id = req.query.act_id || (await FbToken.findOne({where: {user_id: req.user.id}}))['fbm_page_id'];;
         response = (await fb_getDataInternal(req.user.id, metric, page_id, domain, id, breakdown, key));
+
         // response = await FacebookMApi.facebookQuery(page_id, key.api_key, domain, breakdown, metric, startDate, endDate, id);
         return res.status(HttpStatus.OK).send(response);
     }
@@ -138,8 +139,9 @@ const fb_getDataInternal = async (user_id, metric, page_id, domain, id, breakdow
                 end_date.toISOString().slice(0, 10), data, null, domain, breakdown, id);
         }
 
-        response = (await MongoManager.getMongoData(d_type, user_id, page_id, metric, null, domain, breakdown, id))[0];
-        return response;
+        response = (await MongoManager.getMongoData(d_type, user_id, page_id, metric, null, domain, breakdown, id));
+
+        return response[response.length - 1];
 
     } catch (err) {
         throw err;

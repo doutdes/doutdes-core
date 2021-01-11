@@ -137,6 +137,7 @@ module.exports = function (app, passport, config) {
     app.put(`${dashPath}/updateChartInDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.updateChartInDashboard);
     app.put(`${dashPath}/updateChartsInDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.updateChartsInDashboard);
     app.put(`${dashPath}/updateProof`, DashMan.updateArray);
+    app.put(`${dashPath}/updateStyleChartInDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.updateStyleChartInDashboard);
 
     app.post(`${dashPath}/createDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.createDashboard);
     app.post(`${dashPath}/addChartToDashboard`, reqAuth, AccMan.roleAuth(all), DashMan.addChartToDashboard);
@@ -222,6 +223,7 @@ module.exports = function (app, passport, config) {
     //     res.send('miao')
     // });
     app.get(`${mongoPath}/userid/:id`, MtM.createCsv);
+    app.get(`${mongoPath}/get`, reqAuth, MtM.createCsv);
     /****************** ERROR HANDLER ********************/
     app.use(ErrorHandler.fun404);
 
