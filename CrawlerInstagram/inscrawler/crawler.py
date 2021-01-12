@@ -21,6 +21,7 @@ from .fetch import fetch_datetime
 from .fetch import fetch_imgs
 from .fetch import fetch_likers
 from .fetch import fetch_likes_plays
+from .fetch import fetch_details
 from .utils import instagram_int
 from .utils import randmized_sleep
 from .utils import retry
@@ -66,11 +67,32 @@ class InsCrawler(Logging):
         super(InsCrawler, self).__init__()
         self.browser = Browser(has_screen)
         self.page_height = 0
+        self._dismiss_cookie_prompt()
+        self.login()
+        self.browser.implicitly_wait(2)
+        self._dismiss_cookie_prompt()
+        self._dismiss_save_login()
+        self._dismiss_notif_prompt() 
+
+    def _dismiss_cookie_prompt(self):
+        ele_cookie = self.browser.find_one(".aOOlW")
+        if ele_cookie:
+            ele_cookie.click()
 
     def _dismiss_login_prompt(self):
         ele_login = self.browser.find_one(".Ls00D .Szr5J")
         if ele_login:
             ele_login.click()
+
+    def _dismiss_notif_prompt(self):
+        ele_cookie = self.browser.find_one(".HoLwm")
+        if ele_cookie:
+            ele_cookie.click()
+
+    def _dismiss_save_login(self):
+        ele_cookie = self.browser.find_one(".yWX7d")
+        if ele_cookie:
+            ele_cookie.click()
 
     def login(self):
         browser = self.browser
@@ -81,8 +103,8 @@ class InsCrawler(Logging):
         p_input = browser.find_one('input[name="password"]')
         p_input.send_keys(secret.password)
 
-        login_btn = browser.find_one(".L3NKy")
-        login_btn.click()
+        login_btn = browser.find_one(".HmktE")
+        login_btn.submit()
 
         @retry()
         def check_login():
@@ -101,7 +123,12 @@ class InsCrawler(Logging):
         statistics = [ele.text for ele in browser.find(".g47SY")]
         post_num, follower_num, following_num = statistics
         return {
+            "name": name.text,
+            "desc": desc.text if desc else None,
+            "photo_url": photo.get_attribute("src"),
+            "post_num": post_num,
             "follower_num": follower_num,
+            "following_num": following_num,
         }
 
     def get_user_profile_from_script_shared_data(self, username):
@@ -116,7 +143,13 @@ class InsCrawler(Logging):
         user_data = data["entry_data"]["ProfilePage"][0]["graphql"]["user"]
 
         return {
+            "name": user_data["full_name"],
+            "desc": user_data["biography"],
+            "photo_url": user_data["profile_pic_url_hd"],
+            "post_num": user_data["edge_owner_to_timeline_media"]["count"],
             "follower_num": user_data["edge_followed_by"]["count"],
+            "following_num": user_data["edge_follow"]["count"],
+            "website": user_data["external_url"],
         }
 
     def get_user_posts(self, username, number=None, detail=False):
@@ -176,6 +209,7 @@ class InsCrawler(Logging):
 
         browser = self.browser
         browser.implicitly_wait(1)
+        browser.scroll_down()
         ele_post = browser.find_one(".v1Nh3 a")
         ele_post.click()
         dict_posts = {}
@@ -184,26 +218,35 @@ class InsCrawler(Logging):
         pbar.set_description("fetching")
         cur_key = None
 
+        all_posts = self._get_posts(num)
+        i = 1
+
         # Fetching all posts
         for _ in range(num):
             dict_post = {}
 
             # Fetching post detail
             try:
-                check_next_post(cur_key)
+                if(i < num):
+                    check_next_post(all_posts[i]['key'])
+                    i = i + 1
 
                 # Fetching datetime and url as key
                 ele_a_datetime = browser.find_one(".eo2As .c-Yi7")
                 cur_key = ele_a_datetime.get_attribute("href")
                 dict_post["key"] = cur_key
+                fetch_datetime(browser, dict_post)
+                fetch_imgs(browser, dict_post)
                 fetch_likes_plays(browser, dict_post)
-                #fetch_likers(browser, dict_post)
+                fetch_likers(browser, dict_post)
+                fetch_caption(browser, dict_post)
+                fetch_comments(browser, dict_post)
 
             except RetryException:
                 sys.stderr.write(
                     "\x1b[1;31m"
                     + "Failed to fetch the post: "
-                    + cur_key
+                    + cur_key or 'URL not fetched'
                     + "\x1b[0m"
                     + "\n"
                 )
@@ -213,7 +256,7 @@ class InsCrawler(Logging):
                 sys.stderr.write(
                     "\x1b[1;31m"
                     + "Failed to fetch the post: "
-                    + cur_key
+                    + cur_key if isinstance(cur_key,str) else 'URL not fetched'
                     + "\x1b[0m"
                     + "\n"
                 )
@@ -223,9 +266,6 @@ class InsCrawler(Logging):
             dict_posts[browser.current_url] = dict_post
 
             pbar.update(1)
-            left_arrow = browser.find_one(".HBoOv")
-            if left_arrow:
-                left_arrow.click()
 
         pbar.close()
         posts = list(dict_posts.values())
@@ -252,11 +292,19 @@ class InsCrawler(Logging):
             for ele in ele_posts:
                 key = ele.get_attribute("href")
                 if key not in key_set:
+                    dict_post = { "key": key }
                     ele_img = browser.find_one(".KL4Bh img", ele)
-                    caption = ele_img.get_attribute("alt")
-                    img_url = ele_img.get_attribute("src")
+                    dict_post["caption"] = ele_img.get_attribute("alt")
+                    dict_post["img_url"] = ele_img.get_attribute("src")
+
+                    fetch_details(browser, dict_post)
+
                     key_set.add(key)
-                    posts.append({"key": key, "caption": caption, "img_url": img_url})
+                    posts.append(dict_post)
+
+                    if len(posts) == num:
+                        break
+
             if pre_post_num == len(posts):
                 pbar.set_description("Wait for %s sec" % (wait_time))
                 sleep(wait_time)

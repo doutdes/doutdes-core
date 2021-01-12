@@ -2,25 +2,30 @@ import os
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
 
 from .utils import randmized_sleep
 
 
 class Browser:
     def __init__(self, has_screen):
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+        useragent = "Mozilla/5.0 (X11; Linux i686; rv:77.0) Gecko/20100101 Firefox/77.0"
+
         service_args = ["--ignore-ssl-errors=true"]
         chrome_options = Options()
+        chrome_options.add_argument(f'--user-agent={useragent}')
         if not has_screen:
             chrome_options.add_argument("--headless")
         chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(
-            executable_path="%s/bin/chromedriver" % dir_path,
+            ChromeDriverManager().install(),
             service_args=service_args,
             chrome_options=chrome_options,
         )
@@ -56,10 +61,13 @@ class Browser:
     def find(self, css_selector, elem=None, waittime=0):
         obj = elem or self.driver
 
-        if waittime:
-            WebDriverWait(obj, waittime).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
-            )
+        try:
+            if waittime:
+                WebDriverWait(obj, waittime).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, css_selector))
+                )
+        except TimeoutException:
+            return None
 
         try:
             return obj.find_elements(By.CSS_SELECTOR, css_selector)
@@ -79,6 +87,15 @@ class Browser:
 
     def js_click(self, elem):
         self.driver.execute_script("arguments[0].click();", elem)
+
+    def open_new_tab(self, url):
+        self.driver.execute_script("window.open('%s');" %url)
+        self.driver.switch_to.window(self.driver.window_handles[1])
+
+    def close_current_tab(self):
+        self.driver.close()
+
+        self.driver.switch_to.window(self.driver.window_handles[0])
 
     def __del__(self):
         try:

@@ -8,9 +8,16 @@ This crawler could fail due to updates on instagram’s website. If you encounte
 
 ## Install
 1. Make sure you have Chrome browser installed.
-2. Download [chromedriver](https://sites.google.com/a/chromium.org/chromedriver/) and put it into bin folder: `./inscrawler/bin/chromedriver`
-3. Install Selenium: `pip install -r requirements.txt`
-4. `cp inscrawler/secret.py.dist inscrawler/secret.py`
+2. Install Selenium: `pip3 install -r requirements.txt`
+3. `cp inscrawler/secret.py.dist inscrawler/secret.py`
+
+## User Auth
+1. Open `inscrawler/secret.py` file.
+2. Change the `username` and `password` variables' value to the ones corresponding to your Instagram account.
+````
+username = 'my_ig_username'
+password = '***********'
+````
 
 ## Crawler
 ### Usage
@@ -42,6 +49,9 @@ optional arguments:
 
   --fetch_hashtags      fetch hashtags in the caption/comments (startwith #)
 
+  --fetch_details       fetch username and photo caption
+  # only available for "hashtag" search
+
 ```
 
 
@@ -52,6 +62,7 @@ python crawler.py posts_full -u cal_foodie -n 10 --fetch_likers --fetch_likes_pl
 python crawler.py posts_full -u cal_foodie -n 10 --fetch_comments
 python crawler.py profile -u cal_foodie -o ./output
 python crawler.py hashtag -t taiwan -o ./output
+python crawler.py hashtag -t taiwan -o ./output --fetch_details
 python crawler.py posts -u cal_foodie -n 100 -o ./output # deprecated
 ```
 1. Choose mode `posts`, you will get url, caption, first photo for each post; choose mode `posts_full`, you will get url, caption, all photos, time, comments, number of likes and views for each posts. Mode `posts_full` will take way longer than mode `posts`. **[`posts` is deprecated. For the recent posts, there is no quick way to get the post caption]**
@@ -65,7 +76,6 @@ The data format of `posts`:
 
 The data format of `posts_full`:
 <img width="1123" alt="Screen Shot 2019-03-17 at 11 02 24 PM" src="https://user-images.githubusercontent.com/3991678/54510055-1c4f4080-4909-11e9-8d06-8c35a08fb74e.png">
-
 
 ## Liker
 ![Liker Preivew](https://user-images.githubusercontent.com/3991678/41560884-4bbd42d2-72fd-11e8-8d56-84e7cf7187cd.gif)

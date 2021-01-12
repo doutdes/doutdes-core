@@ -6,7 +6,7 @@ from .exceptions import RetryException
 
 
 def instagram_int(string):
-    return int(string.replace(".", ""))
+    return int(string.replace(",", ""))
 
 
 def retry(attempt=10, wait=0.3):
