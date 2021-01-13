@@ -68,6 +68,7 @@ class InsCrawler(Logging):
         self.browser = Browser(has_screen)
         self.page_height = 0
         self._dismiss_cookie_prompt()
+        self.browser.implicitly_wait(2)
         self.login()
         self.browser.implicitly_wait(2)
         self._dismiss_cookie_prompt()
@@ -267,6 +268,10 @@ class InsCrawler(Logging):
 
             pbar.update(1)
 
+            right_arrow = browser.find_one("._65Bje")
+            if right_arrow:
+                right_arrow.click()
+
         pbar.close()
         posts = list(dict_posts.values())
         if posts:
@@ -295,9 +300,7 @@ class InsCrawler(Logging):
                     dict_post = { "key": key }
                     ele_img = browser.find_one(".KL4Bh img", ele)
                     dict_post["caption"] = ele_img.get_attribute("alt")
-                    print("CIAOOOOO")
-                    print(dict_post["caption"])
-                    dict_post["img_url"] = ele_img.get_attribute("src")
+                    dict_post["img_url"] = ele_img.get_attribute("src") 
 
                     fetch_details(browser, dict_post)
 

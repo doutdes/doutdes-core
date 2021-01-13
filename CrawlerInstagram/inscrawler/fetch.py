@@ -112,19 +112,16 @@ def fetch_likers(browser, dict_post):
 
 
 def fetch_caption(browser, dict_post):
-    ele_comments = browser.find(".eo2As .gElp9")
+    ele_comments = browser.find_one(".EtaWk")
+    spans = browser.find("span", ele_comments)
+    if len(spans) > 1:
+        dict_post["caption"] = spans[1].text
+    else:
+        dict_post["caption"] = ""
 
-    if len(ele_comments) > 0:
-
-        temp_element = browser.find("span",ele_comments[0])
-
-        for element in temp_element:
-
-            if element.text not in ['Verified',''] and 'caption' not in dict_post:
-                dict_post["caption"] = element.text
-
-        fetch_mentions(dict_post.get("caption",""), dict_post)
-        fetch_hashtags(dict_post.get("caption",""), dict_post)
+    alt_caption_father = browser.find(".ZyFrc")
+    alt_caption = browser.find_one(".KL4Bh img", alt_caption_father[0])
+    dict_post["alt_caption"] = alt_caption.get_attribute("alt")
 
 
 def fetch_comments(browser, dict_post):
