@@ -7,6 +7,7 @@ import sys
 from io import open
 
 from inscrawler import InsCrawler
+from inscrawler import InsCrawlerV2
 from inscrawler.settings import override_settings
 from inscrawler.settings import prepare_override_settings
 
