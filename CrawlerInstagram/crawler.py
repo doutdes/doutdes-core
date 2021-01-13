@@ -23,8 +23,12 @@ def usage():
     """
 
 
+#def get_posts_by_user(username, number, detail, debug):
+#    ins_crawler = InsCrawler(has_screen=debug)
+#    return ins_crawler.get_user_posts(username, number, detail)
+
 def get_posts_by_user(username, number, detail, debug):
-    ins_crawler = InsCrawler(has_screen=debug)
+    ins_crawler = InsCrawlerV2(has_screen=debug)
     return ins_crawler.get_user_posts(username, number, detail)
 
 
