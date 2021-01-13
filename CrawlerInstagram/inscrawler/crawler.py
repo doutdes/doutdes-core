@@ -295,6 +295,8 @@ class InsCrawler(Logging):
                     dict_post = { "key": key }
                     ele_img = browser.find_one(".KL4Bh img", ele)
                     dict_post["caption"] = ele_img.get_attribute("alt")
+                    print("CIAOOOOO")
+                    print(dict_post["caption"])
                     dict_post["img_url"] = ele_img.get_attribute("src")
 
                     fetch_details(browser, dict_post)
