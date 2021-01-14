@@ -121,8 +121,10 @@ def fetch_caption(browser, dict_post):
 
     alt_caption_father = browser.find(".ZyFrc")
     alt_caption = browser.find_one(".KL4Bh img", alt_caption_father[0])
-    dict_post["alt_caption"] = alt_caption.get_attribute("alt")
-
+    if alt_caption:
+        dict_post["alt_caption"] = alt_caption.get_attribute("alt")
+    else:
+        dict_post["alt_caption"] = "Video"
 
 def fetch_comments(browser, dict_post):
     if not settings.fetch_comments:

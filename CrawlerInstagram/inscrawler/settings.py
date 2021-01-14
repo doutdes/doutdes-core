@@ -1,5 +1,5 @@
 defaults = {
-    "fetch_likes_plays": False,
+    "fetch_likes_plays": True,
     "fetch_likers": False,
     "fetch_comments": False,
     "fetch_mentions": False,

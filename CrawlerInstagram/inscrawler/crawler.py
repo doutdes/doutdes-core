@@ -67,8 +67,6 @@ class InsCrawler(Logging):
         super(InsCrawler, self).__init__()
         self.browser = Browser(has_screen)
         self.page_height = 0
-        self._dismiss_cookie_prompt()
-        self.browser.implicitly_wait(2)
         self.login()
         self.browser.implicitly_wait(2)
         self._dismiss_cookie_prompt()
@@ -99,11 +97,16 @@ class InsCrawler(Logging):
         browser = self.browser
         url = "%s/accounts/login/" % (InsCrawler.URL)
         browser.get(url)
+
         u_input = browser.find_one('input[name="username"]')
         u_input.send_keys(secret.username)
         p_input = browser.find_one('input[name="password"]')
         p_input.send_keys(secret.password)
 
+        #sleep(3)
+        #self._dismiss_cookie_prompt()
+
+        sleep(5)
         login_btn = browser.find_one(".HmktE")
         login_btn.submit()
 
