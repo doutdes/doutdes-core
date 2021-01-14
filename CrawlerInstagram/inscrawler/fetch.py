@@ -126,6 +126,16 @@ def fetch_caption(browser, dict_post):
     else:
         dict_post["alt_caption"] = "Video"
 
+    # recupero like
+    like_div = browser.find_one(".Nm9Fw")
+    like_spans = browser.find("span", like_div)
+    if len(like_spans) > 1:
+        num_like = int(like_spans[1].text) + 1
+        dict_post["likes"] = num_like
+    else:
+        dict_post["likes"] = 1
+
+
 def fetch_comments(browser, dict_post):
     if not settings.fetch_comments:
         return
