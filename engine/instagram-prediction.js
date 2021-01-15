@@ -32,19 +32,26 @@ const concatenationStrings = async (req,res) => {
     let optionsFollowerNum = {
         args: ['profile', '-u', username]
     };
-    followerNum = JSON.parse(await RunFollowerNum(optionsFollowerNum)).follower_num;
+    followerNum = await RunFollowerNum(optionsFollowerNum);
+    followerNum = JSON.parse((followerNum[1]))['follower_num'];
+    //followerNum = '370';
 
     let optionsLikeNum = {
         args: ['posts_full', '-u', username, '-n', '51']
     };
 
-    likeNum = JSON.parse(await RunPostsLikes(optionsLikeNum));
+    likeNum = await RunPostsLikes(optionsLikeNum);
+    likeNum = likeNum.substring(2, likeNum.length);
+    console.log("prima del parse", likeNum);
+    console.log("post parse ", JSON.parse(likeNum));
 
     let optionsCaption = {
         args: [caption]
     };
 
     captionInform = JSON.parse(await RunCaptionScript(optionsCaption));
+
+    console.log("captionInform", captionInform);
 
     hashtags_count = captionInform.hashtags_count;
     sentiment_score = captionInform.sentiment_score;
@@ -87,6 +94,8 @@ const concatenationStrings = async (req,res) => {
         sadness, travel, food, pet, angry, music, party, sport, baseline]
     };
 
+    console.log("opzioni predittore ", optionsPredictor);
+
     predictor = await RunPredictorScript(optionsPredictor);
     predictor = parseFloat(predictor[0].substring(1,5));
     console.log("Result: " + predictor);
@@ -116,7 +125,7 @@ function RunPostsLikes(optionsLikes){
         PythonShell.run('./CrawlerInstagram/crawler.py', optionsLikes,
             function(err, results){
                 if (err) throw err;
-                resolve(results);
+                resolve(results[2]);
             });
     })
 }
@@ -199,6 +208,7 @@ function ChangeDay (day){
 function Mean_x(likesCount, n){
     let mean = 0;
     for(let i = 0; i < n; i++){
+        console.log("likesCount",i,": ", likesCount[i]);
         mean += likesCount[i].likes;
     }
     return mean/n;

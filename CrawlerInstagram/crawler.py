@@ -60,7 +60,7 @@ def output(data, filepath):
         with open(filepath, "w", encoding="utf8") as f:
             f.write(out)
     else:
-        print(out)
+        print(out.encode("utf8"))
 
 
 if __name__ == "__main__":
