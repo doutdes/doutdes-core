@@ -1,0 +1,26 @@
+*.log
+.DS_Store
+.vscode/
+
+test.py
+build/
+dist/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# node
+node_modules/
+
+
+*.egg-info/
+
+
+.tox
+
+secret.py
+inscrawler/bin/*
+!inscrawler/bin/.keep
