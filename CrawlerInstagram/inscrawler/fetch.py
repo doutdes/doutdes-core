@@ -114,17 +114,17 @@ def fetch_likers(browser, dict_post):
 def fetch_caption(browser, dict_post):
     ele_comments = browser.find_one(".EtaWk")
     spans = browser.find("span", ele_comments)
-    if len(spans) > 1:
-        dict_post["caption"] = spans[1].text
-    else:
-        dict_post["caption"] = ""
+    # if len(spans) > 1:
+    #     dict_post["caption"] = spans[1].text
+    # else:
+    #     dict_post["caption"] = ""
 
     alt_caption_father = browser.find(".ZyFrc")
     alt_caption = browser.find_one(".KL4Bh img", alt_caption_father[0])
-    if alt_caption:
-        dict_post["alt_caption"] = alt_caption.get_attribute("alt")
-    else:
-        dict_post["alt_caption"] = "Video"
+    # if alt_caption:
+    #     # dict_post["alt_caption"] = alt_caption.get_attribute("alt")
+    # else:
+        # dict_post["alt_caption"] = "Video"
 
     # recupero like
     like_div = browser.find_one(".Nm9Fw")
