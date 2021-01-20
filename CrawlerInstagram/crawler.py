@@ -87,7 +87,7 @@ def output(data, json_filepath, csv_filepath, username):
     else:
         print(out.encode("utf8"))
 
-    image(username, data)
+    # image(username, data)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Instagram Crawler", usage=usage())
