@@ -158,7 +158,7 @@ module.exports = function (app, passport, config) {
     app.delete(`${messPath}/deleteMessageByID`, reqAuth, AccMan.roleAuth(admin), MessMan.deleteMessageByID);
 
     /****************** INSTAGRAM PREDICTION ********************/
-    app.post(`${instPredPath}/concatenationStrings`, reqAuth, AccMan.roleAuth(admin), InstPred.concatenationStrings);
+    app.post(`${instPredPath}/concatenationStrings`, reqAuth, AccMan.roleAuth(all), InstPred.concatenationStrings);
 
     /****************** FACEBOOK MANAGER ********************/
     app.get(`${fbPath}/updatePages`, reqAuth, AccMan.roleAuth(all), FbM.updatePages);
