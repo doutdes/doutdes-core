@@ -36,7 +36,7 @@ const concatenationStrings = async (req,res) => {
     followerNum = await RunFollowerNum(optionsFollowerNum);
     followerNum = followerNum.substring(2, followerNum.length-1);
     followerNum = JSON.parse((followerNum))['follower_num'];
-
+    
     let optionsLikeNum = {
         args: ['posts_full', '-u', username, '-n', '51']
     };
@@ -92,8 +92,12 @@ const concatenationStrings = async (req,res) => {
         sadness, travel, food, pet, angry, music, party, sport, baseline]
     };
 
+    console.log("ARGOMENTI PREDITTORE ", optionsPredictor);
+
     predictor = await RunPredictorScript(optionsPredictor);
     predictor = parseFloat(predictor[0].substring(1,5));
+
+    console.log("RISULTATO PREDITTORE ", predictor);
 
     if(predictor !== undefined){
         return res.status(HttpStatus.OK).send({
@@ -111,6 +115,7 @@ function RunFollowerNum(optionsFollower){
         PythonShell.run('./CrawlerInstagram/crawler.py', optionsFollower,
             function(err, results){
                 if (err) throw err;
+                console.log("RECUPERO NUM FOLLOWER ESEGUITO");
                 resolve(results[1]);
         });
     })
@@ -120,6 +125,7 @@ function RunPostsLikes(optionsLikes){
         PythonShell.run('./CrawlerInstagram/crawler.py', optionsLikes,
             function(err, results){
                 if (err) throw err;
+                console.log("RECUPERO LIKE ESEGUITO");
                 resolve(results[2]);
             });
     })
@@ -129,6 +135,7 @@ function RunCaptionScript(optionsCaption){
         PythonShell.run('./Caption/txt_features.py', optionsCaption,
             function(err, results){
                 if (err) throw err;
+                console.log("CLASSIFICAZIONE CAPTION ESEGUITO");
                 resolve(results);
             });
     })
@@ -138,6 +145,7 @@ function RunPredictorScript(optionsPredictor){
         PythonShell.run('./Predictor/predictor_v0.1.py', optionsPredictor,
             function(err, results){
                 if (err) throw err;
+                console.log("PREDITTORE ESEGUITO");
                 resolve(results);
             });
     })
