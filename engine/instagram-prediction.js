@@ -1,3 +1,9 @@
+const Model = require('../models/index');
+const FbToken = Model.FbToken;
+const InstagramApi = require('../api_handler/instagram-api');
+
+
+
 const HttpStatus = require('http-status-codes');
 const express = require('express');
 const PythonShell =require('python-shell').PythonShell;
@@ -33,17 +39,21 @@ const concatenationStrings = async (req,res) => {
         args: ['profile', '-u', username]
     };
 
-    followerNum = await RunFollowerNum(optionsFollowerNum);
-    followerNum = followerNum.substring(2, followerNum.length-1);
-    followerNum = JSON.parse((followerNum))['follower_num'];
-    
+    likeNum = await ig_getMedia(req.body.page_id, req.user.id)
+
+    followerNum = await ig_getFollower(req.body.page_id, req.user.id)
+
+    // followerNum = await RunFollowerNum(optionsFollowerNum);
+    // followerNum = followerNum.substring(2, followerNum.length-1);
+    // followerNum = JSON.parse((followerNum))['follower_num'];
+
     let optionsLikeNum = {
         args: ['posts_full', '-u', username, '-n', '51']
     };
 
-    likeNum = await RunPostsLikes(optionsLikeNum);
-    likeNum = likeNum.substring(2, likeNum.length-1);
-    likeNum = JSON.parse(likeNum);
+    // likeNum = await RunPostsLikes(optionsLikeNum);
+    // likeNum = likeNum.substring(2, likeNum.length-1);
+    // likeNum = JSON.parse(likeNum);
 
     let optionsCaption = {
         args: [caption]
@@ -73,10 +83,10 @@ const concatenationStrings = async (req,res) => {
     mean_50 = Mean_x(likeNum, 50);
     mean_1_51 = MeanBaseline(likeNum);
 
-    like_prepost = likeNum[0].likes;
-    like_pprepost = likeNum[1].likes;
-    like_ppprepost = likeNum[2].likes;
-    like_pppprepost = likeNum[3].likes;
+    like_prepost = likeNum[0];
+    like_pprepost = likeNum[1];
+    like_ppprepost = likeNum[2];
+    like_pppprepost = likeNum[3];
 
     baseline = like_prepost/mean_1_51;
     if(baseline > 0.5){
@@ -92,12 +102,8 @@ const concatenationStrings = async (req,res) => {
         sadness, travel, food, pet, angry, music, party, sport, baseline]
     };
 
-    console.log("ARGOMENTI PREDITTORE ", optionsPredictor);
-
     predictor = await RunPredictorScript(optionsPredictor);
     predictor = parseFloat(predictor[0].substring(1,5));
-
-    console.log("RISULTATO PREDITTORE ", predictor);
 
     if(predictor !== undefined){
         return res.status(HttpStatus.OK).send({
@@ -110,6 +116,42 @@ const concatenationStrings = async (req,res) => {
     }
 
 };
+
+async function ig_getFollower(page_id, user_id) {
+    let data, key;
+
+    try {
+        key = await FbToken.findOne({where: {user_id: user_id}});
+        data = (await InstagramApi.getBusinessDiscoveryInfo(page_id, key.api_key));
+
+        return data['followers_count'];
+    } catch (err) {
+        console.error(err);
+        return []
+    }
+}
+
+
+async function ig_getMedia(page_id, user_id) {
+    let data, key;
+    let n = 51;
+    let num_list = [];
+
+    try {
+        key = await FbToken.findOne({where: {user_id: user_id}});
+        data = (await InstagramApi.getMedia(page_id, key.api_key, n, true))['data'];
+        for (let i = 0; i < data.length; i++) {
+            num_list[i] = data[i]['like_count']
+        }
+
+        return num_list;
+    } catch (err) {
+        console.error(err);
+        return []
+    }
+}
+
+
 function RunFollowerNum(optionsFollower){
     return new Promise((resolve,reject) =>{
         PythonShell.run('./CrawlerInstagram/crawler.py', optionsFollower,
@@ -125,7 +167,6 @@ function RunPostsLikes(optionsLikes){
         PythonShell.run('./CrawlerInstagram/crawler.py', optionsLikes,
             function(err, results){
                 if (err) throw err;
-                console.log("RECUPERO LIKE ESEGUITO");
                 resolve(results[2]);
             });
     })
@@ -212,9 +253,11 @@ function Mean_x(likesCount, n){
 
     let mean = 0;
     for(let i = 0; i < n; i++){
-        let likes = likesCount[i]["likes"];
+        let likes = likesCount[i];
+
         mean += likes;
     }
+
     return mean/n;
 }
 module.exports = {concatenationStrings};
