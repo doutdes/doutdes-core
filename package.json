@@ -13,7 +13,7 @@
     "crypto-random-string": "^3.0.0",
     "date-fns": "^1.29.0",
     "debug": "~2.6.9",
-    "express": "~4.16.0",
+    "express": "~4.17.3",
     "fb": "^2.0.0",
     "google-auth-library": "^2.0.0",
     "googleapis": "^33.0.0",
